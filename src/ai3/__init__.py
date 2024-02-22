@@ -1,6 +1,10 @@
-import torch.nn as nn
+# TODO should setup so we allocate the outputs in Python and give it as an attribute
+# of the class, need to make sure the attribute doesn't already exists or just call it
+# _ai3_layer_i_output or something
+# then use the .storage() thing that Nat said in slack
 import torch
-import ai3_functions
+from torch import nn
+from ai3 import functions
 
 
 class Module(nn.Module):
@@ -18,7 +22,7 @@ class Linear(nn.Module):
         self.bias = nn.Parameter(torch.randn(out_features))
 
     def forward(self, x):
-        return ai3_functions.linear(x, self.weights, self.bias)
+        return functions.linear(x, self.weights, self.bias)
 
 
 def optimize(model) -> nn.Module:
