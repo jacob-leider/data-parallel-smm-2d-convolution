@@ -1,5 +1,6 @@
-#include "kn2row_conv2d.hpp"
+// #include "kn2row_conv2d.hpp"
 #include <cstdlib>
+#include <torch/extension.h>
 
 // TODO other parameters from the PyTorch impl
 // groups
