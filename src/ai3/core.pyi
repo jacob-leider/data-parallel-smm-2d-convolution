@@ -4,14 +4,16 @@ from torch import (
         Size,
         )
 from typing import (
-        Optional
+        Optional, Sequence
         )
 
 
 def kn2row_conv2d(input: UntypedStorage, input_shape: Size,
-                  weight: UntypedStorage, weight_shape: Size, dtype: str,
-                  bias: Optional[UntypedStorage], output: Tensor) -> Tensor:
+                  kernel: UntypedStorage, kernel_shape: Size, dtype: str,
+                  bias: Optional[UntypedStorage], padding: Sequence[int],
+                  output: Tensor) -> Tensor:
     ...
+
 
 # def kn2row_conv2d(input: UntypedStorage, weight: UntypedStorage, dtype: str,
 #                   bias: Optional[UntypedStorage] = None,
