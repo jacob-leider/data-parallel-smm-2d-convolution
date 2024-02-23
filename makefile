@@ -16,6 +16,9 @@ clangd:
 ext:
 	$(PIP) install .
 
+ext_e:
+	$(PIP) install --editable .
+
 setup: clangd extension
 
 run_%:

@@ -1,3 +1,5 @@
+# torch.cuda.is_available()
+# torch.backends.mps.is_available()
 from setuptools import setup, find_packages
 from torch.utils.cpp_extension import BuildExtension, CppExtension
 import glob
