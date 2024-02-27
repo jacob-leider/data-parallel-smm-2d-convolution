@@ -31,6 +31,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
          output_channels: int, kernel_height: int, kernel_width: int,
          with_bias: bool = False,
          padding: Union[int, Sequence[int]] = 0,
+         stride: Union[int, Sequence[int]] = 1,
          test_name: str, atol=1e-5) -> None:
         input= torch.randn(1, input_channels, in_height, in_width)
         kernel = torch.randn(output_channels, input_channels, kernel_height, kernel_width)
@@ -39,8 +40,8 @@ def test(*, input_channels: int, in_height: int, in_width: int,
         else:
             bias = None
 
-        ai3_output = functions.conv2d(input, kernel, bias=bias, padding=padding)
-        torch_output = F.conv2d(input, kernel, bias=bias, padding=padding)
+        ai3_output = functions.conv2d(input, kernel, bias=bias, padding=padding, stride=stride)
+        torch_output = F.conv2d(input, kernel, bias=bias, padding=padding, stride=stride)
         compare_tensors(ai3_output, torch_output, test_name, atol=atol)
 
 if __name__ == "__main__":
@@ -65,6 +66,28 @@ if __name__ == "__main__":
          padding = (2,5),
          atol=1e-4,
          test_name="2d padding")
+
+    test(input_channels = 4,
+         in_height=30,
+         in_width=40,
+         output_channels = 6,
+         kernel_height = 7,
+         kernel_width = 5,
+         with_bias = True,
+         stride = 2,
+         atol=1e-4,
+         test_name="1d stride")
+
+    test(input_channels = 4,
+         in_height=30,
+         in_width=40,
+         output_channels = 6,
+         kernel_height = 7,
+         kernel_width = 5,
+         with_bias = True,
+         stride = (2, 3),
+         atol=1e-4,
+         test_name="2d stride")
 
     test(input_channels = 1,
          in_height=5,

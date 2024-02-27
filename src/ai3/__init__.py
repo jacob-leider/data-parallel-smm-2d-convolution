@@ -2,6 +2,7 @@
 # of the class, need to make sure the attribute doesn't already exists or just call it
 # _ai3_layer_i_output or something
 # then use the .storage() thing that Nat said in slack
+# TODO for backprop: https://pytorch.org/tutorials/advanced/cpp_extension.html
 import torch
 from torch import nn
 from ai3 import functions

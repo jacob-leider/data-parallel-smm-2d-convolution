@@ -1,4 +1,3 @@
-// #include "kn2row_conv2d.hpp"
 #include <cstdlib>
 #include <torch/extension.h>
 
@@ -12,7 +11,8 @@ at::Tensor
 kn2row_conv2d(const dtype *input, const at::IntArrayRef input_shape,
               const dtype *kernel, const at::IntArrayRef weight_shape,
               const std::optional<const dtype *> bias,
-              const std::vector<int> padding, const at::Tensor output) {
+              const std::vector<int> padding, const std::vector<int> stride,
+              const at::Tensor output) {
     const int input_channels = input_shape[1];
     const int input_height = input_shape[2];
     const int input_width = input_shape[3];
@@ -34,8 +34,10 @@ kn2row_conv2d(const dtype *input, const at::IntArrayRef input_shape,
                         for (int kern_w = 0; kern_w < kernel_width; ++kern_w) {
                             // should put some stuff on padding
                             // and stride when we do that
-                            int h_offset = out_h - padding[0] + kern_h;
-                            int w_offset = out_w - padding[1] + kern_w;
+                            int h_offset =
+                                out_h * stride[0] - padding[0] + kern_h;
+                            int w_offset =
+                                out_w * stride[1] - padding[1] + kern_w;
 
                             if (h_offset >= 0 && h_offset < input_height &&
                                 w_offset >= 0 && w_offset < input_width) {
@@ -61,27 +63,26 @@ kn2row_conv2d(const dtype *input, const at::IntArrayRef input_shape,
 }
 
 template <typename dtype>
-at::Tensor kn2row_conv2d_caster(const at::Storage &input_store,
-                                const at::IntArrayRef input_shape,
-                                const at::Storage &kernel_store,
-                                const at::IntArrayRef kernel_shape,
-                                const std::optional<at::Storage> &bias,
-                                const std::vector<int> padding,
-                                const at::Tensor &output) {
+at::Tensor kn2row_conv2d_caster(
+    const at::Storage &input_store, const at::IntArrayRef input_shape,
+    const at::Storage &kernel_store, const at::IntArrayRef kernel_shape,
+    const std::optional<at::Storage> &bias, const std::vector<int> padding,
+    const std::vector<int> stride, const at::Tensor &output) {
     return kn2row_conv2d(
         static_cast<const dtype *>(input_store.data()), input_shape,
         static_cast<const dtype *>(kernel_store.data()), kernel_shape,
         bias.has_value() ? std::make_optional<const dtype *>(
                                static_cast<const dtype *>(bias.value().data()))
                          : std::nullopt,
-        padding, output);
+        padding, stride, output);
 }
 
 at::Tensor kn2row_conv2d_entry(
     const at::Storage &input_store, const at::IntArrayRef input_shape,
     const at::Storage &kernel_store, const at::IntArrayRef kernel_shape,
     const std::string &dtype, const std::optional<at::Storage> &bias,
-    const std::vector<int> padding, const at::Tensor &output) {
+    const std::vector<int> padding, const std::vector<int> stride,
+    const at::Tensor &output) {
     if (dtype != "torch.float64" && dtype != "torch.float32") {
         std::cerr << "Unsupported data type." << dtype << std::endl;
         std::exit(1);
@@ -91,5 +92,5 @@ at::Tensor kn2row_conv2d_entry(
         caster = kn2row_conv2d_caster<double>;
     }
     return caster(input_store, input_shape, kernel_store, kernel_shape, bias,
-                  padding, output);
+                  padding, stride, output);
 }
