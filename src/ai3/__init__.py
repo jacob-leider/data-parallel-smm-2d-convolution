@@ -1,36 +1,63 @@
-# TODO should setup so we allocate the outputs in Python and give it as an attribute
-# of the class, need to make sure the attribute doesn't already exists or just call it
-# _ai3_layer_i_output or something
-# then use the .storage() thing that Nat said in slack
 # TODO for backprop: https://pytorch.org/tutorials/advanced/cpp_extension.html
-import torch
+# TODO benchmarks
 from torch import nn
-from ai3 import functions
+from ai3 import layers
+from typing import Optional, Sequence
+
+KN2ROW = 'kn2row'
+TORCH = 'torch'
+SUPPORTED_OBJECTIVES = ['energy', 'latency', 'memory']
+SUPPORTED_ALGORITHMS = [KN2ROW, TORCH]
+
+# TODO support for guess also being a dict mapping layer type to algorithm
+# TODO some check to make sure objective is either latency, memory, energy
 
 
-class Module(nn.Module):
-    def __init__(self, *args, **kwargs):
-        return super().__init__(*args, **kwargs)
+def module_algorithms(holder: nn.Module, objective: str = 'latency', guess: Optional[Sequence[str]] = None) -> Sequence[str]:
+    assert objective in SUPPORTED_OBJECTIVES
+    assert guess is None or len(guess) == len(list(holder.children()))
 
-    def __call__(self, *args, **kwargs):
-        return super().__call__(*args, **kwargs)
+    algos = []
+    for i, mod in enumerate(holder.children()):
+        if isinstance(mod, nn.Sequential):
+            if guess is not None:
+                assert isinstance(guess[i], list)
+                algos.append(module_algorithms(mod, objective, guess[i]))
+            algos.append(module_algorithms(mod, objective, None))
+        else:
+            if guess is not None:
+                # TODO some processing on whether to use the guess
+                assert guess[i] in SUPPORTED_ALGORITHMS
+            if isinstance(mod, nn.Conv2d):
+                algos.append(KN2ROW)
+            else:
+                algos.append(TORCH)
+    return algos
+
+# TODO function: optimize(objective='memory'/'energy'/'latency',
+#                         guess=[users guess for best algorithms to use for each layer],
+#                         given=[each layers algorithm will be set to the algorithm in this list] # only one of given or guess can be used at a time
+#                         model=model to optimize layers for) -> New Model With Better Layers
 
 
-class Linear(nn.Module):
-    def __init__(self, in_features, out_features):
-        super(Linear, self).__init__()
-        self.weights = nn.Parameter(torch.randn(out_features, in_features))
-        self.bias = nn.Parameter(torch.randn(out_features))
+def optimize(module: nn.Module) -> nn.Module:
+    for name, mod in module.named_children():
+        if isinstance(mod, nn.Sequential):
+            setattr(module, name, optimize(mod))
+        if isinstance(mod, nn.Conv2d):
+            # make sure non-defaults are all supported, remove this as they get supported
+            assert (mod.output_padding == 0 or mod.output_padding == (
+                0, 0)) and mod.padding_mode == 'zeros' and not mod.transposed
 
-    def forward(self, x):
-        return functions.linear(x, self.weights, self.bias)
+            ai3_layer = layers.Conv2d(mod.in_channels, mod.out_channels, mod.kernel_size,
+                                      bias=mod.bias is not None, stride=mod.stride,
+                                      padding=mod.padding,
+                                      dilation=mod.dilation)
+            assert ai3_layer.weight.shape == mod.weight.shape
+            ai3_layer.weight = mod.weight
+            if mod.bias is not None and ai3_layer.bias is not None:
+                assert ai3_layer.bias.shape == mod.bias.shape
+                ai3_layer.bias = mod.bias
+            setattr(module, name, ai3_layer)
 
-
-def optimize(model) -> nn.Module:
-    assert (isinstance(model, nn.Module))
-
-    for name, layer in model.named_children():
-        if isinstance(layer, nn.Linear):
-            setattr(model, name, Linear(layer.in_features, layer.out_features))
-
-    return model
+    return module
