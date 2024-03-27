@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 from torch.utils.cpp_extension import BuildExtension, CppExtension
 import glob
 
-# TODO setup different sources depending on the platform
+# TODO setup different sources depending on supported backend
 
 setup(
     name='ai3',
