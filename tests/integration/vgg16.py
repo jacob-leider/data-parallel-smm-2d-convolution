@@ -10,10 +10,10 @@ def run():
     with torch.inference_mode():
         model = torchvision.models.vgg16(weights=VGG16_Weights.DEFAULT)
         model.eval()
-        output_original = model(input_data)
-        ai3.optimize(model)
+        original = model(input_data)
+        ai3.optimize(model, replace=True)
         output = model(input_data)
-    compare_tensors(output, output_original, "vgg16")
+    compare_tensors(output, original, "vgg16")
 
 
 if __name__ == "__main__":

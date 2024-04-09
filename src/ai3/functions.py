@@ -40,8 +40,6 @@ def make_2d(a: Union[int, Sequence[int]], dtype=int) -> Sequence[int]:
 
 # TODO other parameters from the PyTorch impl
 # groups
-
-
 def conv2d(input: torch.Tensor, kernel: torch.Tensor, bias: Optional[torch.Tensor] = None,
            padding: Union[str, Union[int, Sequence[int]]] = 0,
            stride: Union[int, Sequence[int]] = 1,
@@ -57,15 +55,13 @@ def conv2d(input: torch.Tensor, kernel: torch.Tensor, bias: Optional[torch.Tenso
     dilation = make_2d(dilation)
     padding = make_padding_2d(padding, stride, dilation, kernel.shape)
 
-    output_size = conv2d_output_shape(input, kernel, padding, stride, dilation)
-    output_tensor = torch.empty(
-        output_size, dtype=input.dtype, requires_grad=False)
+    output_shape = conv2d_output_shape(input, kernel, padding, stride, dilation)
 
     return core.kn2row_conv2d(input.untyped_storage(), input.shape,
                               kernel.untyped_storage(), kernel.shape,
-                              str(input.dtype),
                               bias_ptr,
+                              output_shape,
+                              str(input.dtype),
                               padding,
                               stride,
-                              dilation,
-                              output_tensor)
+                              dilation)

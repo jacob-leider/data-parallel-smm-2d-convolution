@@ -6,6 +6,7 @@ PY_FORMAT := autopep8
 TEST_DIR := tests
 UNIT_TEST_DIR := $(TEST_DIR).unit
 INTEGRATION_TEST_DIR := $(TEST_DIR).integration
+BENCH_DIR := bench
 C_FILES := $(shell find . -name '*.cpp' -not -path "./venv/*")
 PY_FILES := $(shell find . -name '*.py' -not -path "./venv/*")
 
@@ -19,6 +20,9 @@ ext_e:
 	$(PIP) install --editable .
 
 setup: clangd extension
+
+bench.%:
+	$(PY) $(BENCH_DIR).$*
 
 test:
 	$(PY) $(TEST_DIR)

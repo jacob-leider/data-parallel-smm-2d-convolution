@@ -1,19 +1,34 @@
+# TODO try the model in slack paper with transformers
+# TODO more algorithms to implement
+# TODO for onnx support, should be pretty easy to also iterate
+# through the onnx layers and hyperparametrs. In both create a class
+# which has a list of the functions with all the hparams. This is then passed
+# to C++ which creates and returns the model, then forwarding is done fully
+# in C++
+# - im2col
 # torch.cuda.is_available()
 # torch.backends.mps.is_available()
 from setuptools import setup, find_packages
 from torch.utils.cpp_extension import BuildExtension, CppExtension
-import glob
+import os
 
-# TODO setup different sources depending on supported backend
+DIR = 'src'
+PKG = 'ai3'
+
+def form_path(file_name: str):
+    return os.path.join(DIR, PKG, 'csrc', file_name + '.cpp')
+
+def sources():
+    return [form_path('ai3'), form_path('kn2row_plain')]
 
 setup(
     name='ai3',
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
+    packages=find_packages(where=DIR),
+    package_dir={"": DIR},
     ext_modules=[
         CppExtension(
-            name='ai3.core',
-            sources=glob.glob('src/ai3/csrc/*.cpp'))
+            name=PKG + '.core',
+            sources=sources())
     ],
     cmdclass={
         'build_ext': BuildExtension
