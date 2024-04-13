@@ -2,6 +2,8 @@ import torch
 import ai3
 from tests import compare_tensors
 
+# TODO support this one in full C++ first
+
 
 class SimpleConvNet(torch.nn.Module):
     def __init__(self):

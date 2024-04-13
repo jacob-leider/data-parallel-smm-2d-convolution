@@ -1,3 +1,6 @@
+# TODO not sure how to set up dependencies or this file, need either a Pytorch model or a .onnx file but not both
+# - we are not always building a PyTorch extension
+# optional flag when installing, something like pip install --frontend=torch/onnx
 # TODO try the model in slack paper with transformers
 # TODO more algorithms to implement
 # TODO for onnx support, should be pretty easy to also iterate
