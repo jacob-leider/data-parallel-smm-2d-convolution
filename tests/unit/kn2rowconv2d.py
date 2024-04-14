@@ -1,9 +1,8 @@
 import torch
 import torch.nn.functional as F
+from ai3.functions import form_conv2d, form_model, predict
 from tests import compare_tensors
-from ai3 import functions
 from typing import Union, Sequence
-
 
 def test(*, input_channels: int, in_height: int, in_width: int,
          output_channels: int, kernel_height: int, kernel_width: int,
@@ -16,30 +15,21 @@ def test(*, input_channels: int, in_height: int, in_width: int,
     input = torch.randn(1, input_channels, in_height, in_width)
     kernel = torch.randn(output_channels, input_channels // groups,
                          kernel_height, kernel_width)
+    assert (str(input.dtype) == "torch.float32") and (str(kernel.dtype) == "torch.float32")
     if with_bias:
         bias = torch.randn(output_channels)
     else:
         bias = None
 
-    ai3_output = functions.conv2d(input, kernel, bias=bias, dilation=dilation,
-                                  padding=padding, stride=stride)
+    model = form_model(input.dtype, [form_conv2d(input.dtype, kernel, bias,
+                                                 stride=stride, padding=padding, dilation=dilation)])
+    ai3_output = predict(model, input)
     torch_output = F.conv2d(input, kernel, bias=bias, dilation=dilation,
                             padding=padding, stride=stride, groups=groups)
     compare_tensors(ai3_output, torch_output, test_name, atol=atol)
 
 
 def run():
-    # test(input_channels=4,
-    #      in_height=30,
-    #      in_width=40,
-    #      output_channels=6,
-    #      kernel_height=7,
-    #      kernel_width=5,
-    #      with_bias=True,
-    #      atol=1e-4,
-    #      groups=2,
-    #      test_name='groups')
-
     test(input_channels=4,
          in_height=30,
          in_width=40,

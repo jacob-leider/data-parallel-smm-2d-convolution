@@ -3,13 +3,13 @@
 # TODO benchmarks
 # TODO nice error setup instead of these asserts
 from torch import nn
-from ai3 import layers
 from typing import Optional, Sequence
 
 KN2ROW = 'kn2row'
 TORCH = 'torch'
 SUPPORTED_OBJECTIVES = ['energy', 'latency', 'memory']
 SUPPORTED_ALGORITHMS = [KN2ROW, TORCH]
+
 
 # TODO support for guess also being a dict mapping layer type to algorithm
 def module_algorithms(holder: nn.Module, objective: str = 'latency', guess: Optional[Sequence[str]] = None) -> Sequence[str]:
@@ -33,6 +33,9 @@ def module_algorithms(holder: nn.Module, objective: str = 'latency', guess: Opti
                 algos.append(TORCH)
     return algos
 
+
+SUPPORTED_LAYERS = [nn.Conv2d]
+
 # TODO function: optimize(objective='memory'/'energy'/'latency',
 #                         guess=[users guess for best algorithms to use for each layer],
 #                         given=[each layers algorithm will be set to the algorithm in this list] # only one of given or guess can be used at a time
@@ -50,12 +53,5 @@ def optimize(module: nn.Module, replace=False) -> nn.Module:
             if replace:
                 weight = mod.weight
                 bias= mod.bias
-            ai3_layer = layers.Conv2d(mod.in_channels, mod.out_channels, mod.kernel_size,
-                                      bias=mod.bias is not None, stride=mod.stride,
-                                      padding=mod.padding,
-                                      dilation=mod.dilation,
-                                      replace_weight=weight,
-                                      replace_bias=bias)
-            setattr(module, name, ai3_layer)
 
     return module

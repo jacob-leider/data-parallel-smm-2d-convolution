@@ -1,22 +1,33 @@
-#include "utils.hpp"
-#include <torch/extension.h>
+#pragma once
+
+#include "tensor.hpp"
+#include <iostream>
+#include <optional>
+#include <tuple>
+#include <vector>
 
 template <typename dtype>
-at::Tensor run(const dtype *input, const std::vector<int> input_shape,
-               const dtype *kernel, const std::vector<int> kernel_shape,
-               const std::optional<const dtype *> bias,
-               const std::vector<int> output_shape,
-               const std::vector<int> padding, const std::vector<int> stride,
-               const std::vector<int> dilation) {
-    const int input_channels = input_shape[1];
-    const int input_height = input_shape[2];
-    const int input_width = input_shape[3];
-    const int kernel_height = kernel_shape[2];
-    const int kernel_width = kernel_shape[3];
+Tensor<dtype>
+kn2row_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
+              const std::optional<const Tensor<dtype>> &bias,
+              const std::vector<int> &padding, const std::vector<int> &stride,
+              const std::vector<int> &dilation) {
+    const int input_channels = input.shape[1];
+    const int input_height = input.shape[2];
+    const int input_width = input.shape[3];
+    const int kernel_height = kernel.shape[2];
+    const int kernel_width = kernel.shape[3];
 
-    const int output_channels = kernel_shape[0];
-    const int output_height = output_shape[2];
-    const int output_width = output_shape[3];
+    const int output_channels = kernel.shape[0];
+    const int output_height = (input_height + 2 * padding[0] -
+                               dilation[0] * (kernel_height - 1) - 1) /
+                                  stride[0] +
+                              1;
+    const int output_width =
+        (input_width + 2 * padding[1] - dilation[1] * (kernel_width - 1) - 1) /
+            stride[1] +
+        1;
+
     const int kernel_size = kernel_height * kernel_width;
 
     dtype *output = new dtype[output_channels * output_height * output_width];
@@ -54,8 +65,6 @@ at::Tensor run(const dtype *input, const std::vector<int> input_shape,
             }
         }
     }
-    return torch::from_blob(output,
-                            {1, output_channels, output_height, output_width});
+    return Tensor<dtype>(output,
+                         {1, output_channels, output_height, output_width});
 }
-
-IMPL_ENTRY_FOR_DOUBLE_FLOAT

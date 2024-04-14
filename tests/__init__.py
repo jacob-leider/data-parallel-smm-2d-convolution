@@ -2,8 +2,8 @@ import torch
 import numpy as np
 
 
-def compare_tensors(out_tensor: torch.Tensor, tar_tensor: torch.Tensor, mes: str, atol=1e-5) -> None:
-    out = np.array(out_tensor)
+def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: str, atol=1e-5) -> None:
+    out = np.array(out_tensor.data).reshape(out_tensor.shape)
     tar = np.array(tar_tensor)
 
     if tar.shape != out.shape:

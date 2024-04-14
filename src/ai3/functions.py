@@ -1,11 +1,58 @@
 import torch
 from ai3 import core
 from typing import (
-    Optional,
     Union,
     Sequence
 )
 
+def predict(model, input):
+    if isinstance(input, torch.Tensor):
+        return model.predict(input.data_ptr(), input.size())
+
+    assert False and 'bad input type'
+
+def get_dtype_str(dtype):
+    if str(dtype) == 'torch.float32':
+        return 'float'
+    if str(dtype) == 'torch.float64':
+        return 'double'
+    assert False and f'using bad dtype: {str(dtype)}'
+
+def form_model(dtype, layers):
+    dtype = get_dtype_str(dtype)
+    if dtype == 'float':
+        return core.Model_float(layers)
+    elif dtype == 'double':
+        return core.Model_double(layers)
+
+def form_conv2d(dtype, weight, bias, *,
+                 stride: Union[int, Sequence[int]],
+                 padding: Union[str, Union[int, Sequence[int]]],
+                 dilation: Union[int, Sequence[int]]):
+    dtype = get_dtype_str(dtype)
+    stride = make_2d(stride)
+    dilation = make_2d(dilation)
+    padding = make_padding_2d(padding, stride, dilation, weight.size())
+
+    if isinstance(weight, torch.Tensor):
+        weight_addr = weight.data_ptr()
+        weight_shape = weight.size()
+    else:
+        assert False
+    if bias is not None:
+        if isinstance(bias, torch.Tensor):
+            bias_addr = bias.data_ptr()
+        else:
+            assert False
+    else:
+        bias_addr = None
+    if dtype == "float":
+        return core.Conv2D_float(weight_addr, weight_shape, bias_addr,
+                                 padding, stride, dilation)
+    elif dtype == "double":
+        return core.Conv2D_double(weight_addr, weight_shape, bias_addr,
+                                 padding, stride, dilation)
+    assert False
 
 def conv2d_output_shape(input: torch.Tensor, kernel: torch.Tensor, padding: Sequence[int],
                         stride: Sequence[int], dilation: Sequence[int]) -> tuple:
@@ -37,31 +84,3 @@ def make_2d(a: Union[int, Sequence[int]], dtype=int) -> Sequence[int]:
         return [a, a]
     assert len(a) == 2 and all(isinstance(val, dtype) for val in a)
     return a
-
-# TODO other parameters from the PyTorch impl
-# groups
-def conv2d(input: torch.Tensor, kernel: torch.Tensor, bias: Optional[torch.Tensor] = None,
-           padding: Union[str, Union[int, Sequence[int]]] = 0,
-           stride: Union[int, Sequence[int]] = 1,
-           dilation: Union[int, Sequence[int]] = 1
-           ) -> torch.Tensor:
-    assert input.dtype == kernel.dtype
-    if bias is not None:
-        assert input.dtype == bias.dtype
-        bias_ptr = bias.untyped_storage()
-    else:
-        bias_ptr = None
-    stride = make_2d(stride)
-    dilation = make_2d(dilation)
-    padding = make_padding_2d(padding, stride, dilation, kernel.shape)
-
-    output_shape = conv2d_output_shape(input, kernel, padding, stride, dilation)
-
-    return core.kn2row_conv2d(input.untyped_storage(), input.shape,
-                              kernel.untyped_storage(), kernel.shape,
-                              bias_ptr,
-                              output_shape,
-                              str(input.dtype),
-                              padding,
-                              stride,
-                              dilation)

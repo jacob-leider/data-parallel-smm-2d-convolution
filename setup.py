@@ -22,7 +22,7 @@ def form_path(file_name: str):
     return os.path.join(DIR, PKG, 'csrc', file_name + '.cpp')
 
 def sources():
-    return [form_path('ai3'), form_path('kn2row_plain')]
+    return [form_path('ai3')]
 
 setup(
     name='ai3',
