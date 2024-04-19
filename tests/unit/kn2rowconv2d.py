@@ -1,6 +1,6 @@
 import torch
 import torch.nn.functional as F
-from ai3.functions import form_conv2d, form_model, predict
+from ai3.model import Model, Conv2D
 from tests import compare_tensors
 from typing import Union, Sequence
 
@@ -21,11 +21,11 @@ def test(*, input_channels: int, in_height: int, in_width: int,
     else:
         bias = None
 
-    model = form_model(input.dtype, [form_conv2d(input.dtype, kernel, bias,
+    model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
                                                  stride=stride, padding=padding, dilation=dilation)])
-    ai3_output = predict(model, input)
+    ai3_output = model.predict(input)
     torch_output = F.conv2d(input, kernel, bias=bias, dilation=dilation,
-                            padding=padding, stride=stride, groups=groups)
+                             padding=padding, stride=stride, groups=groups)
     compare_tensors(ai3_output, torch_output, test_name, atol=atol)
 
 

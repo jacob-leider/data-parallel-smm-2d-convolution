@@ -38,8 +38,7 @@ template <typename dtype> class Tensor {
                                std::multiplies<int>());
     }
 
-    template <typename... Indices>
-    inline int linear_index(Indices... indices) const {
+    template <typename... Indices> int linear_index(Indices... indices) const {
         int idx = 0;
         int multiplier = 1;
         int indexArr[] = {indices...};
