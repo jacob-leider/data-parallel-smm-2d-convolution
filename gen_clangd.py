@@ -1,5 +1,5 @@
 import subprocess
-import torch
+import pybind11
 import os
 
 
@@ -16,9 +16,7 @@ def create_clangd_file(file_path):
         '-Werror',
         '-std=c++17',
         '-I' +
-        os.path.join(os.path.dirname(torch.__file__), 'include'),
-        '-I' + os.path.join(os.path.dirname(torch.__file__),
-                            'include', 'torch', 'csrc', 'api', 'include'),
+        os.path.join(os.path.dirname(pybind11.__file__), 'include'),
         *get_python_include()
     ]
 
