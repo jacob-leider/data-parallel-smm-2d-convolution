@@ -12,7 +12,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
          stride: Union[int, Sequence[int]] = 1,
          groups: int = 1,
          test_name: str, atol=1e-5) -> None:
-    input = torch.randn(1, input_channels, in_height, in_width)
+    input = torch.randn(input_channels, in_height, in_width)
     kernel = torch.randn(output_channels, input_channels // groups,
                          kernel_height, kernel_width)
     assert (str(input.dtype) == "torch.float32") and (str(kernel.dtype) == "torch.float32")

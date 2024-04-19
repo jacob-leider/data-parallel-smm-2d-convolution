@@ -12,9 +12,10 @@ kn2row_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
               const std::optional<const Tensor<dtype>> &bias,
               const std::vector<int> &padding, const std::vector<int> &stride,
               const std::vector<int> &dilation) {
-    const int input_channels = input.shape[1];
-    const int input_height = input.shape[2];
-    const int input_width = input.shape[3];
+    // TODO to support list of input need to use input.size() - 4
+    const int input_channels = input.shape[input.shape.size() - 3];
+    const int input_height = input.shape[input.shape.size() - 2];
+    const int input_width = input.shape[input.shape.size() - 1];
     const int kernel_height = kernel.shape[2];
     const int kernel_width = kernel.shape[3];
 
@@ -30,7 +31,8 @@ kn2row_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
 
     const int kernel_size = kernel_height * kernel_width;
 
-    dtype *output = new dtype[output_channels * output_height * output_width];
+    Tensor<dtype> output =
+        Tensor<dtype>({output_channels, output_height, output_width});
 
     for (int out_c = 0; out_c < output_channels; ++out_c) {
         for (int out_h = 0; out_h < output_height; ++out_h) {
@@ -45,26 +47,20 @@ kn2row_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                                            kern_c * dilation[1];
 
                             if (h_offset >= 0 && h_offset < input_height &&
-                                w_offset >= 0 && w_offset < input_width) {
-                                sum +=
-                                    input[in_c * input_height * input_width +
-                                          h_offset * input_width + w_offset] *
-                                    kernel[out_c * input_channels *
-                                               kernel_size +
-                                           in_c * kernel_size +
-                                           kern_r * kernel_width + kern_c];
+                                    w_offset >= 0 && w_offset < input_width) {
+                                sum += input.at(in_c, h_offset, w_offset) *
+                                    kernel.at(out_c, in_c, kern_r, kern_c);
+
                             }
                         }
                     }
                 }
                 if (bias.has_value()) {
-                    sum += bias.value()[out_c];
+                    sum += bias.value().at(out_c);
                 }
-                output[out_c * output_height * output_width +
-                       out_h * output_width + out_w] = sum;
+                output.at(out_c, out_h, out_w) = sum;
             }
         }
     }
-    return Tensor<dtype>(output,
-                         {1, output_channels, output_height, output_width});
+    return output;
 }
