@@ -4,13 +4,13 @@ from typing import (
     Sequence
 )
 
-
-def get_dtype_str(dtype):
+def get_correct_from_type(dtype, float_item, double_item):
     if str(dtype) == 'torch.float32':
-        return 'float'
+        return float_item
     if str(dtype) == 'torch.float64':
-        return 'double'
+        return double_item
     assert False and f'using bad dtype: {str(dtype)}'
+
 
 def get_address(frontend_data) -> int:
     if isinstance(frontend_data, torch.Tensor):
@@ -30,7 +30,9 @@ def make_padding_2d(padding: Union[str, Union[int, Sequence[int]]],
             return [0, 0]
         if padding == 'same':
             assert all(x == 1 for x in stride)
-            return [dilation[0] * (kernel_shape[2] - 1) // 2, dilation[1] * (kernel_shape[3] - 1) // 2]
+            k_height = kernel_shape[len(kernel_shape) - 2]
+            k_width = kernel_shape[len(kernel_shape) - 1]
+            return [dilation[0] * (k_height - 1) // 2, dilation[1] * (k_width - 1) // 2]
         assert False and f'invalid padding string: {padding}'
     else:
         return make_2d(padding, dtype=dtype)

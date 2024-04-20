@@ -1,6 +1,7 @@
 // TODO support for the first index of input and output tensors being greater
 // than one signifying multiple inputs and outputs (predicting on a list)
 #include "kn2row_plain.hpp"
+#include "maxpool2d_plain.hpp"
 #include "tensor.hpp"
 #include <iostream>
 #include <pybind11/pybind11.h>
@@ -9,18 +10,27 @@
 template <typename dtype> class Layer {
   public:
     virtual Tensor<dtype> forward(const Tensor<dtype> &input) = 0;
+};
 
-    Tensor<dtype> weight;
-    std::optional<Tensor<dtype>> bias;
+template <typename dtype> class MaxPool2D : public Layer<dtype> {
+  public:
+    MaxPool2D(const std::vector<int> kernel_shape,
+              const std::vector<int> padding, const std::vector<int> stride,
+              const std::vector<int> dilation)
+        : kernel_shape(kernel_shape), padding(padding), stride(stride),
+          dilation(dilation) {}
 
-  protected:
-    Layer(const intptr_t weight_address, const std::vector<int> &weight_shape,
-          const std::optional<intptr_t> bias_addr)
-        : weight(Tensor<dtype>(weight_address, weight_shape)),
-          bias(bias_addr.has_value()
-                   ? std::make_optional(
-                         Tensor<dtype>(bias_addr.value(), {weight_shape[0]}))
-                   : std::nullopt) {}
+    Tensor<dtype> forward(const Tensor<dtype> &input) override {
+        return maxpool2d<dtype>(input, this->kernel_shape, this->padding,
+                                this->stride, this->dilation);
+    }
+    ~MaxPool2D() = default;
+
+  private:
+    std::vector<int> kernel_shape;
+    std::vector<int> padding;
+    std::vector<int> stride;
+    std::vector<int> dilation;
 };
 
 // TODO do groups
@@ -30,7 +40,8 @@ template <typename dtype> class Conv2D : public Layer<dtype> {
            const std::optional<intptr_t> bias_addr,
            const std::vector<int> padding, const std::vector<int> stride,
            const std::vector<int> dilation)
-        : Layer<dtype>(weight_address, weight_shape, bias_addr),
+        : weight(weight_address, weight_shape),
+          bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]})),
           padding(padding), stride(stride), dilation(dilation) {}
 
     Tensor<dtype> forward(const Tensor<dtype> &input) override {
@@ -41,6 +52,8 @@ template <typename dtype> class Conv2D : public Layer<dtype> {
     ~Conv2D() = default;
 
   private:
+    Tensor<dtype> weight;
+    std::optional<Tensor<dtype>> bias;
     std::vector<int> padding;
     std::vector<int> stride;
     std::vector<int> dilation;
@@ -82,12 +95,20 @@ void define_layer_classes(py::module &m, std::string type_str) {
     model.def(py::init<const std::vector<std::shared_ptr<Layer<dtype>>> &>())
         .def("predict", &Model<dtype>::predict);
 
+    // TODO simplify this naming, don't know if the third thing is necessary
     std::string conv2d_name = std::string("Conv2D_") + type_str;
     py::class_<Conv2D<dtype>, Layer<dtype>, std::shared_ptr<Conv2D<dtype>>>
         conv2d(m, conv2d_name.c_str());
     conv2d.def(py::init<const intptr_t, const std::vector<int>,
                         const std::optional<intptr_t>, const std::vector<int>,
                         const std::vector<int>, const std::vector<int>>());
+
+    std::string maxpool_2d_name = std::string("MaxPool2D_") + type_str;
+    py::class_<MaxPool2D<dtype>, Layer<dtype>,
+               std::shared_ptr<MaxPool2D<dtype>>>
+        maxpool2d(m, maxpool_2d_name.c_str());
+    maxpool2d.def(py::init<const std::vector<int>, const std::vector<int>,
+                           const std::vector<int>, const std::vector<int>>());
 }
 
 PYBIND11_MODULE(core, m) {

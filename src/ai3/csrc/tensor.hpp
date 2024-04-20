@@ -4,6 +4,7 @@
 #include <functional>
 #include <iostream>
 #include <numeric>
+#include <optional>
 #include <vector>
 
 template <typename dtype> class Tensor {
@@ -17,8 +18,13 @@ template <typename dtype> class Tensor {
 
     ~Tensor() = default;
 
-    const dtype &operator[](int index) const { return data[index]; }
-    dtype &operator[](int index) { return data[index]; }
+    static std::optional<Tensor>
+    from_optional(const std::optional<intptr_t> &data_address,
+                  const std::vector<int> &s) {
+        return data_address.has_value()
+                   ? std::make_optional(Tensor<dtype>(data_address.value(), s))
+                   : std::nullopt;
+    }
 
     template <typename... Indices>
     inline const dtype &at(Indices... indices) const {

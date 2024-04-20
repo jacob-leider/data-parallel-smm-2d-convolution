@@ -12,7 +12,8 @@ kn2row_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
               const std::optional<const Tensor<dtype>> &bias,
               const std::vector<int> &padding, const std::vector<int> &stride,
               const std::vector<int> &dilation) {
-    // TODO to support list of input need to use input.size() - 4
+    // TODO put these accesses in a function which measures the size and acts
+    // accordingly
     const int input_channels = input.shape[input.shape.size() - 3];
     const int input_height = input.shape[input.shape.size() - 2];
     const int input_width = input.shape[input.shape.size() - 1];
@@ -28,8 +29,6 @@ kn2row_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
         (input_width + 2 * padding[1] - dilation[1] * (kernel_width - 1) - 1) /
             stride[1] +
         1;
-
-    const int kernel_size = kernel_height * kernel_width;
 
     Tensor<dtype> output =
         Tensor<dtype>({output_channels, output_height, output_width});
@@ -47,10 +46,9 @@ kn2row_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                                            kern_c * dilation[1];
 
                             if (h_offset >= 0 && h_offset < input_height &&
-                                    w_offset >= 0 && w_offset < input_width) {
+                                w_offset >= 0 && w_offset < input_width) {
                                 sum += input.at(in_c, h_offset, w_offset) *
-                                    kernel.at(out_c, in_c, kern_r, kern_c);
-
+                                       kernel.at(out_c, in_c, kern_r, kern_c);
                             }
                         }
                     }
