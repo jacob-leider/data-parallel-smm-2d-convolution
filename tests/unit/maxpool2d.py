@@ -25,6 +25,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
 
 
 def run():
+    print('MAX POOL 2D')
     test(input_channels=4,
          in_height=30,
          in_width=40,

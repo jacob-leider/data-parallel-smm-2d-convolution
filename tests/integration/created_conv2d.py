@@ -3,7 +3,8 @@ import ai3
 from tests import compare_tensors
 
 # TODO support this one in full C++ first
-
+# TODO we can't support looking at the functional stuff all the layers have to be put
+# in the __init__, so move the relu
 class SimpleConvNet(torch.nn.Module):
     def __init__(self):
         super(SimpleConvNet, self).__init__()

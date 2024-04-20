@@ -31,7 +31,6 @@ class Conv2D():
         self.core = utils.get_correct_from_type(dtype, core.Conv2D_float, core.Conv2D_double)(weight_addr, weight_shape, bias_addr,
                                  padding, stride, dilation)
 
-# TODO when integrating remember default for stride is the kernel_shape not 1,1
 class MaxPool2D():
     def __init__(self, dtype, kernel_shape: Union[int, Sequence[int]],
                  stride: Union[int, Sequence[int]],

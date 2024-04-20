@@ -9,7 +9,7 @@
 
 template <typename dtype> class Layer {
   public:
-    virtual Tensor<dtype> forward(const Tensor<dtype> &input) = 0;
+    virtual Tensor<dtype> forward(const Tensor<dtype> &input);
 };
 
 template <typename dtype> class MaxPool2D : public Layer<dtype> {
@@ -67,7 +67,7 @@ template <typename dtype> class Model {
     Tensor<dtype> predict(const intptr_t input_address,
                           std::vector<int> input_shape) {
         Tensor<dtype> output(input_address, input_shape);
-        for (std::shared_ptr<Layer<dtype>> &layer : layers) {
+        for (const std::shared_ptr<Layer<dtype>> &layer : layers) {
             output = layer->forward(output);
         }
         return output;
@@ -81,34 +81,28 @@ namespace py = pybind11;
 
 template <typename dtype>
 void define_layer_classes(py::module &m, std::string type_str) {
-    std::string tensor_name = std::string("Tensor_") + type_str;
-    py::class_<Tensor<dtype>>(m, tensor_name.c_str())
+    py::class_<Tensor<dtype>>(m, ("Tensor_" + type_str).c_str())
         .def_readonly("data", &Tensor<dtype>::data)
         .def_readonly("shape", &Tensor<dtype>::shape);
 
-    std::string layer_name = std::string("Layer_") + type_str;
-    py::class_<Layer<dtype>, std::shared_ptr<Layer<dtype>>> layer(
-        m, layer_name.c_str());
-
-    std::string model_name = std::string("Model_") + type_str;
-    py::class_<Model<dtype>> model(m, model_name.c_str());
-    model.def(py::init<const std::vector<std::shared_ptr<Layer<dtype>>> &>())
+    py::class_<Model<dtype>>(m, ("Model_" + type_str).c_str())
+        .def(py::init<const std::vector<std::shared_ptr<Layer<dtype>>>>())
         .def("predict", &Model<dtype>::predict);
 
-    // TODO simplify this naming, don't know if the third thing is necessary
-    std::string conv2d_name = std::string("Conv2D_") + type_str;
-    py::class_<Conv2D<dtype>, Layer<dtype>, std::shared_ptr<Conv2D<dtype>>>
-        conv2d(m, conv2d_name.c_str());
-    conv2d.def(py::init<const intptr_t, const std::vector<int>,
-                        const std::optional<intptr_t>, const std::vector<int>,
-                        const std::vector<int>, const std::vector<int>>());
+    py::class_<Layer<dtype>, std::shared_ptr<Layer<dtype>>> layer(
+        m, ("Layer_" + type_str).c_str());
 
-    std::string maxpool_2d_name = std::string("MaxPool2D_") + type_str;
+    py::class_<Conv2D<dtype>, Layer<dtype>, std::shared_ptr<Conv2D<dtype>>>(
+        m, ("Conv2D_" + type_str).c_str())
+        .def(py::init<const intptr_t, const std::vector<int>,
+                      const std::optional<intptr_t>, const std::vector<int>,
+                      const std::vector<int>, const std::vector<int>>());
+
     py::class_<MaxPool2D<dtype>, Layer<dtype>,
-               std::shared_ptr<MaxPool2D<dtype>>>
-        maxpool2d(m, maxpool_2d_name.c_str());
-    maxpool2d.def(py::init<const std::vector<int>, const std::vector<int>,
-                           const std::vector<int>, const std::vector<int>>());
+               std::shared_ptr<MaxPool2D<dtype>>>(
+        m, ("MaxPool2D_" + type_str).c_str())
+        .def(py::init<const std::vector<int>, const std::vector<int>,
+                      const std::vector<int>, const std::vector<int>>());
 }
 
 PYBIND11_MODULE(core, m) {

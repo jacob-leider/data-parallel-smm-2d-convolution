@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 
-# TODO we are defining defaults in the params of test functions but should be doing in the params of the classes
 def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: str, atol=1e-5) -> None:
     out = np.array(out_tensor.data).reshape(out_tensor.shape)
     tar = np.array(tar_tensor)

@@ -1,9 +1,7 @@
 #pragma once
 
 #include "tensor.hpp"
-#include <iostream>
 #include <optional>
-#include <tuple>
 #include <vector>
 
 template <typename dtype>
@@ -11,11 +9,12 @@ Tensor<dtype>
 maxpool2d(const Tensor<dtype> &input, const std::vector<int> kernel_shape,
           const std::vector<int> &padding, const std::vector<int> &stride,
           const std::vector<int> &dilation) {
-    const int input_channels = input.shape[input.shape.size() - 3];
-    const int input_height = input.shape[input.shape.size() - 2];
-    const int input_width = input.shape[input.shape.size() - 1];
-    const int kernel_height = kernel_shape[0];
-    const int kernel_width = kernel_shape[1];
+    const int input_channels = input.input_channels(input.shape);
+
+    const int input_height = input.height(input.shape);
+    const int input_width = input.width(input.shape);
+    const int kernel_height = Tensor<dtype>::height(kernel_shape);
+    const int kernel_width = Tensor<dtype>::width(kernel_shape);
 
     const int output_channels = input_channels;
     const int output_height = (input_height + 2 * padding[0] -

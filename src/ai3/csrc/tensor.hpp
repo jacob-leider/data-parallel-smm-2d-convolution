@@ -1,11 +1,8 @@
 #pragma once
 
 #include <cassert>
-#include <functional>
-#include <iostream>
 #include <numeric>
 #include <optional>
-#include <vector>
 
 template <typename dtype> class Tensor {
   public:
@@ -33,6 +30,22 @@ template <typename dtype> class Tensor {
 
     template <typename... Indices> inline dtype &at(Indices... indices) {
         return data[linear_index(indices...)];
+    }
+
+    static inline int num_data(const std::vector<int> &shape) {
+        return shape[shape.size() - 4];
+    }
+    static inline int kern_out_channels(const std::vector<int> &shape) {
+        return shape[shape.size() - 4];
+    }
+    static inline int input_channels(const std::vector<int> &shape) {
+        return shape[shape.size() - 3];
+    }
+    static inline int height(const std::vector<int> &shape) {
+        return shape[shape.size() - 2];
+    }
+    static inline int width(const std::vector<int> &shape) {
+        return shape[shape.size() - 1];
     }
 
     std::vector<dtype> data;

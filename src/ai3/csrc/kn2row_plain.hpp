@@ -3,7 +3,6 @@
 #include "tensor.hpp"
 #include <iostream>
 #include <optional>
-#include <tuple>
 #include <vector>
 
 template <typename dtype>
@@ -12,15 +11,14 @@ kn2row_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
               const std::optional<const Tensor<dtype>> &bias,
               const std::vector<int> &padding, const std::vector<int> &stride,
               const std::vector<int> &dilation) {
-    // TODO put these accesses in a function which measures the size and acts
-    // accordingly
-    const int input_channels = input.shape[input.shape.size() - 3];
-    const int input_height = input.shape[input.shape.size() - 2];
-    const int input_width = input.shape[input.shape.size() - 1];
-    const int kernel_height = kernel.shape[2];
-    const int kernel_width = kernel.shape[3];
+    const int input_channels = input.input_channels(input.shape);
+    const int input_height = input.height(input.shape);
+    const int input_width = input.width(input.shape);
 
-    const int output_channels = kernel.shape[0];
+    const int kernel_height = kernel.height(kernel.shape);
+    const int kernel_width = kernel.width(kernel.shape);
+
+    const int output_channels = kernel.kern_out_channels(kernel.shape);
     const int output_height = (input_height + 2 * padding[0] -
                                dilation[0] * (kernel_height - 1) - 1) /
                                   stride[0] +
