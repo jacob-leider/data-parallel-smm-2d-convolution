@@ -58,3 +58,17 @@ class MaxPool2D_float():
                  stride: Sequence[int],
                  dilation: Sequence[int]):
         ...
+
+class Linear_double():
+    def __init__(self,
+                 weight_address: int,
+                 weight_shape: Sequence[int],
+                 bias_addr: Optional[int]):
+        ...
+
+class Linear_float():
+    def __init__(self,
+                 weight_address: int,
+                 weight_shape: Sequence[int],
+                 bias_addr: Optional[int]):
+        ...

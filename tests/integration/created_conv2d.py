@@ -2,6 +2,7 @@ import torch
 import ai3
 from tests import compare_tensors
 
+# https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html
 # TODO support this one in full C++ first
 # TODO we can't support looking at the functional stuff all the layers have to be put
 # in the __init__, so move the relu

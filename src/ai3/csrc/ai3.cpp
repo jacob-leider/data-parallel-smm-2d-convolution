@@ -1,18 +1,20 @@
 // TODO support for the first index of input and output tensors being greater
 // than one signifying multiple inputs and outputs (predicting on a list)
+// this should be done for conv2d, maxpool, linear
 #include "kn2row_plain.hpp"
+#include "linear_plain.hpp"
 #include "maxpool2d_plain.hpp"
 #include "tensor.hpp"
-#include <iostream>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 template <typename dtype> class Layer {
   public:
     virtual Tensor<dtype> forward(const Tensor<dtype> &input);
+    virtual ~Layer() = default;
 };
 
-template <typename dtype> class MaxPool2D : public Layer<dtype> {
+template <typename dtype> class MaxPool2D : virtual public Layer<dtype> {
   public:
     MaxPool2D(const std::vector<int> kernel_shape,
               const std::vector<int> padding, const std::vector<int> stride,
@@ -33,8 +35,25 @@ template <typename dtype> class MaxPool2D : public Layer<dtype> {
     std::vector<int> dilation;
 };
 
+template <typename dtype> class Linear : virtual public Layer<dtype> {
+  public:
+    Linear(const intptr_t weight_address, const std::vector<int> weight_shape,
+           const std::optional<intptr_t> bias_addr)
+        : weight(weight_address, weight_shape),
+          bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]})) {}
+
+    Tensor<dtype> forward(const Tensor<dtype> &input) override {
+        return linear<dtype>(input, this->weight, this->bias);
+    }
+    ~Linear() = default;
+
+  private:
+    Tensor<dtype> weight;
+    std::optional<Tensor<dtype>> bias;
+};
+
 // TODO do groups
-template <typename dtype> class Conv2D : public Layer<dtype> {
+template <typename dtype> class Conv2D : virtual public Layer<dtype> {
   public:
     Conv2D(const intptr_t weight_address, const std::vector<int> weight_shape,
            const std::optional<intptr_t> bias_addr,
@@ -89,8 +108,9 @@ void define_layer_classes(py::module &m, std::string type_str) {
         .def(py::init<const std::vector<std::shared_ptr<Layer<dtype>>>>())
         .def("predict", &Model<dtype>::predict);
 
-    py::class_<Layer<dtype>, std::shared_ptr<Layer<dtype>>> layer(
-        m, ("Layer_" + type_str).c_str());
+    py::class_<Layer<dtype>, std::shared_ptr<Layer<dtype>>>(
+        m, ("Layer_" + type_str).c_str())
+        .def("forward", &Layer<dtype>::forward);
 
     py::class_<Conv2D<dtype>, Layer<dtype>, std::shared_ptr<Conv2D<dtype>>>(
         m, ("Conv2D_" + type_str).c_str())
@@ -103,6 +123,11 @@ void define_layer_classes(py::module &m, std::string type_str) {
         m, ("MaxPool2D_" + type_str).c_str())
         .def(py::init<const std::vector<int>, const std::vector<int>,
                       const std::vector<int>, const std::vector<int>>());
+
+    py::class_<Linear<dtype>, Layer<dtype>, std::shared_ptr<Linear<dtype>>>(
+        m, ("Linear_" + type_str).c_str())
+        .def(py::init<const intptr_t, const std::vector<int>,
+                      const std::optional<intptr_t>>());
 }
 
 PYBIND11_MODULE(core, m) {

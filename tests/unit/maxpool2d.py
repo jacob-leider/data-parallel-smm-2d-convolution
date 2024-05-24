@@ -10,7 +10,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
          dilation: Union[int, Sequence[int]] = 1,
          stride: Optional[Union[int, Sequence[int]]] = None,
          test_name: str, atol=1e-5) -> None:
-    input = torch.randn(input_channels, in_height, in_width)
+    input = torch.randn(input_channels, in_height, in_width,dtype=torch.float32)
     kernel_shape = (kernel_height, kernel_width)
 
     if stride is None:

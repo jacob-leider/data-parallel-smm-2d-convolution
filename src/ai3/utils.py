@@ -1,4 +1,4 @@
-import torch
+import torch # TODO could put code that accesses torch all in one file to cleanup to maybe allow easior conditional backends between onnx and torch
 from typing import (
     Union,
     Sequence

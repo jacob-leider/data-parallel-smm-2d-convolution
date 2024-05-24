@@ -31,6 +31,16 @@ class Conv2D():
         self.core = utils.get_correct_from_type(dtype, core.Conv2D_float, core.Conv2D_double)(weight_addr, weight_shape, bias_addr,
                                  padding, stride, dilation)
 
+class Linear():
+    def __init__(self, dtype, weight, bias):
+        weight_addr = utils.get_address(weight)
+        weight_shape = utils.get_shape(weight)
+        if bias is not None:
+            bias_addr = utils.get_address(bias)
+        else:
+            bias_addr = None
+        self.core = utils.get_correct_from_type(dtype, core.Linear_float, core.Linear_double)(weight_addr, weight_shape, bias_addr)
+
 class MaxPool2D():
     def __init__(self, dtype, kernel_shape: Union[int, Sequence[int]],
                  stride: Union[int, Sequence[int]],

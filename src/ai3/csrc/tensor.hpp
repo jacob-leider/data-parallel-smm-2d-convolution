@@ -32,6 +32,10 @@ template <typename dtype> class Tensor {
         return data[linear_index(indices...)];
     }
 
+    // FIXME why are these static, these functions are bad
+    // make them non static and do height and width properly
+    // do if input_channels or out_channels and the size isn't correct then
+    // throw some error or just keep it as is and error then
     static inline int num_data(const std::vector<int> &shape) {
         return shape[shape.size() - 4];
     }

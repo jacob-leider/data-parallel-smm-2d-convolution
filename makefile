@@ -11,13 +11,19 @@ C_FILES := $(shell find . -name '*.cpp' -not -path "./venv/*")
 PY_FILES := $(shell find . -name '*.py' -not -path "./venv/*")
 
 clangd:
-	$(PY) gen_clangd
+	$(PY) bare_builder gen-clangd
 
 ext:
 	$(PIP) install .
 
 ext_e:
 	$(PIP) install --editable .
+
+ext_ev:
+	$(PIP) install --editable . -vvv
+
+ext_bare:
+	$(PY) bare_builder
 
 setup: clangd extension
 
