@@ -72,3 +72,12 @@ class Linear_float():
                  weight_shape: Sequence[int],
                  bias_addr: Optional[int]):
         ...
+
+class ReLU_double():
+    def __init__(self):
+        ...
+
+class ReLU_float():
+    def __init__(self):
+        ...
+

@@ -41,6 +41,12 @@ class Linear():
             bias_addr = None
         self.core = utils.get_correct_from_type(dtype, core.Linear_float, core.Linear_double)(weight_addr, weight_shape, bias_addr)
 
+
+class ReLU():
+    def __init__(self, dtype):
+        self.core = utils.get_correct_from_type(dtype, core.ReLU_float, core.ReLU_double)()
+
+
 class MaxPool2D():
     def __init__(self, dtype, kernel_shape: Union[int, Sequence[int]],
                  stride: Union[int, Sequence[int]],

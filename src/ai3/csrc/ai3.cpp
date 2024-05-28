@@ -4,6 +4,7 @@
 #include "kn2row_plain.hpp"
 #include "linear_plain.hpp"
 #include "maxpool2d_plain.hpp"
+#include "relu_plain.hpp"
 #include "tensor.hpp"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -33,6 +34,16 @@ template <typename dtype> class MaxPool2D : virtual public Layer<dtype> {
     std::vector<int> padding;
     std::vector<int> stride;
     std::vector<int> dilation;
+};
+
+template <typename dtype> class ReLU : virtual public Layer<dtype> {
+  public:
+    ReLU(){};
+
+    Tensor<dtype> forward(const Tensor<dtype> &input) override {
+        return relu<dtype>(input);
+    }
+    ~ReLU() = default;
 };
 
 template <typename dtype> class Linear : virtual public Layer<dtype> {
@@ -128,6 +139,10 @@ void define_layer_classes(py::module &m, std::string type_str) {
         m, ("Linear_" + type_str).c_str())
         .def(py::init<const intptr_t, const std::vector<int>,
                       const std::optional<intptr_t>>());
+
+    py::class_<ReLU<dtype>, Layer<dtype>, std::shared_ptr<ReLU<dtype>>>(
+        m, ("ReLU_" + type_str).c_str())
+        .def(py::init());
 }
 
 PYBIND11_MODULE(core, m) {
