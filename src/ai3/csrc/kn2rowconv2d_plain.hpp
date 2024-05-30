@@ -1,6 +1,8 @@
-#pragma once
+#ifndef KN2ROW_CONV2D
+#define KN2ROW_CONV2D
 
 #include "tensor.hpp"
+#include "utils.hpp"
 #include <optional>
 #include <vector>
 
@@ -10,22 +12,19 @@ kn2row_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
               const std::optional<const Tensor<dtype>> &bias,
               const std::vector<int> &padding, const std::vector<int> &stride,
               const std::vector<int> &dilation) {
-    const int input_channels = input.input_channels(input.shape);
-    const int input_height = input.height(input.shape);
-    const int input_width = input.width(input.shape);
+    const int input_channels = dims::input_channels(input.shape);
+    const int input_height = dims::height(input.shape);
+    const int input_width = dims::width(input.shape);
 
-    const int kernel_height = kernel.height(kernel.shape);
-    const int kernel_width = kernel.width(kernel.shape);
+    const int kernel_height = dims::height(kernel.shape);
+    const int kernel_width = dims::width(kernel.shape);
 
-    const int output_channels = kernel.kern_out_channels(kernel.shape);
-    const int output_height = (input_height + 2 * padding[0] -
-                               dilation[0] * (kernel_height - 1) - 1) /
-                                  stride[0] +
-                              1;
-    const int output_width =
-        (input_width + 2 * padding[1] - dilation[1] * (kernel_width - 1) - 1) /
-            stride[1] +
-        1;
+    const int output_channels = dims::out_channels(kernel.shape);
+
+    const int output_height = dims::output_dim<dtype>(
+        input_height, kernel_height, padding[0], dilation[0], stride[0], false);
+    const int output_width = dims::output_dim<dtype>(
+        input_width, kernel_width, padding[1], dilation[1], stride[1], false);
 
     Tensor<dtype> output =
         Tensor<dtype>({output_channels, output_height, output_width});
@@ -59,3 +58,4 @@ kn2row_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     }
     return output;
 }
+#endif

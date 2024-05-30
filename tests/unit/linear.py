@@ -7,7 +7,7 @@ def test(*, in_features: int, out_features: int,
          with_bias: bool = False,
          test_name: str, atol=1e-5) -> None:
     input = torch.randn(in_features, dtype=torch.float32)
-    weight = torch.randn(out_features, in_features, dtype=torch.float32)
+    weight = torch.randn((out_features, in_features), dtype=torch.float32)
     if with_bias:
          bias = torch.randn(out_features)
     else:

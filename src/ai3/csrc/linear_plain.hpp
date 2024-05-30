@@ -1,16 +1,23 @@
-#pragma once
+#ifndef LINEAR
+#define LINEAR
 
+#include "errors.hpp"
 #include "tensor.hpp"
+#include "utils.hpp"
+#include <iostream>
 #include <optional>
 #include <vector>
 
 template <typename dtype>
 Tensor<dtype> linear(const Tensor<dtype> &input, const Tensor<dtype> &weight,
                      const std::optional<const Tensor<dtype>> &bias) {
-    assert(weight.shape[1] == input.shape[0]);
+    bail_if(
+        dims::width(input.shape) != dims::width(weight.shape),
+        "Invalid matrix multiplication: input width=", dims::width(input.shape),
+        "weight width=", dims::width(weight.shape));
 
-    const int in_features = input.shape[0];
-    const int out_features = weight.shape[0];
+    const int in_features = dims::width(input.shape);
+    const int out_features = dims::height(weight.shape);
 
     Tensor<dtype> output = Tensor<dtype>({out_features});
 
@@ -27,3 +34,4 @@ Tensor<dtype> linear(const Tensor<dtype> &input, const Tensor<dtype> &weight,
 
     return output;
 }
+#endif

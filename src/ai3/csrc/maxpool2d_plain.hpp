@@ -1,6 +1,8 @@
-#pragma once
+#ifndef MAXPOOL2D
+#define MAXPOOL2D
 
 #include "tensor.hpp"
+#include "utils.hpp"
 #include <optional>
 #include <vector>
 
@@ -8,23 +10,21 @@ template <typename dtype>
 Tensor<dtype>
 maxpool2d(const Tensor<dtype> &input, const std::vector<int> kernel_shape,
           const std::vector<int> &padding, const std::vector<int> &stride,
-          const std::vector<int> &dilation) {
-    const int input_channels = input.input_channels(input.shape);
+          const std::vector<int> &dilation, const bool ceil_mode) {
+    const int input_channels = dims::input_channels(input.shape);
+    const int input_height = dims::height(input.shape);
+    const int input_width = dims::width(input.shape);
 
-    const int input_height = input.height(input.shape);
-    const int input_width = input.width(input.shape);
-    const int kernel_height = Tensor<dtype>::height(kernel_shape);
-    const int kernel_width = Tensor<dtype>::width(kernel_shape);
+    const int kernel_height = dims::height(kernel_shape);
+    const int kernel_width = dims::width(kernel_shape);
 
     const int output_channels = input_channels;
-    const int output_height = (input_height + 2 * padding[0] -
-                               dilation[0] * (kernel_height - 1) - 1) /
-                                  stride[0] +
-                              1;
+    const int output_height =
+        dims::output_dim<dtype>(input_height, kernel_height, padding[0],
+                                dilation[0], stride[0], ceil_mode);
     const int output_width =
-        (input_width + 2 * padding[1] - dilation[1] * (kernel_width - 1) - 1) /
-            stride[1] +
-        1;
+        dims::output_dim<dtype>(input_width, kernel_width, padding[1],
+                                dilation[1], stride[1], ceil_mode);
 
     Tensor<dtype> output =
         Tensor<dtype>({output_channels, output_height, output_width});
@@ -32,7 +32,7 @@ maxpool2d(const Tensor<dtype> &input, const std::vector<int> kernel_shape,
     for (int out_c = 0; out_c < output_channels; ++out_c) {
         for (int out_h = 0; out_h < output_height; ++out_h) {
             for (int out_w = 0; out_w < output_width; ++out_w) {
-                dtype cur_max = 0;
+                dtype cur_max = std::numeric_limits<dtype>::lowest();
                 for (int kern_r = 0; kern_r < kernel_height; ++kern_r) {
                     for (int kern_c = 0; kern_c < kernel_width; ++kern_c) {
                         int h_offset = out_h * stride[0] - padding[0] +
@@ -54,3 +54,4 @@ maxpool2d(const Tensor<dtype> &input, const std::vector<int> kernel_shape,
     }
     return output;
 }
+#endif

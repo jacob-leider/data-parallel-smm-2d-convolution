@@ -48,7 +48,8 @@ class MaxPool2D_double():
                  kernel_shape: Sequence[int],
                  padding: Sequence[int],
                  stride: Sequence[int],
-                 dilation: Sequence[int]):
+                 dilation: Sequence[int],
+                 ceil_mode: bool):
         ...
 
 class MaxPool2D_float():
@@ -56,7 +57,36 @@ class MaxPool2D_float():
                  kernel_shape: Sequence[int],
                  padding: Sequence[int],
                  stride: Sequence[int],
-                 dilation: Sequence[int]):
+                 dilation: Sequence[int],
+                 ceil_mode: bool):
+        ...
+
+class AvgPool2D_float():
+    def __init__(self,
+                 kernel_shape: Sequence[int],
+                 padding: Sequence[int],
+                 stride: Sequence[int],
+                 ceil_mode: bool,
+                 count_include_pad: bool,
+                 divisor_override: Optional[int]):
+        ...
+
+class AvgPool2D_double():
+    def __init__(self,
+                 kernel_shape: Sequence[int],
+                 padding: Sequence[int],
+                 stride: Sequence[int],
+                 ceil_mode: bool,
+                 count_include_pad: bool,
+                 divisor_override: Optional[int]):
+       ...
+
+class AdaptiveAvgPool2D_float():
+    def __init__(self, output_shape: Union[None, Sequence[Optional[int]], Sequence[int]]): # TODO change the Union None to optional
+        ...
+
+class AdaptiveAvgPool2D_double():
+    def __init__(self, output_shape: Union[None, Sequence[Optional[int]], Sequence[int]]):
         ...
 
 class Linear_double():

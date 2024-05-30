@@ -1,6 +1,6 @@
-#pragma once
+#ifndef TENSORS
+#define TENSORS
 
-#include <cassert>
 #include <numeric>
 #include <optional>
 
@@ -32,26 +32,6 @@ template <typename dtype> class Tensor {
         return data[linear_index(indices...)];
     }
 
-    // FIXME why are these static, these functions are bad
-    // make them non static and do height and width properly
-    // do if input_channels or out_channels and the size isn't correct then
-    // throw some error or just keep it as is and error then
-    static inline int num_data(const std::vector<int> &shape) {
-        return shape[shape.size() - 4];
-    }
-    static inline int kern_out_channels(const std::vector<int> &shape) {
-        return shape[shape.size() - 4];
-    }
-    static inline int input_channels(const std::vector<int> &shape) {
-        return shape[shape.size() - 3];
-    }
-    static inline int height(const std::vector<int> &shape) {
-        return shape[shape.size() - 2];
-    }
-    static inline int width(const std::vector<int> &shape) {
-        return shape[shape.size() - 1];
-    }
-
     std::vector<dtype> data;
     std::vector<int> shape;
 
@@ -72,3 +52,4 @@ template <typename dtype> class Tensor {
         return idx;
     }
 };
+#endif

@@ -1,5 +1,6 @@
-# TODO next meeting or research: Why are we using SYCL and not just our own threading engine
-# TODO watch the SYCL video Tom sent in slack
+# TODO put all the hyperparameter stuff done in the tests in the layer creation
+# TODO after beginning benchmarking on the vgg16, then try separating the outer three for loops to a function which takes
+# a lambda to do the other processing
 # TODO for onnx backend could use Torches frontend for onnx which would make everything easier. I really don't want to make torch a required
 # dependency though
 # TODO could checkout KAN networks and provide support for their forwarding, don't think it should actually be bad to just do inferencing,

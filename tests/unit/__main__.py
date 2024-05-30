@@ -1,4 +1,4 @@
-from . import kn2rowconv2d, maxpool2d, linear, relu
+from . import kn2rowconv2d, maxpool2d, linear, relu, avgpool2d, adaptiveavgpool2d
 
 def run():
     print('UNIT')
@@ -6,6 +6,8 @@ def run():
     maxpool2d.run()
     linear.run()
     relu.run()
+    avgpool2d.run()
+    adaptiveavgpool2d.run()
 
 if __name__ == "__main__":
     run()

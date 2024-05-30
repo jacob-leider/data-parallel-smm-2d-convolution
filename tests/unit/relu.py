@@ -2,7 +2,6 @@ import torch
 import torch.nn.functional as F
 from ai3.model import Model, ReLU
 from tests import compare_tensors
-from typing import Sequence
 
 def test(*, input_shape,
          test_name: str, atol=1e-5) -> None:
@@ -11,7 +10,6 @@ def test(*, input_shape,
     ai3_output = model.predict(input)
     torch_output = F.relu(input)
     compare_tensors(ai3_output, torch_output, test_name, atol=atol)
-
 
 def run():
     print('RELU')

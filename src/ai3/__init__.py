@@ -1,5 +1,3 @@
-# TODO for backprop: https://pytorch.org/tutorials/advanced/cpp_extension.html
-# - Can actually just call whatever pytorch function is there and eventually do it ourselves later on
 # TODO benchmarks
 from torch import nn
 from typing import Optional, Sequence
