@@ -9,8 +9,7 @@ def get_correct_from_type(dtype, float_item, double_item):
         return float_item
     if str(dtype) == 'torch.float64':
         return double_item
-    assert False and f'using bad dtype: {str(dtype)}'
-
+    assert False, f'using bad dtype: {str(dtype)}'
 
 def get_address(frontend_data) -> int:
     if isinstance(frontend_data, torch.Tensor):

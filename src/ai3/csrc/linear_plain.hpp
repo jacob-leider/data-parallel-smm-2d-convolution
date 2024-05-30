@@ -14,7 +14,7 @@ Tensor<dtype> linear(const Tensor<dtype> &input, const Tensor<dtype> &weight,
     bail_if(
         dims::width(input.shape) != dims::width(weight.shape),
         "Invalid matrix multiplication: input width=", dims::width(input.shape),
-        "weight width=", dims::width(weight.shape));
+        " weight width=", dims::width(weight.shape));
 
     const int in_features = dims::width(input.shape);
     const int out_features = dims::height(weight.shape);

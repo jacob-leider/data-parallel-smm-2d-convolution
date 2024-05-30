@@ -1,37 +1,34 @@
 import torch
+from torch import nn
 import ai3
 from tests import compare_tensors
 
-# https://pytorch.org/docs/stable/generated/torch.nn.ReLU.html
-# TODO support this one in full C++ first
-# TODO we can't support looking at the functional stuff all the layers have to be put
-# in the __init__, so move the relu
 class SimpleConvNet(torch.nn.Module):
     def __init__(self):
         super(SimpleConvNet, self).__init__()
-        self.conv1 = torch.nn.Conv2d(3, 16, kernel_size=3, padding=1)
-        self.conv2 = torch.nn.Conv2d(16, 32, kernel_size=3, padding=1)
-        self.pool = torch.nn.MaxPool2d(2, 2)
-        self.fc1 = torch.nn.Linear(32 * 56 * 56, 128)
-        self.fc2 = torch.nn.Linear(128, 10)
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=16, kernel_size=3, stride=1, padding=1)
+        self.relu1 = nn.ReLU()
+        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.conv2 = nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1)
+        self.relu2 = nn.ReLU()
+        self.avgpool = nn.AvgPool2d(kernel_size=2, stride=2)
 
     def forward(self, x):
-        x = self.pool(torch.nn.functional.relu(self.conv1(x)))
-        x = self.pool(torch.nn.functional.relu(self.conv2(x)))
-        x = torch.flatten(x, 1)
-        x = torch.nn.functional.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = self.relu1(self.conv1(x))
+        x = self.maxpool(x)
+        x = self.relu2(self.conv2(x))
+        x = self.avgpool(x)
         return x
 
 
 def run():
     model = SimpleConvNet()
 
-    input_data = torch.randn(1, 3, 224, 224)
+    input_data = torch.randn(3, 224, 224)
     output_original = model(input_data)
-    ai3.optimize(model)
-    output = model(input_data)
-    compare_tensors(output.detach().numpy(),
+    ai3_model = ai3.optimize(model)
+    output = ai3_model.predict(input_data)
+    compare_tensors(output,
                     output_original.detach().numpy(), "simple conv2d")
 
 

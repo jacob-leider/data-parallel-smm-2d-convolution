@@ -14,6 +14,7 @@ class Model():
     def predict(self, input):
         return self.core.predict(utils.get_address(input), utils.get_shape(input))
 
+# TODO padding mode
 class Conv2D():
     def __init__(self, dtype, weight, bias,
                  stride: Union[int, Sequence[int]],

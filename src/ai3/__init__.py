@@ -1,6 +1,7 @@
-# TODO benchmarks
+# TODO benchmarks should benchmark each layer to start
 from torch import nn
-from typing import Optional, Sequence
+from typing import Optional, Sequence, List
+from ai3 import model
 
 KN2ROW = 'kn2row'
 TORCH = 'torch'
@@ -37,18 +38,41 @@ SUPPORTED_LAYERS = [nn.Conv2d]
 #                         guess=[users guess for best algorithms to use for each layer],
 #                         given=[each layers algorithm will be set to the algorithm in this list] # only one of given or guess can be used at a time
 #                         model=model to optimize layers for) -> New Model With Better Layers
-def optimize(module: nn.Module, replace=False) -> nn.Module:
-    for name, mod in module.named_children():
+
+def get_layers(module: nn.Module, layers, dtype) -> List:
+    for _, mod in module.named_children():
         if isinstance(mod, nn.Sequential):
-            setattr(module, name, optimize(mod, replace=replace))
-        if isinstance(mod, nn.Conv2d):
-            assert (mod.output_padding == 0 or mod.output_padding == (
-                0, 0)) and mod.padding_mode == 'zeros' and not mod.transposed
+            layers = get_layers(mod, layers, dtype)
+        elif isinstance(mod, nn.Conv2d):
+            assert (mod.padding_mode == 'zeros')
+            layers.append(model.Conv2D(dtype, mod.weight,
+                                       mod.bias, mod.stride,
+                                       mod.padding, mod.dilation))
+        elif isinstance(mod, nn.Linear):
+            layers.append(model.Linear(dtype, mod.weight, mod.bias))
+        elif isinstance(mod, nn.MaxPool2d):
+            layers.append(model.MaxPool2D(dtype, mod.kernel_size, mod.stride,
+                                          mod.padding, mod.dilation, mod.ceil_mode))
+        elif isinstance(mod, nn.AvgPool2d):
+            layers.append(model.AvgPool2D(dtype, mod.kernel_size, mod.stride,
+                                          mod.padding, mod.ceil_mode,
+                                          mod.count_include_pad,
+                                          mod.divisor_override))
+        elif isinstance(mod, nn.AdaptiveAvgPool2d):
+            layers.append(model.AdaptiveAvgPool2D(dtype, mod.output_size))
+        elif isinstance(mod, nn.ReLU):
+            layers.append(model.ReLU(dtype))
+        elif isinstance(mod, nn.Dropout):
+            pass
+        else:
+            assert False, f"unsupported module: f{mod}"
 
-            weight = None
-            bias = None
-            if replace:
-                weight = mod.weight
-                bias= mod.bias
+    return layers
 
-    return module
+
+def optimize(module: nn.Module) -> model.Model:
+    dtype = None
+    for param in module.parameters():
+        dtype = param.dtype
+        break
+    return model.Model(dtype, get_layers(module, [], dtype))
