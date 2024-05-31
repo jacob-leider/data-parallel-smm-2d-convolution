@@ -8,7 +8,6 @@
 #include <optional>
 #include <vector>
 
-// TODO give this to chat to try and clean it up
 template <typename dtype>
 Tensor<dtype> flatten(const Tensor<dtype> &input, const int start_dim,
                       int end_dim) {
