@@ -64,6 +64,8 @@ def get_layers(module: nn.Module, layers, dtype) -> List:
             layers.append(model.AdaptiveAvgPool2D(dtype, mod.output_size))
         elif isinstance(mod, nn.ReLU):
             layers.append(model.ReLU(dtype))
+        elif isinstance(mod, nn.Flatten):
+            layers.append(model.Flatten(dtype, start_dim=mod.start_dim, end_dim=mod.end_dim))
         elif isinstance(mod, nn.Dropout):
             pass
         else:

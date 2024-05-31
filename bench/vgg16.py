@@ -1,27 +1,22 @@
 import torch
-import torchvision
-from torchvision.models.vgg import VGG16_Weights
 import ai3
 import time
+from tests.integration.vgg16 import VGG16
 
 
 def run():
-    input_data = torch.randn(1, 3, 224, 224)
-
+    input_data = torch.randn(3, 224, 224)
     with torch.inference_mode():
-        model = torchvision.models.vgg16(weights=VGG16_Weights.DEFAULT)
-        model.eval()
-
+        pytorch_vgg16 = VGG16()
+        pytorch_vgg16.eval()
         start_time = time.time()
-        _ = model(input_data)
+        _ = pytorch_vgg16(input_data)
         end_time = time.time()
-
         inference_time = end_time - start_time
-        print("Inference time original:", inference_time, "seconds")
-
-        ai3.optimize(model, replace=True)
+        print("Inference time pytorch:", inference_time, "seconds")
+        ai3_model = ai3.optimize(pytorch_vgg16)
         start_time = time.time()
-        _ = model(input_data)
+        _ = ai3_model.predict(input_data)
         end_time = time.time()
         inference_time = end_time - start_time
         print("Inference time ai3:", inference_time, "seconds")
