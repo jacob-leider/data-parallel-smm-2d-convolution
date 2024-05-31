@@ -1,4 +1,8 @@
 # TODO benchmarks should benchmark each layer to start
+# right now limitation is that the model to optimize must be written
+# with each part of its forwarding declared in order as a field of
+# the model class
+
 from torch import nn
 from typing import Optional, Sequence, List
 from ai3 import model
@@ -31,8 +35,6 @@ def module_algorithms(holder: nn.Module, objective: str = 'latency', guess: Opti
                 algos.append(TORCH)
     return algos
 
-
-SUPPORTED_LAYERS = [nn.Conv2d]
 
 # TODO function: optimize(objective='memory'/'energy'/'latency',
 #                         guess=[users guess for best algorithms to use for each layer],

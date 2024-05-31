@@ -79,9 +79,13 @@ class AvgPool2D():
                                  padding, stride, ceil_mode, count_include_pad, divisor_override)
 
 class AdaptiveAvgPool2D():
-    def __init__(self, dtype, output_shape: Union[int, None, Sequence[Optional[int]]]):
+    def __init__(self, dtype, output_shape: Optional[Union[int, Sequence[Optional[int]]]]):
         if isinstance(output_shape, list):
             assert(len(output_shape) == 2)
         if isinstance(output_shape, int):
             output_shape = utils.make_2d(output_shape)
         self.core = utils.get_correct_from_type(dtype, core.AdaptiveAvgPool2D_float, core.AdaptiveAvgPool2D_double)(output_shape)
+
+class Flatten():
+    def __init__(self, dtype, start_dim: int, end_dim: int):
+        self.core = utils.get_correct_from_type(dtype, core.Flatten_float, core.Flatten_double)(start_dim, end_dim)

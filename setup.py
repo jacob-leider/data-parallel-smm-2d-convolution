@@ -1,4 +1,3 @@
-# TODO put all the hyperparameter stuff done in the tests in the layer creation
 # TODO after beginning benchmarking on the vgg16, then try separating the outer three for loops to a function which takes
 # a lambda to do the other processing
 # TODO for onnx backend could use Torches frontend for onnx which would make everything easier. I really don't want to make torch a required

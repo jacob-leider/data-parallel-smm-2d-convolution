@@ -29,7 +29,7 @@ def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: str, atol=1e-5) -
     different_elements = np.where(np.abs(out - tar) > atol)
 
     if len(different_elements[0]) == 0:
-        print(f'Passed Test {mes}')
+        print(f'  Passed Test {mes}')
     else:
         add_fail(mes)
         print(f'Failed Test {mes}')
@@ -39,8 +39,17 @@ def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: str, atol=1e-5) -
 
 def calling_file():
     current_frame = inspect.currentframe()
-    caller_frame = current_frame.f_back.f_back.f_back
+    if current_frame is None:
+        return
+    caller_frame = current_frame.f_back
+    if caller_frame is None:
+        return None
+    caller_frame = caller_frame.f_back
+    if caller_frame is None:
+        return None
+    caller_frame = caller_frame.f_back
+    if caller_frame is None:
+        return None
     caller_file = caller_frame.f_globals["__file__"]
 
     return caller_file
-

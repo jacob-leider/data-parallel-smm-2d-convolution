@@ -82,11 +82,11 @@ class AvgPool2D_double():
        ...
 
 class AdaptiveAvgPool2D_float():
-    def __init__(self, output_shape: Union[None, Sequence[Optional[int]], Sequence[int]]): # TODO change the Union None to optional
+    def __init__(self, output_shape: Optional[Union[Sequence[Optional[int]], Sequence[int]]]):
         ...
 
 class AdaptiveAvgPool2D_double():
-    def __init__(self, output_shape: Union[None, Sequence[Optional[int]], Sequence[int]]):
+    def __init__(self, output_shape: Optional[Union[Sequence[Optional[int]], Sequence[int]]]):
         ...
 
 class Linear_double():
@@ -111,3 +111,10 @@ class ReLU_float():
     def __init__(self):
         ...
 
+class Flatten_double():
+    def __init__(self, start_dim: int, end_dim: int):
+        ...
+
+class Flatten_float():
+    def __init__(self, start_dim: int, end_dim: int):
+        ...

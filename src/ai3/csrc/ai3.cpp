@@ -2,6 +2,7 @@
 // than one signifying multiple inputs and outputs (predicting on a list)
 // this should be done for conv2d, maxpool, linear
 #include "avgpool2d_plain.hpp"
+#include "flatten_plain.hpp"
 #include "kn2rowconv2d_plain.hpp"
 #include "linear_plain.hpp"
 #include "maxpool2d_plain.hpp"
@@ -130,6 +131,21 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
     std::optional<Tensor<dtype>> bias;
 };
 
+template <typename dtype> class Flatten : virtual public Layer<dtype> {
+  public:
+    Flatten(const int start_dim, const int end_dim)
+        : start_dim(start_dim), end_dim(end_dim) {}
+
+    Tensor<dtype> forward(const Tensor<dtype> &input) override {
+        return flatten<dtype>(input, this->start_dim, this->end_dim);
+    }
+    ~Flatten() = default;
+
+  private:
+    int start_dim;
+    int end_dim;
+};
+
 // TODO do groups
 template <typename dtype> class Conv2D : virtual public Layer<dtype> {
   public:
@@ -223,6 +239,10 @@ void define_layer_classes(py::module &m, std::string type_str) {
                std::shared_ptr<AdaptiveAvgPool2D<dtype>>>(
         m, ("AdaptiveAvgPool2D_" + type_str).c_str())
         .def(py::init<std::optional<std::vector<std::optional<int>>>>());
+
+    py::class_<Flatten<dtype>, Layer<dtype>, std::shared_ptr<Flatten<dtype>>>(
+        m, ("Flatten_" + type_str).c_str())
+        .def(py::init<const int, const int>());
 }
 
 PYBIND11_MODULE(core, m) {
