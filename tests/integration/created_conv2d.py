@@ -22,6 +22,7 @@ class SimpleConvNet(torch.nn.Module):
 
 
 def run():
+    print("SIMPLE CREATED CONV NET")
     model = SimpleConvNet()
 
     input_data = torch.randn(3, 224, 224)

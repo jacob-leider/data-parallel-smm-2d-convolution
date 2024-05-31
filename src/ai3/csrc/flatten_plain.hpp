@@ -4,8 +4,6 @@
 #include "errors.hpp"
 #include "tensor.hpp"
 #include "utils.hpp"
-#include <iostream>
-#include <optional>
 #include <vector>
 
 template <typename dtype>
