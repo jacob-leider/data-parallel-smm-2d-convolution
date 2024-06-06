@@ -7,6 +7,8 @@ TEST_DIR := tests
 UNIT_TEST_DIR := $(TEST_DIR).unit
 INTEGRATION_TEST_DIR := $(TEST_DIR).integration
 BENCH_DIR := bench
+LAYER_BENCH_DIR := $(BENCH_DIR).layers
+MODEL_BENCH_DIR := $(BENCH_DIR).models
 C_FILES := $(shell find . -name '*.cpp' -not -path "./venv/*")
 PY_FILES := $(shell find . -name '*.py' -not -path "./venv/*")
 
@@ -27,8 +29,24 @@ ext_bare:
 
 setup: clangd extension
 
+.PHONY: bench
+bench:
+	$(PY) $(BENCH_DIR)
+
 bench.%:
 	$(PY) $(BENCH_DIR).$*
+
+lbench:
+	$(PY) $(LAYER_BENCH_DIR)
+
+lbench.%:
+	$(PY) $(LAYER_BENCH_DIR).$*
+
+mbench:
+	$(PY) $(MODEL_BENCH_DIR)
+
+mbench.%:
+	$(PY) $(MODEL_BENCH_DIR).$*
 
 test:
 	$(PY) $(TEST_DIR)

@@ -1,23 +1,19 @@
-# TODO after beginning benchmarking on the vgg16, then try separating the outer three for loops to a function which takes
-# a lambda to do the other processing
-# TODO for onnx backend could use Torches frontend for onnx which would make everything easier. I really don't want to make torch a required
-# dependency though
-# TODO could checkout KAN networks and provide support for their forwarding, don't think it should actually be bad to just do inferencing,
-# and could make it pretty cool
+# TODO July 7th deadline
+# TODO once we have a way to just swap out the layers, try to
+# run torch.compile on it
 
-# TODO after changing model, do vgg16 and inception compare the performance, impact on energy,
-# BME people have UNET model but their images is too large and run out of memory (good scientific use case)
-# - TODO bench against intel extension for pytorch and CUDNN have to check if it has Python support
-# - TODO then do the transformer model
+# TODO in the torch.compile see if we can inject our convolution algorithms as
+# customized by the user into it,
+# TODO an easy bench suite to bench on the same 140ish models that PyTorch benchmarks on
 
+# TODO onnx support, should be pretty easy to also iterate
+# through the onnx layers and hyperparametrs, could also use the pytorch way
+# of loading .onnx, .onnx -> nn.Module -> ai3.optimize -> ai3.Model
 # TODO not sure how to set up dependencies or this file, need either a Pytorch model or a .onnx file but not both
 # - we are not always building a PyTorch extension
 # optional flag when installing, something like pip install --frontend=torch/onnx
-# TODO onnx support, should be pretty easy to also iterate
-# through the onnx layers and hyperparametrs. In both create a class
-# which has a list of the functions with all the hparams. This is then passed
-# to C++ which creates and returns the model, then forwarding is done fully
-# in C++
+# TODO could checkout KAN networks and provide support for their forwarding, don't think it should actually be bad to just do inferencing,
+# and could make it pretty cool
 
 import os
 from pybind11.setup_helpers import Pybind11Extension, build_ext
