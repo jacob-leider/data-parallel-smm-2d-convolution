@@ -1,6 +1,7 @@
-#ifndef UTILS
-#define UTILS
+#pragma once
 
+#include "errors.hpp"
+#include <iterator>
 #include <optional>
 #include <vector>
 
@@ -25,12 +26,22 @@ inline int output_dim(const int input, const int kernel, const int padding,
     return (poss - 1) * stride >= input + padding ? poss - 1 : poss;
 }
 
+inline bool add_dim_for_samples(const std::vector<int> &shape,
+                                int data_dim = -1) {
+    if (data_dim == -1) {
+        return false;
+    }
+    return shape.size() != unsigned(data_dim + 1);
+}
+
+inline int num_samples(const std::vector<int> &shape, const int input_dims) {
+    return shape[shape.size() - 1 - input_dims];
+}
+
 inline int out_channels(const std::vector<int> &shape) {
     return shape[shape.size() - 4];
 }
-inline int num_data(const std::vector<int> &shape) {
-    return shape[shape.size() - 4];
-}
+
 inline int input_channels(const std::vector<int> &shape) {
     return shape[shape.size() - 3];
 }
@@ -40,5 +51,26 @@ inline int height(const std::vector<int> &shape) {
 inline int width(const std::vector<int> &shape) {
     return shape[shape.size() - 1];
 }
+namespace input {
+const int LINEAR = 1;
+const int POOL2D = 3;
+const int CONV2D = 3;
+const int ACTIVATION = -1;
+const int FLATTEN = -1;
+}; // namespace input
 } // namespace dims
-#endif
+
+template <typename dtype>
+void loop_over_out(int num_samples, int output_channels, int output_height,
+                   int output_width,
+                   std::function<void(int, int, int, int)> inner_processing) {
+    for (int samp = 0; samp < num_samples; samp++) {
+        for (int out_c = 0; out_c < output_channels; out_c++) {
+            for (int out_h = 0; out_h < output_height; out_h++) {
+                for (int out_w = 0; out_w < output_width; out_w++) {
+                    inner_processing(samp, out_c, out_h, out_w);
+                }
+            }
+        }
+    }
+}

@@ -1,5 +1,6 @@
-from tests.unit import __main__ as unit
-from tests.integration import __main__ as integration
+import tests.unit
+import tests.integration
 
-unit.run()
-integration.run()
+if __name__ == "__main__":
+    tests.unit.run()
+    tests.integration.run()

@@ -1,5 +1,4 @@
-#ifndef ERRORS
-#define ERRORS
+#pragma once
 
 #include <sstream>
 #include <string>
@@ -12,4 +11,3 @@ template <typename... Args> void bail_if(bool check, Args... args) {
         throw std::runtime_error(ss.str());
     }
 }
-#endif

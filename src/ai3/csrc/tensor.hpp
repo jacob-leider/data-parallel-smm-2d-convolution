@@ -1,11 +1,11 @@
-#ifndef TENSORS
-#define TENSORS
+#pragma once
 
 #include <numeric>
 #include <optional>
 
 template <typename dtype> class Tensor {
   public:
+    Tensor() = default;
     Tensor(const dtype *d, const std::vector<int> &s)
         : data(d, d + total_elem(s)), shape(s) {}
     Tensor(const intptr_t data_address, const std::vector<int> &s)
@@ -44,12 +44,11 @@ template <typename dtype> class Tensor {
     template <typename... Indices> int linear_index(Indices... indices) const {
         int idx = 0;
         int multiplier = 1;
-        int indexArr[] = {indices...};
-        for (int i = shape.size() - 1; i >= 0; --i) {
-            idx += indexArr[i] * multiplier;
+        int index_arr[] = {indices...};
+        for (int i = shape.size() - 1; i >= 0; i--) {
+            idx += index_arr[i] * multiplier;
             multiplier *= shape[i];
         }
         return idx;
     }
 };
-#endif

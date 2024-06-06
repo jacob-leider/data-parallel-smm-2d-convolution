@@ -3,10 +3,13 @@ import torch.nn.functional as F
 from ai3.model import Model, Linear
 from tests import compare_tensors
 
-def test(*, in_features: int, out_features: int,
+def test(*, num_samples, in_features: int, out_features: int,
          with_bias: bool = False,
          test_name: str, atol=1e-5) -> None:
-    input = torch.randn(in_features, dtype=torch.float32)
+    if num_samples:
+        input = torch.randn((num_samples, in_features), dtype=torch.float32)
+    else:
+        input = torch.randn(in_features, dtype=torch.float32)
     weight = torch.randn((out_features, in_features), dtype=torch.float32)
     if with_bias:
          bias = torch.randn(out_features)
@@ -21,27 +24,39 @@ def test(*, in_features: int, out_features: int,
 
 def run():
     print('LINEAR')
-    test(in_features=2,
+    test(num_samples=None,
+         in_features=2,
          out_features=2,
          test_name='square')
-    test(in_features=4,
+    test(num_samples=None,
+         in_features=4,
          out_features=4,
          with_bias=True,
          test_name='square bias')
-    test(in_features=100,
+    test(num_samples=None,
+         in_features=100,
          out_features=5,
          test_name='in > out')
-    test(in_features=5,
+    test(num_samples=None,
+         in_features=5,
          out_features=100,
          test_name='out > in')
-    test(in_features=40,
+    test(num_samples=None,
+         in_features=40,
          out_features=30,
          with_bias=True,
          test_name='10s with bias')
-    test(in_features=348,
+    test(num_samples=None,
+         in_features=348,
          out_features=498,
          with_bias=True,
          test_name='100s with bias',
+         atol=1e-4)
+    test(num_samples=5,
+         in_features=348,
+         out_features=498,
+         with_bias=True,
+         test_name='100s with bias multiple samples',
          atol=1e-4)
 
 if __name__ == "__main__":

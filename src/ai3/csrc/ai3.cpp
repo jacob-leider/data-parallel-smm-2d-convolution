@@ -1,6 +1,3 @@
-// TODO support for the first index of input and output tensors being greater
-// than one signifying multiple inputs and outputs (predicting on a list)
-// this should be done for conv2d, maxpool, linear
 #include "avgpool2d_plain.hpp"
 #include "flatten_plain.hpp"
 #include "kn2rowconv2d_plain.hpp"
@@ -16,6 +13,7 @@
 template <typename dtype> class Layer {
   public:
     virtual Tensor<dtype> forward(const Tensor<dtype> &input);
+    virtual int data_dim();
     virtual ~Layer() = default;
 };
 
@@ -31,6 +29,9 @@ template <typename dtype> class MaxPool2D : virtual public Layer<dtype> {
         return maxpool2d<dtype>(input, this->kernel_shape, this->padding,
                                 this->stride, this->dilation, this->ceil_mode);
     }
+
+    int data_dim() override { return dims::input::POOL2D; }
+
     ~MaxPool2D() = default;
 
   private:
@@ -56,6 +57,7 @@ template <typename dtype> class AvgPool2D : virtual public Layer<dtype> {
             input, this->kernel_shape, this->padding, this->stride,
             this->ceil_mode, this->count_include_pad, this->divisor_override);
     }
+    int data_dim() override { return dims::input::POOL2D; }
     ~AvgPool2D() = default;
 
   private:
@@ -98,6 +100,7 @@ class AdaptiveAvgPool2D : virtual public Layer<dtype> {
         return avgpool2d<dtype>(input, kernel_shape, {0, 0}, stride, false,
                                 false, std::nullopt);
     }
+    int data_dim() override { return dims::input::POOL2D; }
     ~AdaptiveAvgPool2D() = default;
 
   private:
@@ -112,6 +115,7 @@ template <typename dtype> class ReLU : virtual public Layer<dtype> {
         return relu<dtype>(input);
     }
     ~ReLU() = default;
+    int data_dim() override { return dims::input::ACTIVATION; }
 };
 
 template <typename dtype> class Linear : virtual public Layer<dtype> {
@@ -124,6 +128,8 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
     Tensor<dtype> forward(const Tensor<dtype> &input) override {
         return linear<dtype>(input, this->weight, this->bias);
     }
+    int data_dim() override { return dims::input::LINEAR; }
+
     ~Linear() = default;
 
   private:
@@ -138,6 +144,14 @@ template <typename dtype> class Flatten : virtual public Layer<dtype> {
 
     Tensor<dtype> forward(const Tensor<dtype> &input) override {
         return flatten<dtype>(input, this->start_dim, this->end_dim);
+    }
+    int data_dim() override { return dims::input::FLATTEN; }
+
+    void shift_dims(int by) {
+        start_dim += by;
+        if (end_dim != -1) {
+            end_dim += by;
+        }
     }
     ~Flatten() = default;
 
@@ -163,6 +177,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
                                     this->dilation);
     }
     ~Conv2D() = default;
+    int data_dim() override { return dims::input::CONV2D; }
 
   private:
     Tensor<dtype> weight;
@@ -179,9 +194,25 @@ template <typename dtype> class Model {
 
     Tensor<dtype> predict(const intptr_t input_address,
                           std::vector<int> input_shape) {
+        bool add_dim_for_samples =
+            dims::add_dim_for_samples(input_shape, layers[0]->data_dim());
+        if (add_dim_for_samples) {
+            input_shape.insert(input_shape.begin(), 1);
+        }
         Tensor<dtype> output(input_address, input_shape);
         for (const std::shared_ptr<Layer<dtype>> &layer : layers) {
+            std::shared_ptr<Flatten<dtype>> flat =
+                std::dynamic_pointer_cast<Flatten<dtype>>(layer);
+            if (flat && add_dim_for_samples) {
+                flat->shift_dims(1);
+            }
             output = layer->forward(output);
+            if (flat && add_dim_for_samples) {
+                flat->shift_dims(-1);
+            }
+        }
+        if (add_dim_for_samples && output.shape.size() > 1) {
+            output = flatten<dtype>(output, 0, 1);
         }
         return output;
     }

@@ -1,9 +1,9 @@
-#ifndef FLATTEN
-#define FLATTEN
+#pragma once
 
 #include "errors.hpp"
 #include "tensor.hpp"
 #include "utils.hpp"
+#include <iostream>
 #include <vector>
 
 template <typename dtype>
@@ -31,4 +31,3 @@ Tensor<dtype> flatten(const Tensor<dtype> &input, const int start_dim,
 
     return Tensor<dtype>(input.data.data(), new_shape);
 }
-#endif

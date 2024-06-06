@@ -1,9 +1,9 @@
-#ifndef LINEAR
-#define LINEAR
+#pragma once
 
 #include "errors.hpp"
 #include "tensor.hpp"
 #include "utils.hpp"
+#include <cassert>
 #include <iostream>
 #include <optional>
 #include <vector>
@@ -19,19 +19,22 @@ Tensor<dtype> linear(const Tensor<dtype> &input, const Tensor<dtype> &weight,
     const int in_features = dims::width(input.shape);
     const int out_features = dims::height(weight.shape);
 
-    Tensor<dtype> output = Tensor<dtype>({out_features});
+    int num_samples = dims::num_samples(input.shape, dims::input::LINEAR);
+    Tensor<dtype> output = Tensor<dtype>({num_samples, out_features});
 
-    for (int i = 0; i < out_features; i++) {
-        dtype res = 0;
-        for (int j = 0; j < in_features; ++j) {
-            res += weight.at(i, j) * input.at(j);
+    for (int s = 0; s < num_samples; s++) {
+        for (int i = 0; i < out_features; i++) {
+            dtype res = 0;
+            for (int j = 0; j < in_features; ++j) {
+                dtype in = input.at(s, j);
+                res += weight.at(i, j) * in;
+            }
+            if (bias.has_value()) {
+                res += bias.value().at(i);
+            }
+            output.at(s, i) = res;
         }
-        if (bias.has_value()) {
-            res += bias.value().at(i);
-        }
-        output.at(i) = res;
     }
 
     return output;
 }
-#endif

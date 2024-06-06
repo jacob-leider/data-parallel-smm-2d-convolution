@@ -1,5 +1,4 @@
-#ifndef RELU
-#define RELU
+#pragma once
 
 #include "tensor.hpp"
 #include <optional>
@@ -12,4 +11,3 @@ template <typename dtype> Tensor<dtype> relu(const Tensor<dtype> &input) {
     }
     return output;
 }
-#endif

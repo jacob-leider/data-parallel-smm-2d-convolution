@@ -1,3 +1,4 @@
+from typing import Optional
 import torch
 import numpy as np
 import atexit
@@ -16,7 +17,7 @@ atexit.register(show_failed)
 def add_fail(mes):
     FAILED_TESTS.append(f"{mes} from: {calling_file()}")
 
-def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: str, atol=1e-5) -> None:
+def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: Optional[str]=None, atol=1e-5) -> None:
     out = np.array(out_tensor.data).reshape(out_tensor.shape)
     tar = np.array(tar_tensor)
 
@@ -29,7 +30,8 @@ def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: str, atol=1e-5) -
     different_elements = np.where(np.abs(out - tar) > atol)
 
     if len(different_elements[0]) == 0:
-        print(f'  Passed Test {mes}')
+        if mes:
+            print(f'  Passed Test {mes}')
     else:
         add_fail(mes)
         print(f'Failed Test {mes}')
