@@ -19,22 +19,28 @@ Tensor<dtype> linear(const Tensor<dtype> &input, const Tensor<dtype> &weight,
     const int in_features = dims::width(input.shape);
     const int out_features = dims::height(weight.shape);
 
-    int num_samples = dims::num_samples(input.shape, dims::input::LINEAR);
-    Tensor<dtype> output = Tensor<dtype>({num_samples, out_features});
+    Tensor<dtype> output;
+    int num_samples;
+    if (dims::has_dim_for_batch_size(input.shape, dims::input::LINEAR)) {
+        num_samples = 1;
+        output = Tensor<dtype>({out_features});
+    } else {
+        num_samples = dims::batch_size(input.shape, dims::input::LINEAR);
+        output = Tensor<dtype>({num_samples, out_features});
+    }
 
     for (int s = 0; s < num_samples; s++) {
         for (int i = 0; i < out_features; i++) {
             dtype res = 0;
             for (int j = 0; j < in_features; ++j) {
-                dtype in = input.at(s, j);
-                res += weight.at(i, j) * in;
+                res += weight.data[to_linear(i, j, in_features)] *
+                       input.data[to_linear(s, j, in_features)];
             }
             if (bias.has_value()) {
-                res += bias.value().at(i);
+                res += bias.value().data[i];
             }
-            output.at(s, i) = res;
+            output.data[to_linear(s, i, out_features)] = res;
         }
     }
-
     return output;
 }

@@ -1,9 +1,18 @@
 #pragma once
 
 #include "errors.hpp"
+#include <cmath>
+#include <functional>
 #include <iterator>
 #include <optional>
 #include <vector>
+
+enum PaddingMode { Zeros, Reflect, Replicate, Circular };
+
+inline int to_linear(int i, int j, int k, int l, int J, int K, int L) {
+    return i * J * K * L + j * K * L + k * L + l;
+}
+inline int to_linear(int i, int j, int J) { return i * J + j; }
 
 namespace dims {
 template <typename dtype>
@@ -26,15 +35,15 @@ inline int output_dim(const int input, const int kernel, const int padding,
     return (poss - 1) * stride >= input + padding ? poss - 1 : poss;
 }
 
-inline bool add_dim_for_samples(const std::vector<int> &shape,
-                                int data_dim = -1) {
+inline bool has_dim_for_batch_size(const std::vector<int> &shape,
+                                   int data_dim = -1) {
     if (data_dim == -1) {
         return false;
     }
     return shape.size() != unsigned(data_dim + 1);
 }
 
-inline int num_samples(const std::vector<int> &shape, const int input_dims) {
+inline int batch_size(const std::vector<int> &shape, const int input_dims) {
     return shape[shape.size() - 1 - input_dims];
 }
 

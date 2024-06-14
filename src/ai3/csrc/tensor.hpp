@@ -1,54 +1,81 @@
 #pragma once
 
+#include <memory>
 #include <numeric>
 #include <optional>
+#include <pybind11/numpy.h>
+#include <pybind11/pybind11.h>
+#include <vector>
+
+namespace py = pybind11;
 
 template <typename dtype> class Tensor {
   public:
-    Tensor() = default;
-    Tensor(const dtype *d, const std::vector<int> &s)
-        : data(d, d + total_elem(s)), shape(s) {}
-    Tensor(const intptr_t data_address, const std::vector<int> &s)
-        : Tensor(static_cast<const dtype *>((void *)data_address), s) {}
+    Tensor(const intptr_t data_address, const std::vector<int> &s,
+           bool input_data = false)
+        : shape(s), owned(!input_data) {
+        if (owned) {
+            data = new dtype[total_elem(s)];
+            std::memcpy(data, reinterpret_cast<const dtype *>(data_address),
+                        total_elem(s) * sizeof(dtype));
+        } else {
+            data = reinterpret_cast<dtype *>(data_address);
+        }
+    }
 
-    Tensor(const std::vector<int> &s) : Tensor(new dtype[total_elem(s)], s) {}
-
-    ~Tensor() = default;
+    Tensor(const std::vector<int> &s)
+        : data(new dtype[total_elem(s)]), shape(s), owned(true) {}
 
     static std::optional<Tensor>
     from_optional(const std::optional<intptr_t> &data_address,
-                  const std::vector<int> &s) {
-        return data_address.has_value()
-                   ? std::make_optional(Tensor<dtype>(data_address.value(), s))
-                   : std::nullopt;
+                  const std::vector<int> &s, bool input_data = false) {
+        if (data_address.has_value()) {
+            return Tensor<dtype>(data_address.value(), s, input_data);
+        } else {
+            return std::nullopt;
+        }
     }
 
-    template <typename... Indices>
-    inline const dtype &at(Indices... indices) const {
-        return data[linear_index(indices...)];
+    Tensor() = default;
+
+    ~Tensor() {
+        if (owned) {
+            delete[] data;
+        }
+    };
+
+    Tensor(Tensor &&other) noexcept { *this = std::move(other); }
+
+    Tensor &operator=(Tensor &&other) noexcept {
+        if (this != &other) {
+            data = other.data;
+            shape = std::move(other.shape);
+            owned = other.owned;
+            other.data = nullptr;
+        }
+        return *this;
     }
 
-    template <typename... Indices> inline dtype &at(Indices... indices) {
-        return data[linear_index(indices...)];
+    py::buffer_info buffer() {
+        std::vector<int> stride(shape.size());
+        stride[shape.size() - 1] = sizeof(dtype);
+        for (int i = shape.size() - 2; i >= 0; --i) {
+            stride[i] = stride[i + 1] * shape[i + 1];
+        }
+        return py::buffer_info(data, sizeof(dtype),
+                               py::format_descriptor<dtype>::format(),
+                               shape.size(), shape, stride);
     }
 
-    std::vector<dtype> data;
-    std::vector<int> shape;
-
-  private:
     static int total_elem(const std::vector<int> &shape) {
-        return std::accumulate(std::begin(shape), std::end(shape), 1,
+        return std::accumulate(shape.begin(), shape.end(), 1,
                                std::multiplies<int>());
     }
 
-    template <typename... Indices> int linear_index(Indices... indices) const {
-        int idx = 0;
-        int multiplier = 1;
-        int index_arr[] = {indices...};
-        for (int i = shape.size() - 1; i >= 0; i--) {
-            idx += index_arr[i] * multiplier;
-            multiplier *= shape[i];
-        }
-        return idx;
-    }
+    Tensor(const Tensor &) = delete;
+    Tensor &operator=(const Tensor &) = delete;
+
+    dtype *data;
+    std::vector<int> shape;
+    bool owned;
 };
