@@ -1,5 +1,6 @@
 import math
 
+
 def pooling_poss_output_size(input_height, input_width, padding, stride, kernel_height, kernel_width, ceil_mode):
     top_height = input_height + 2 * padding[0] - kernel_height
     bottom_height = stride[0]
@@ -19,14 +20,14 @@ def pooling_poss_output_size(input_height, input_width, padding, stride, kernel_
 
     return poss_output_height, poss_output_width
 
+
 def run():
-    from . import kn2rowconv2d, maxpool2d, linear, relu, avgpool2d, adaptiveavgpool2d, flatten
+    from . import conv2d, maxpool2d, linear, relu, avgpool2d, adaptiveavgpool2d, flatten
     print('UNIT')
-    kn2rowconv2d.run()
+    conv2d.run()
     maxpool2d.run()
     linear.run()
     relu.run()
     avgpool2d.run()
     adaptiveavgpool2d.run()
     flatten.run()
-

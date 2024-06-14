@@ -1,10 +1,12 @@
 import torch
-from tests.unit import pooling_poss_output_size
 from torch import nn
+from tests.unit import pooling_poss_output_size
 from ai3 import utils
-from ai3.model import Model, MaxPool2D
 from tests import compare_tensors
+from ai3 import Model
+from ai3.layers import MaxPool2D
 from typing import Union, Sequence, Optional
+
 
 def test(*, input_channels: int, in_height: int, in_width: int,
          kernel_height: int, kernel_width: int,
@@ -15,24 +17,28 @@ def test(*, input_channels: int, in_height: int, in_width: int,
          ceil_mode_note_height: bool = False,
          ceil_mode_note_width: bool = False,
          test_name: str, atol=1e-5) -> None:
-    input = torch.randn(input_channels, in_height, in_width,dtype=torch.float32)
+    input = torch.randn(input_channels, in_height,
+                        in_width, dtype=torch.float32)
     kernel_shape = (kernel_height, kernel_width)
 
     if stride is None:
         stride = kernel_shape
 
     if ceil_mode_note_height or ceil_mode_note_width:
-        pos = pooling_poss_output_size(in_height, in_width, padding, stride, kernel_height, kernel_width, ceil_mode)
+        pos = pooling_poss_output_size(
+            in_height, in_width, padding, stride, kernel_height, kernel_width, ceil_mode)
         stride = utils.make_2d(stride)
         padding = utils.make_2d(padding)
-        assert(((pos[0] - 1) * stride[0] >= in_height + padding[0]) == ceil_mode_note_height)
-        assert(((pos[1] - 1) * stride[1] >= in_width + padding[1]) == ceil_mode_note_width)
+        assert (((pos[0] - 1) * stride[0] >= in_height +
+                padding[0]) == ceil_mode_note_height)
+        assert (((pos[1] - 1) * stride[1] >= in_width +
+                padding[1]) == ceil_mode_note_width)
 
     model = Model(input.dtype, [MaxPool2D(input.dtype, kernel_shape,
-                                                 stride, padding, dilation, ceil_mode)])
+                                          stride, padding, dilation, ceil_mode)])
     ai3_output = model.predict(input)
     torch_output = nn.MaxPool2d(kernel_shape, dilation=dilation,
-                             padding=padding, stride=stride, ceil_mode=ceil_mode)(input)
+                                padding=padding, stride=stride, ceil_mode=ceil_mode)(input)
     compare_tensors(ai3_output, torch_output, test_name, atol=atol)
 
 
@@ -164,14 +170,14 @@ def run():
          in_width=85,
          kernel_height=7,
          kernel_width=7,
-         padding=(3,3),
+         padding=(3, 3),
          ceil_mode=True,
          test_name='ceil mode with padding')
 
     test(input_channels=3,
          in_height=6,
          in_width=6,
-         stride=(4,4),
+         stride=(4, 4),
          padding=(1, 1),
          kernel_height=2,
          kernel_width=2,
@@ -183,7 +189,7 @@ def run():
     test(input_channels=3,
          in_height=6,
          in_width=40,
-         stride=(4,5),
+         stride=(4, 5),
          padding=(1, 1),
          kernel_height=2,
          kernel_width=5,
@@ -195,7 +201,7 @@ def run():
     test(input_channels=3,
          in_height=40,
          in_width=6,
-         stride=(5,4),
+         stride=(5, 4),
          padding=(1, 1),
          kernel_height=5,
          kernel_width=2,

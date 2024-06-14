@@ -1,7 +1,9 @@
 import torch
 import torch.nn.functional as F
-from ai3.model import Model, Linear
+from ai3 import Model
+from ai3.layers import Linear
 from tests import compare_tensors
+
 
 def test(*, num_samples, in_features: int, out_features: int,
          with_bias: bool = False,
@@ -12,7 +14,7 @@ def test(*, num_samples, in_features: int, out_features: int,
         input = torch.randn(in_features, dtype=torch.float32)
     weight = torch.randn((out_features, in_features), dtype=torch.float32)
     if with_bias:
-         bias = torch.randn(out_features)
+        bias = torch.randn(out_features)
     else:
         bias = None
 
@@ -58,6 +60,7 @@ def run():
          with_bias=True,
          test_name='100s with bias multiple samples',
          atol=1e-4)
+
 
 if __name__ == "__main__":
     run()

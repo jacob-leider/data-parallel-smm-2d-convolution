@@ -1,8 +1,10 @@
 import torch
 import torch.nn.functional as F
-from ai3.model import Model, Conv2D
+from ai3 import Model
+from ai3.layers import Conv2D
 from tests import compare_tensors
 from typing import Union, Sequence
+
 
 def test(*, input_channels: int, in_height: int, in_width: int,
          output_channels: int, kernel_height: int, kernel_width: int,
@@ -12,7 +14,8 @@ def test(*, input_channels: int, in_height: int, in_width: int,
          stride: Union[int, Sequence[int]] = 1,
          groups: int = 1,
          test_name: str, atol=1e-5) -> None:
-    input = torch.randn(input_channels, in_height, in_width, dtype=torch.float32)
+    input = torch.randn(input_channels, in_height,
+                        in_width, dtype=torch.float32)
     kernel = torch.randn(output_channels, input_channels // groups,
                          kernel_height, kernel_width, dtype=torch.float32)
     if with_bias:
@@ -21,15 +24,15 @@ def test(*, input_channels: int, in_height: int, in_width: int,
         bias = None
 
     model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
-                                                 stride, padding, dilation)])
-    ai3_output = model.predict(input)
+                                       stride, padding, dilation, 'zeros', 1)])
+    ai3_output = model.predict(input, out_type=torch.Tensor)
     torch_output = F.conv2d(input, kernel, bias=bias, dilation=dilation,
-                             padding=padding, stride=stride, groups=groups)
+                            padding=padding, stride=stride, groups=groups)
     compare_tensors(ai3_output, torch_output, test_name, atol=atol)
 
 
 def run():
-    print('KN2ROW CONV2D')
+    print('CONV2D')
     test(input_channels=4,
          in_height=30,
          in_width=40,
@@ -41,6 +44,8 @@ def run():
          dilation=(2, 2),
          atol=1e-4,
          test_name='same odd kernel')
+
+    print('hello')
 
     test(input_channels=4,
          in_height=30,
