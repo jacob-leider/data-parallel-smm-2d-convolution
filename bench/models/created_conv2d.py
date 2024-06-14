@@ -1,20 +1,20 @@
 import torch
 import ai3
-import torchvision
 from bench import predict_show_time
 from tests import compare_tensors
+from tests.integration.created_conv2d import SimpleConvNet
 
 
 def run():
     print('VGG')
-    input_data = torch.randn(1, 3, 224, 224)
+    input_data = torch.randn(100, 3, 224, 224)
     with torch.inference_mode():
-        pytorch_vgg16 = torchvision.models.vgg16()
-        pytorch_vgg16.eval()
-        torch_out = predict_show_time(pytorch_vgg16, input_data, "pytorch")
+        torch_model = SimpleConvNet()
+        torch_model.eval()
+        torch_out = predict_show_time(torch_model, input_data, "pytorch")
         assert (isinstance(torch_out, torch.Tensor))
 
-        ai3_model = ai3.swap_backend(pytorch_vgg16)
+        ai3_model = ai3.swap_backend(torch_model)
         ai3_out = predict_show_time(ai3_model, input_data, "ai3")
         compare_tensors(ai3_out, torch_out, "")
 

@@ -8,4 +8,3 @@ def run():
     adaptiveavgpool2d.run()
     relu.run()
     flatten.run()
-

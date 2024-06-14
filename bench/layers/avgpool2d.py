@@ -4,6 +4,7 @@ from torch import nn
 import ai3
 from tests import compare_tensors
 
+
 class AvgPool2D(nn.Module):
     def __init__(self, kernel_size, stride=None, padding=0):
         super(AvgPool2D, self).__init__()
@@ -13,15 +14,17 @@ class AvgPool2D(nn.Module):
         x = self.avgpool(x)
         return x
 
+
 def run():
     print("AvgPool2D")
     input = torch.randn(1000, 3, 300, 300)
     orig = AvgPool2D(kernel_size=5, stride=1, padding=0)
-    optim = ai3.optimize(orig)
+    optim = ai3.swap_backend(orig)
     orig_out = predict_show_time(orig, input, "pytorch")
-    assert(isinstance(orig_out, torch.Tensor))
+    assert (isinstance(orig_out, torch.Tensor))
     optim_out = predict_show_time(optim, input, "ai3")
     compare_tensors(optim_out, orig_out.detach().numpy())
+
 
 if __name__ == "__main__":
     run()
