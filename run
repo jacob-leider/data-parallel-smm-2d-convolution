@@ -11,7 +11,7 @@ PIP = "pip"
 C_FORMAT = "clang-format"
 PY_FORMAT = "autopep8"
 
-TEST_MOD = "tests"
+TEST_MOD = "test"
 UNIT_TEST_MOD = TEST_MOD + ".unit"
 INTEGRATION_TEST_MOD = TEST_MOD + '.integration'
 BENCH_MOD = "bench"
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         elif cmd.startswith("mbench"):
             updated_command = cmd.replace("mbench", MODEL_BENCH_MOD, 1)
             run_command(f"{PY} {updated_command}")
-        elif cmd.startswith("tests"):
+        elif cmd.startswith("test"):
             run_command(f"{PY} {cmd}")
         elif cmd.startswith("utest"):
             updated_command = cmd.replace("utest", UNIT_TEST_MOD, 1)

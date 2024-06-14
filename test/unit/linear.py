@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from ai3 import Model
 from ai3.layers import Linear
-from tests import compare_tensors
+from test import compare_tensors
 
 
 def test(*, num_samples, in_features: int, out_features: int,

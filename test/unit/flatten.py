@@ -1,7 +1,7 @@
 import torch
 from ai3 import Model
 from ai3.layers import Flatten
-from tests import compare_tensors
+from test import compare_tensors
 
 
 def test(*, in_shape,

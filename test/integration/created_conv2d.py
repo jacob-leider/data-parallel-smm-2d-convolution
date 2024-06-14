@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 import ai3
-from tests import compare_tensors
+from test import compare_tensors
 
 
 class SimpleConvNet(torch.nn.Module):

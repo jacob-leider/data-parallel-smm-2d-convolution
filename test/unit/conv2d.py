@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from ai3 import Model
 from ai3.layers import Conv2D
-from tests import compare_tensors
+from test import compare_tensors
 from typing import Union, Sequence
 
 
@@ -33,6 +33,15 @@ def test(*, input_channels: int, in_height: int, in_width: int,
 
 def run():
     print('CONV2D')
+
+    test(input_channels=1,
+         in_height=5,
+         in_width=5,
+         output_channels=1,
+         kernel_height=3,
+         kernel_width=3,
+         test_name='basic no bias')
+
     test(input_channels=4,
          in_height=30,
          in_width=40,
@@ -44,8 +53,6 @@ def run():
          dilation=(2, 2),
          atol=1e-4,
          test_name='same odd kernel')
-
-    print('hello')
 
     test(input_channels=4,
          in_height=30,
@@ -148,14 +155,6 @@ def run():
          stride=(2, 3),
          atol=1e-4,
          test_name='2d stride')
-
-    test(input_channels=1,
-         in_height=5,
-         in_width=5,
-         output_channels=1,
-         kernel_height=3,
-         kernel_width=3,
-         test_name='basic')
 
     test(input_channels=1,
          in_height=100,

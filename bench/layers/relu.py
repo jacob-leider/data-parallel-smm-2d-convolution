@@ -2,7 +2,7 @@ import torch
 from bench import predict_show_time
 from torch import nn
 import ai3
-from tests import compare_tensors
+from test import compare_tensors
 
 
 class ReLU(nn.Module):

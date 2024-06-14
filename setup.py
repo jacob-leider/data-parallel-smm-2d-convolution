@@ -1,10 +1,8 @@
-# TODO July 7th deadline
-# TODO write adaptiveavgpool to use a separate function so that users can override
 # TODO bench suite on all the imagenet winners
 # TODO try some way to do the normal pip install without compiling cpp code then taking users cpp code and
 # compiling the SO with that. This would stop requiring building from source
 
-# TODO would be best to split up samples then each process also has its way of
+# TODO would be best to split up samples then each algorithm also has its way of
 # accelerating instead of doing all the samples in each layer
 # TODO onnx support, should be pretty easy to also iterate
 # through the onnx layers and hyperparametrs, could also use the pytorch way
@@ -14,6 +12,7 @@
 # TODO move the acpp flags I set by default to cmake, try acpp in CMAKE first then do icpx in cmake on remote
 # - also use the setup.cfg thing
 # - in CMAKE use release flags for compiler optimizations
+# - should also support cuda in case users want to use that for their custom impls
 
 import os
 from pybind11.setup_helpers import Pybind11Extension, build_ext
@@ -42,11 +41,10 @@ class Builder(build_ext):
         extra_link_args = []
         icpx_path = shutil.which("icpx")
         acpp_path = shutil.which("acpp")
-        icpx_path = None
         acpp_path = None
         if icpx_path or acpp_path:
             print('Using SYCL compiler')
-            extra_compile_args.append('-DAI3_USE_SYCL')
+            extra_compile_args.append('-DUSE_SYCL')
             extra_link_args.append('-shared')
             if icpx_path:
                 print('Using icpx')

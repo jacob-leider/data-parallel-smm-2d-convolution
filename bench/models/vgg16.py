@@ -2,7 +2,7 @@ import torch
 import ai3
 import torchvision
 from bench import predict_show_time
-from tests import compare_tensors
+from test import compare_tensors
 
 
 def run():

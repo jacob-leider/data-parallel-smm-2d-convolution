@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from ai3 import Model
 from ai3.layers import AdaptiveAvgPool2D
-from tests import compare_tensors
+from test import compare_tensors
 
 
 def test(*, input_channels: int, in_height: int, in_width: int,

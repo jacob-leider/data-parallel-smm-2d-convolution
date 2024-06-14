@@ -2,7 +2,7 @@ import torch
 from bench import predict_show_time
 from torch import nn
 import ai3
-from tests import compare_tensors
+from test import compare_tensors
 
 
 class Flatten(nn.Module):
@@ -22,8 +22,8 @@ def run():
     orig_out = predict_show_time(orig, input, "pytorch")
     assert (isinstance(orig_out, torch.Tensor))
     optim_out = predict_show_time(optim, input, "ai3")
-    # TODO remove this
-    # compare_tensors(optim_out, orig_out.detach().numpy(), "")
+    compare_tensors(optim_out, orig_out.detach().numpy(), "")
+
 
 if __name__ == "__main__":
     run()

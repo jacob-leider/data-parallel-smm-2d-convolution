@@ -1,10 +1,10 @@
 import torch
-from tests.unit import pooling_poss_output_size
+from test.unit import pooling_poss_output_size
 from torch import nn
 from ai3 import Model
 from ai3.layers import AvgPool2D
 from ai3 import utils
-from tests import compare_tensors
+from test import compare_tensors
 from typing import Union, Sequence, Optional
 
 # torch.nn.AvgPool2d(kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True, divisor_override=None)

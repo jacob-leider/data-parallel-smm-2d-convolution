@@ -1,7 +1,7 @@
 import torch
 import time
 import ai3
-from tests import compare_tensors
+from test import compare_tensors
 
 
 def _run(orig_torch):

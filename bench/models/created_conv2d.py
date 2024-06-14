@@ -1,8 +1,8 @@
 import torch
 import ai3
 from bench import predict_show_time
-from tests import compare_tensors
-from tests.integration.created_conv2d import SimpleConvNet
+from test import compare_tensors
+from test.integration.created_conv2d import SimpleConvNet
 
 
 def run():

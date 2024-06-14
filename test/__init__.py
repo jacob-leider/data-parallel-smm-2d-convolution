@@ -31,17 +31,17 @@ def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: Optional[str] = N
     else:
         out = utils.tensor_to_type(out_tensor, np.ndarray)
     tar = np.array(tar_tensor)
-    assert(isinstance(out, np.ndarray))
+    assert (isinstance(out, np.ndarray))
 
     if np.isnan(tar).any():
-         add_fail(mes)
-         print(f'Failed Test `{mes}`, target has NaNs')
-         return
+        add_fail(mes)
+        print(f'Failed Test `{mes}`, target has NaNs')
+        return
 
     if np.isnan(out).any():
-         add_fail(mes)
-         print(f'Failed Test `{mes}`, output has NaNs')
-         return
+        add_fail(mes)
+        print(f'Failed Test `{mes}`, output has NaNs')
+        return
     if tar.shape != out.shape:
         add_fail(mes)
         print(

@@ -1,8 +1,8 @@
 import torch
 from torch import nn
-from tests.unit import pooling_poss_output_size
+from test.unit import pooling_poss_output_size
 from ai3 import utils
-from tests import compare_tensors
+from test import compare_tensors
 from ai3 import Model
 from ai3.layers import MaxPool2D
 from typing import Union, Sequence, Optional

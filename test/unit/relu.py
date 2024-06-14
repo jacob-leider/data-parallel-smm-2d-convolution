@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from ai3 import Model
 from ai3.layers import ReLU
-from tests import compare_tensors
+from test import compare_tensors
 
 
 def test(*, input_shape,
