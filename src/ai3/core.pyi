@@ -1,24 +1,29 @@
-from typing import Optional, Sequence, Union
+from typing import Sequence, Union, Optional
+from enum import Enum
 
-Possible_Layers = Union[Conv2D_double, Conv2D_float]
+class PaddingMode(Enum):
+    zeros: int
+    reflect: int
+    replicate: int
+    circular: int
 
 class Tensor_float:
-    def __init__(self, d: Sequence[float], s: Sequence[int]) -> None:
-        ...
+    data: Sequence[float]
+    shape: Sequence[int]
 
 class Tensor_double:
-    def __init__(self, d: Sequence[float], s: Sequence[int]) -> None:
-        ...
+    data: Sequence[float]
+    shape: Sequence[int]
 
 class Model_double():
-    def __init__(self, layers: Sequence[Possible_Layers]):
+    def __init__(self, layers: Sequence):
         ...
 
     def predict(self, input_address: int, input_shape: Sequence[int]):
         ...
 
 class Model_float():
-    def __init__(self, layers: Sequence[Possible_Layers]):
+    def __init__(self, layers: Sequence):
         ...
 
     def predict(self, input_address: int, input_shape: Sequence[int]):
@@ -31,8 +36,14 @@ class Conv2D_double():
                  bias_addr: Optional[int],
                  padding: Sequence[int],
                  stride: Sequence[int],
-                 dilation: Sequence[int]):
+                 dilation: Sequence[int],
+                 padding_mode: PaddingMode,
+                 groups: int):
         ...
+
+    def forward(self, input_address: int, input_shape: Sequence[int]):
+        ...
+
 class Conv2D_float():
     def __init__(self,
                  weight_address: int,
@@ -40,7 +51,12 @@ class Conv2D_float():
                  bias_addr: Optional[int],
                  padding: Sequence[int],
                  stride: Sequence[int],
-                 dilation: Sequence[int]):
+                 dilation: Sequence[int],
+                 padding_mode: PaddingMode,
+                 groups: int):
+        ...
+
+    def forward(self, input_address: int, input_shape: Sequence[int]):
         ...
 
 class MaxPool2D_double():
