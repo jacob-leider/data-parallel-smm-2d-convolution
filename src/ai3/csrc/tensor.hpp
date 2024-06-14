@@ -30,7 +30,7 @@ template <typename dtype> class Tensor {
     from_optional(const std::optional<intptr_t> &data_address,
                   const std::vector<int> &s, bool input_data = false) {
         if (data_address.has_value()) {
-            return Tensor<dtype>(data_address.value(), s, input_data);
+            return Tensor<dtype>((*data_address), s, input_data);
         } else {
             return std::nullopt;
         }

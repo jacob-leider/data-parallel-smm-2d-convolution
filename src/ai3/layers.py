@@ -13,6 +13,7 @@ from abc import ABC
 def issequential(name: str) -> bool:
     return '.' in name
 
+
 def getmodule(module: nn.Module, name: str) -> nn.Module:
     if issequential(name):
         names = name.split('.', 1)
@@ -20,10 +21,12 @@ def getmodule(module: nn.Module, name: str) -> nn.Module:
     else:
         return getattr(module, name)
 
+
 class Layer(ABC):
     def __init__(self, core):
         self.core = core
         ...
+
 
 def get_layers(module: nn.Module, dtype) -> List[Layer]:
     gm: fx.GraphModule = fx.symbolic_trace(module)
@@ -60,6 +63,7 @@ def get_layers(module: nn.Module, dtype) -> List[Layer]:
 
     return layers
 
+
 def swap(module: nn.Module, dtype) -> Optional[Layer]:
     if isinstance(module, nn.Conv2d):
         return Conv2D(dtype, module.weight, module.bias, module.stride,
@@ -83,6 +87,7 @@ def swap(module: nn.Module, dtype) -> Optional[Layer]:
         return Flatten(dtype, start_dim=module.start_dim, end_dim=module.end_dim)
     return None
 
+
 class Conv2D(Layer):
     def __init__(self, dtype, weight, bias,
                  stride: Union[int, Sequence[int]],
@@ -92,7 +97,7 @@ class Conv2D(Layer):
         dilation = utils.make_2d(dilation)
         padding = utils.make_padding_2d(
             padding, stride, dilation, weight.size())
-        assert(padding_mode in ['zeros', 'reflect', 'replicate', 'circular'])
+        assert (padding_mode in ['zeros', 'reflect', 'replicate', 'circular'])
         pad_mode = {
             'zeros': core.PaddingMode.zeros,
             'reflect': core.PaddingMode.reflect,

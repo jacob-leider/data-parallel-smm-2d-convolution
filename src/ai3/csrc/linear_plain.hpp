@@ -1,8 +1,6 @@
 #pragma once
 
-#include "errors.hpp"
-#include "tensor.hpp"
-#include "utils.hpp"
+#include "ai3.hpp"
 #include <cassert>
 #include <iostream>
 #include <optional>
@@ -11,7 +9,7 @@
 template <typename dtype>
 Tensor<dtype> linear(const Tensor<dtype> &input, const Tensor<dtype> &weight,
                      const std::optional<const Tensor<dtype>> &bias) {
-    bail_if(
+    errs::bail_if(
         dims::width(input.shape) != dims::width(weight.shape),
         "Invalid matrix multiplication: input width=", dims::width(input.shape),
         " weight width=", dims::width(weight.shape));
@@ -29,6 +27,7 @@ Tensor<dtype> linear(const Tensor<dtype> &input, const Tensor<dtype> &weight,
         output = Tensor<dtype>({num_samples, out_features});
     }
 
+    const bool has_bias = bias.has_value();
     for (int s = 0; s < num_samples; s++) {
         for (int i = 0; i < out_features; i++) {
             dtype res = 0;
@@ -36,8 +35,8 @@ Tensor<dtype> linear(const Tensor<dtype> &input, const Tensor<dtype> &weight,
                 res += weight.data[to_linear(i, j, in_features)] *
                        input.data[to_linear(s, j, in_features)];
             }
-            if (bias.has_value()) {
-                res += bias.value().data[i];
+            if (has_bias) {
+                res += bias->data[i];
             }
             output.data[to_linear(s, i, out_features)] = res;
         }

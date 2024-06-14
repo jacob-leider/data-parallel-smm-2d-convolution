@@ -1,20 +1,18 @@
 #pragma once
 
-#include "errors.hpp"
-#include "tensor.hpp"
-#include "utils.hpp"
+#include "ai3.hpp"
 #include <iostream>
 #include <vector>
 
 template <typename dtype>
 Tensor<dtype> flatten(Tensor<dtype> input, const int start_dim, int end_dim) {
-    bail_if(end_dim != -1 && start_dim > end_dim,
-            "start dimension > end dimension in flattening function");
+    errs::bail_if(end_dim != -1 && start_dim > end_dim,
+                  "start dimension > end dimension in flattening function");
     if (end_dim == -1) {
         end_dim = input.shape.size() - 1;
     }
     const int new_num_dim = input.shape.size() - (end_dim - start_dim);
-    bail_if(
+    errs::bail_if(
         new_num_dim < 0,
         "tensor would have a negative number of dimensions after flattening");
 

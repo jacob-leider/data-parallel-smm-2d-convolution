@@ -1,21 +1,13 @@
-// TODO for the way for users to include there file have a separate one that
-// includes a file that users defined with a macro #define USER_DEFINED_CONV2D
-// ./aeustnh/aoesuh
-//
-// #ifdef USER_DEFINED_CONV2D
-// #include US..
-// #else
-// #include "default file"
-// have a header which defines macros for the paths if they aren't defined
-// those are used later for the imports
-#include "avgpool2d_plain.hpp"
-#include "conv2d_plain.hpp"
-#include "flatten_plain.hpp"
-#include "linear_plain.hpp"
-#include "maxpool2d_plain.hpp"
-#include "relu_plain.hpp"
-#include "tensor.hpp"
-#include "utils.hpp"
+/* define paths to custom algorithms above */
+#define CONV2D_SYCL
+#include "ai3.hpp"
+#include ADAPTIVEAVGPOOL2D_PATH
+#include AVGPOOL2D_PATH
+#include CONV2D_PATH
+#include MAXPOOL2D_PATH
+#include LINEAR_PATH
+#include RELU_PATH
+#include FLATTEN_PATH
 #include <cstdint>
 #include <optional>
 #include <pybind11/pybind11.h>
@@ -83,28 +75,7 @@ class AdaptiveAvgPool2D : virtual public Layer<dtype> {
         : output_shape(output_shape) {}
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
-        int input_height = dims::height(input.shape);
-        int input_width = dims::width(input.shape);
-        const std::vector<std::optional<int>> opt_in_shape = {input_height,
-                                                              input_width};
-        const int output_height =
-            output_shape.value_or(opt_in_shape)[0].value_or(input_height);
-        const int output_width =
-            output_shape.value_or(opt_in_shape)[1].value_or(input_width);
-        bail_if(
-            input_height % output_height != 0 ||
-                input_width % output_width != 0,
-            "Adaptive average pooling not implemented for cases where "
-            "input size is not a multiple of output size given input shape=(",
-            input_height, ", ", input_width, ") and output shape=(",
-            output_height, ", ", output_width, ")");
-        std::vector<int> stride = {input_height / output_height,
-                                   input_width / output_width};
-        std::vector<int> kernel_shape = {
-            input_height - ((output_height - 1) * stride[0]),
-            input_width - ((output_width - 1) * stride[1])};
-        return avgpool2d<dtype>(input, kernel_shape, {0, 0}, stride, false,
-                                false, std::nullopt);
+        return adaptiveavgpool2d(input, output_shape);
     }
     ~AdaptiveAvgPool2D() = default;
 

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "tensor.hpp"
-#include "utils.hpp"
+#include "ai3.hpp"
 #include <algorithm>
 #include <optional>
 #include <vector>

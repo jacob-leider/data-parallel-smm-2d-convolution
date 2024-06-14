@@ -1,7 +1,6 @@
 #pragma once
 
-#include "tensor.hpp"
-#include "utils.hpp"
+#include "ai3.hpp"
 #include <optional>
 #include <vector>
 
@@ -37,7 +36,7 @@ avgpool2d(const Tensor<dtype> &input, const std::vector<int> kernel_shape,
         output = Tensor<dtype>(
             {num_samples, output_channels, output_height, output_width});
     }
-
+    const bool has_divisor_override = divisor_override.has_value();
     for (int samp = 0; samp < num_samples; samp++) {
         for (int out_c = 0; out_c < output_channels; out_c++) {
             for (int out_h = 0; out_h < output_height; out_h++) {
@@ -63,8 +62,8 @@ avgpool2d(const Tensor<dtype> &input, const std::vector<int> kernel_shape,
                     }
 
                     dtype val;
-                    if (divisor_override.has_value()) {
-                        val = total / divisor_override.value();
+                    if (has_divisor_override) {
+                        val = total / (*divisor_override);
                     } else {
                         if (count_include_pad) {
                             int hstart = out_h * stride[0] - padding[0];

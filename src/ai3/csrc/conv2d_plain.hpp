@@ -1,8 +1,6 @@
 #pragma once
 
-#include "errors.hpp"
-#include "tensor.hpp"
-#include "utils.hpp"
+#include "ai3.hpp"
 #include <cstddef>
 #include <iostream>
 #include <optional>
@@ -16,8 +14,8 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                      const std::vector<int> &stride,
                      const std::vector<int> &dilation,
                      const PaddingMode padding_mode, int groups) {
-    bail_if(padding_mode != Zeros, "padding mode must be zeroes");
-    bail_if(groups != 1, "groups must be 1");
+    errs::bail_if(padding_mode != Zeros, "padding mode must be zeroes");
+    errs::bail_if(groups != 1, "groups must be 1");
 
     const int input_channels = dims::input_channels(input.shape);
     const int input_height = dims::height(input.shape);
@@ -43,6 +41,8 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
         output = Tensor<dtype>(
             {num_samples, output_channels, output_height, output_width});
     }
+
+    const bool has_bias = bias.has_value();
 
     for (int samp = 0; samp < num_samples; samp++) {
         for (int out_c = 0; out_c < output_channels; out_c++) {
@@ -71,8 +71,8 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                             }
                         }
                     }
-                    if (bias.has_value()) {
-                        res += bias.value().data[out_c];
+                    if (has_bias) {
+                        res += bias->data[out_c];
                     }
                     output.data[to_linear(samp, out_c, out_h, out_w,
                                           output_channels, output_height,

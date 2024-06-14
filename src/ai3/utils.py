@@ -5,12 +5,15 @@ from typing import (
     Sequence
 )
 
+
 def bail(message):
     raise AssertionError(message)
+
 
 def bail_if(check, message):
     if check:
         bail(message)
+
 
 def tensor_to_type(tens, out_type):
     dtype = torch.get_default_dtype()
@@ -18,10 +21,11 @@ def tensor_to_type(tens, out_type):
         return torch.frombuffer(tens, dtype=dtype).view(tens.shape)
     elif out_type is numpy.ndarray:
         dtype = {
-                torch.float32: numpy.float32,
-                torch.float64: numpy.float64
-                }[dtype]
-        bail_if(dtype is None, f"torch type, {dtype} is neither float32 or float64")
+            torch.float32: numpy.float32,
+            torch.float64: numpy.float64
+        }[dtype]
+        bail_if(dtype is None,
+                f"torch type, {dtype} is neither float32 or float64")
         data = numpy.frombuffer(tens, dtype=dtype)
         return data.reshape(tens.shape)
     elif out_type is None:
