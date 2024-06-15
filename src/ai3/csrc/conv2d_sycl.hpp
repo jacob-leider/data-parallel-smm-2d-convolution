@@ -13,8 +13,6 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     errs::bail_if(padding_mode != Zeros, "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
 
-    std::cout << "sycl impl\n";
-
     const int input_channels = dims::input_channels(input.shape);
     const int input_height = dims::height(input.shape);
     const int input_width = dims::width(input.shape);
@@ -48,47 +46,65 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     int dilation_w = dilation[1];
 
     sycl::queue queue(sycl::default_selector_v);
-    sycl::buffer<dtype> input_buf(input.data,
-                                  Tensor<dtype>::total_elem(input.shape));
-    sycl::buffer<dtype> kernel_buf(kernel.data,
-                                   Tensor<dtype>::total_elem(kernel.shape));
+
+    sycl::buffer<dtype> input_buf(input.data, input.count());
+    sycl::buffer<dtype> kernel_buf(kernel.data, kernel.count());
 
     const bool has_bias = bias.has_value();
     sycl::buffer<dtype> bias_buf =
-        has_bias ? sycl::buffer<dtype>(bias->data,
-                                       Tensor<dtype>::total_elem(bias->shape))
+        has_bias ? sycl::buffer<dtype>(bias->data, bias->count())
                  : sycl::buffer<dtype>(sycl::range<1>(0));
-    sycl::buffer<dtype> output_buf(output.data,
-                                   Tensor<dtype>::total_elem(output.shape));
+    sycl::buffer<dtype> output_buf(output.data, output.count());
+
+    const int total_out = output.count();
+    const int max_work_group_size =
+        queue.get_device().get_info<sycl::info::device::max_work_group_size>();
+
+    int work_group;
+    if (total_out < max_work_group_size) {
+        work_group = total_out;
+    } else {
+        work_group = max_work_group_size;
+        while (total_out % work_group != 0) {
+            work_group--;
+        }
+    }
+
+    const int num_batch = total_out / work_group;
 
     queue
         .submit([&](sycl::handler &h) {
-            sycl::accessor ainput(input_buf, h, sycl::read_only);
-            sycl::accessor akernel(kernel_buf, h, sycl::read_only);
-            sycl::accessor abias(bias_buf, h, sycl::read_only);
-            sycl::accessor aoutput(output_buf, h, sycl::write_only,
-                                   sycl::no_init);
-
+            sycl::accessor ainput =
+                sycl::accessor(input_buf, h, sycl::read_only);
+            sycl::accessor akernel =
+                sycl::accessor(kernel_buf, h, sycl::read_only);
+            sycl::accessor abias = sycl::accessor(bias_buf, h, sycl::read_only);
+            sycl::accessor aoutput =
+                sycl::accessor(output_buf, h, sycl::write_only, sycl::no_init);
             h.parallel_for(
-                sycl::nd_range(
-                    sycl::range(output_channels * num_samples,
-                                output_height * num_samples,
-                                output_width * num_samples),
-                    sycl::range(output_channels, output_height, output_width)),
-                [=](sycl::nd_item<3> idx) {
-                    int samp = idx.get_global_id(0) / output_channels;
-                    sycl::id local = idx.get_local_id();
-                    int out_c = local[0];
-                    int out_h = local[1];
-                    int out_w = local[2];
+                sycl::nd_range(sycl::range(total_out),
+                               sycl::range(total_out / num_batch)),
+                [=](sycl::nd_item<1> item) {
+                    int glob_id = item.get_global_id(0);
+
+                    int idx = glob_id;
+                    int out_w = idx % output_width;
+                    idx /= output_width;
+                    int out_h = idx % output_height;
+                    idx /= output_height;
+                    int out_c = idx % output_channels;
+                    idx /= output_channels;
+                    int samp = idx;
                     dtype sum = 0;
+                    int h_offset_base = out_h * stride_h - padding_h;
+                    int w_offset_base = out_w * stride_w - padding_w;
                     for (int in_c = 0; in_c < input_channels; ++in_c) {
                         for (int ker_h = 0; ker_h < kernel_height; ++ker_h) {
                             for (int ker_w = 0; ker_w < kernel_width; ++ker_w) {
-                                int h_offset = out_h * stride_h - padding_h +
-                                               ker_h * dilation_h;
-                                int w_offset = out_w * stride_w - padding_w +
-                                               ker_w * dilation_w;
+                                int h_offset =
+                                    h_offset_base + ker_h * dilation_h;
+                                int w_offset =
+                                    w_offset_base + ker_w * dilation_w;
                                 if (h_offset >= 0 && h_offset < input_height &&
                                     w_offset >= 0 && w_offset < input_width) {
                                     sum += ainput[to_linear(
@@ -106,9 +122,7 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                     if (has_bias) {
                         sum += abias[out_c];
                     }
-                    aoutput[to_linear(samp, out_c, out_h, out_w,
-                                      output_channels, output_height,
-                                      output_width)] = sum;
+                    aoutput[glob_id] = sum;
                 });
         })
         .wait_and_throw();

@@ -3,7 +3,6 @@
 #include <memory>
 #include <numeric>
 #include <optional>
-#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <vector>
 
@@ -15,16 +14,16 @@ template <typename dtype> class Tensor {
            bool input_data = false)
         : shape(s), owned(!input_data) {
         if (owned) {
-            data = new dtype[total_elem(s)];
+            data = new dtype[_count(s)];
             std::memcpy(data, reinterpret_cast<const dtype *>(data_address),
-                        total_elem(s) * sizeof(dtype));
+                        _count(s) * sizeof(dtype));
         } else {
             data = reinterpret_cast<dtype *>(data_address);
         }
     }
 
     Tensor(const std::vector<int> &s)
-        : data(new dtype[total_elem(s)]), shape(s), owned(true) {}
+        : data(new dtype[_count(s)]), shape(s), owned(true) {}
 
     static std::optional<Tensor>
     from_optional(const std::optional<intptr_t> &data_address,
@@ -67,10 +66,7 @@ template <typename dtype> class Tensor {
                                shape.size(), shape, stride);
     }
 
-    static int total_elem(const std::vector<int> &shape) {
-        return std::accumulate(shape.begin(), shape.end(), 1,
-                               std::multiplies<int>());
-    }
+    int count() const { return _count(shape); }
 
     Tensor(const Tensor &) = delete;
     Tensor &operator=(const Tensor &) = delete;
@@ -78,4 +74,13 @@ template <typename dtype> class Tensor {
     dtype *data;
     std::vector<int> shape;
     bool owned;
+
+  private:
+    static int _count(const std::vector<int> &s) {
+        int count = 1;
+        for (int v : s) {
+            count *= v;
+        }
+        return count;
+    }
 };

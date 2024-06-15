@@ -5,7 +5,7 @@
 #include <vector>
 
 template <typename dtype> Tensor<dtype> relu(Tensor<dtype> input) {
-    int total_elements = Tensor<dtype>::total_elem(input.shape);
+    int total_elements = input.count();
     for (int i = 0; i < total_elements; i++) {
         input.data[i] = (input.data[i] > 0) ? input.data[i] : 0;
     }

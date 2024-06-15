@@ -1,4 +1,4 @@
-/* define paths to custom algorithms above */
+#include "user_defined.hpp"
 #define CONV2D_SYCL
 #include "ai3.hpp"
 #include ADAPTIVEAVGPOOL2D_PATH

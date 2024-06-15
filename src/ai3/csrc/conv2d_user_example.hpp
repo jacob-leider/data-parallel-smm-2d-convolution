@@ -1,7 +1,8 @@
 // To use this impl instead of the default put
-// #define USER_CONV2D `path to this file` at top of ai3.cpp
+// #define CONV2D_USER `path to this file` at top of `user_defined.hpp`
 #pragma once
 #include "ai3.hpp"
+#include <iostream>
 
 template <typename dtype>
 Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
@@ -18,5 +19,6 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     (void)dilation;
     (void)padding_mode;
     (void)groups;
+    std::cout << "user override" << std::endl;
     std::exit(1);
 }
