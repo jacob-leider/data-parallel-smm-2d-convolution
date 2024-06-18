@@ -6,7 +6,7 @@ from test.integration.created_conv2d import SimpleConvNet
 
 
 def run():
-    print('VGG')
+    print('SIMPLE CREATED')
     input_data = torch.randn(100, 3, 224, 224)
     with torch.inference_mode():
         torch_model = SimpleConvNet()
