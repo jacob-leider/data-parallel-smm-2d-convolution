@@ -7,7 +7,7 @@ def run():
     print('MODELS SWAPPING CONV2D')
     from . import (vgg16, alexnet, convnext, densenet, efficientnet, googlenet,
                    inception, shufflenetv2, mobilenet, mnasnet, squeezenet, vision_transformer,
-                   swin_transformer, maxvit)
+                   swin_transformer, maxvit, regnet, resnet)
     vgg16.run()
     alexnet.run()
     convnext.run()
@@ -15,6 +15,8 @@ def run():
     efficientnet.run()
     googlenet.run()
     inception.run()
+    regnet.run()
+    resnet.run()
     mobilenet.run()
     mnasnet.run()
     shufflenetv2.run()

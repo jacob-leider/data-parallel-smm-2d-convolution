@@ -3,7 +3,7 @@ import torchvision
 from bench.swap_conv2d import swap_conv2d_and_time
 
 def run():
-    print('  MNASNET')
+    print(' MNASNET')
     print('Skipping as mnasnet requires groups > 1')
     return
     input_data = torch.randn(1, 3, 224, 224)

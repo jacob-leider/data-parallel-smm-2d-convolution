@@ -4,7 +4,7 @@ from bench.swap_conv2d import swap_conv2d_and_time
 
 
 def run():
-    print('  VGG16')
+    print(' VGG16')
     input_data = torch.randn(1, 3, 224, 224)
     vgg16 = torchvision.models.vgg16(
         weights=torchvision.models.VGG16_Weights.DEFAULT)
