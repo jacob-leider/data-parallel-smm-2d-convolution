@@ -7,8 +7,8 @@ from test.integration.created_conv2d import SimpleConvNet
 def _run(data, mes):
     model = SimpleConvNet()
     target = model(data)
-    ai3_model = ai3.swap_conv2d(model)
-    output = ai3_model(data)
+    ai3.swap_conv2d(model)
+    output = model(data)
     compare_tensors(output, target.detach().numpy(), mes)
 
 

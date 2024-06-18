@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from typing import Optional, Sequence
 from ai3 import layers
-from ai3 import as_nn
+from ai3 import swap_torch
 from ai3 import utils, core
 
 KN2ROW = 'kn2row'
@@ -55,16 +55,8 @@ class Model():
 
 def swap_backend(module: nn.Module) -> Model:
     dtype = torch.get_default_dtype()
-    return Model(dtype, layers.get_layers(module, dtype))
+    return Model(dtype, swap_torch.get_layers(module, dtype))
 
 
-def swap_conv2d(module: nn.Module) -> nn.Module:
-    dtype = torch.get_default_dtype()
-    for name, mod in module.named_children():
-        if isinstance(mod, nn.Sequential):
-            setattr(module, name, swap_conv2d(mod))
-        elif isinstance(mod, nn.Conv2d):
-            ai3_layer = layers.swap(mod, dtype)
-            assert (isinstance(ai3_layer, layers.Conv2D))
-            setattr(module, name, as_nn.Conv2D(ai3_layer))
-    return module
+def swap_conv2d(module: nn.Module):
+    swap_torch.swap_conv2d(module, torch.get_default_dtype())

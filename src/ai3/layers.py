@@ -10,82 +10,10 @@ from typing import (
 from abc import ABC
 
 
-def issequential(name: str) -> bool:
-    return '.' in name
-
-
-def getmodule(module: nn.Module, name: str) -> nn.Module:
-    if issequential(name):
-        names = name.split('.', 1)
-        return getmodule(getattr(module, names[0]), names[1])
-    else:
-        return getattr(module, name)
-
-
 class Layer(ABC):
     def __init__(self, core):
         self.core = core
         ...
-
-
-def get_layers(module: nn.Module, dtype) -> List[Layer]:
-    gm: fx.GraphModule = fx.symbolic_trace(module)
-    layers = []
-    for node in gm.graph.nodes:
-        if node.op == 'placeholder' or node.op == 'output':
-            pass
-        elif node.op == 'call_function':
-            if node.target == torch.flatten:
-                start_dim = 0
-                end_dim = -1
-                if len(node.args) > 1:
-                    start_dim = node.args[1]
-                if len(node.args) > 2:
-                    end_dim = node.args[2]
-                if 'start_dim' in node.kwargs:
-                    start_dim = node.kwargs['start_dim']
-                if 'end_dim' in node.kwargs:
-                    end_dim = node.kwargs['end_dim']
-                layers.append(Flatten(dtype, start_dim, end_dim))
-            elif node.target == torch.relu:
-                layers.append(ReLU(dtype))
-            else:
-                utils.bail(f"unsupported function: {node.target}")
-        elif node.op == 'call_module':
-            mod = getmodule(module, node.target)
-            if not isinstance(mod, nn.Dropout):
-                swapped = swap(mod, dtype)
-                if not swapped:
-                    utils.bail(f"unsupported module: {mod}")
-                layers.append(swapped)
-        else:
-            utils.bail(f"unsupported call: {node.op}")
-
-    return layers
-
-
-def swap(module: nn.Module, dtype) -> Optional[Layer]:
-    if isinstance(module, nn.Conv2d):
-        return Conv2D(dtype, module.weight, module.bias, module.stride,
-                      module.padding, module.dilation, module.padding_mode,
-                      module.groups)
-    elif isinstance(module, nn.Linear):
-        return Linear(dtype, module.weight, module.bias)
-    elif isinstance(module, nn.MaxPool2d):
-        return MaxPool2D(dtype, module.kernel_size, module.stride,
-                         module.padding, module.dilation, module.ceil_mode)
-    elif isinstance(module, nn.AvgPool2d):
-        return AvgPool2D(dtype, module.kernel_size, module.stride,
-                         module.padding, module.ceil_mode,
-                         module.count_include_pad,
-                         module.divisor_override)
-    elif isinstance(module, nn.AdaptiveAvgPool2d):
-        return AdaptiveAvgPool2D(dtype, module.output_size)
-    elif isinstance(module, nn.ReLU):
-        return ReLU(dtype)
-    elif isinstance(module, nn.Flatten):
-        return Flatten(dtype, start_dim=module.start_dim, end_dim=module.end_dim)
-    return None
 
 
 class Conv2D(Layer):
