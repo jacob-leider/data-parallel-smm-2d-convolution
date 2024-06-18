@@ -14,7 +14,7 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                      const std::vector<int> &stride,
                      const std::vector<int> &dilation,
                      const PaddingMode padding_mode, int groups) {
-    errs::bail_if(padding_mode != Zeros, "padding mode must be zeroes");
+    errs::bail_if(padding_mode != Zeros, "padding mode must be zeros");
     errs::bail_if(groups != 1, "groups must be 1");
 
     const int input_channels = dims::input_channels(input.shape);

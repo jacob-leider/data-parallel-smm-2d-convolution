@@ -1,6 +1,6 @@
-#include "user_defined.hpp"
 #define CONV2D_SYCL
 #include "ai3.hpp"
+#include "algo_paths.hpp"
 #include ADAPTIVEAVGPOOL2D_PATH
 #include AVGPOOL2D_PATH
 #include CONV2D_PATH

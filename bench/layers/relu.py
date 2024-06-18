@@ -17,7 +17,7 @@ class ReLU(nn.Module):
 
 def run():
     print("ReLU")
-    input = torch.randn(1000, 3, 300, 300)
+    input = torch.randn(1000, 3, 1000, 500)
     orig = ReLU()
     optim = ai3.swap_backend(orig)
     orig_out = predict_show_time(orig, input, "pytorch")
