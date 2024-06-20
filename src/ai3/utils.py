@@ -1,9 +1,8 @@
-import torch  # TODO could put code that accesses torch all in one file to cleanup to maybe allow easior conditional backends between onnx and torch
-import numpy
 from typing import (
     Union,
     Sequence
 )
+import torch
 
 
 def bail(message):
@@ -19,15 +18,15 @@ def tensor_to_type(tens, out_type):
     dtype = torch.get_default_dtype()
     if out_type is torch.Tensor:
         return torch.frombuffer(tens, dtype=dtype).view(tens.shape)
-    elif out_type is numpy.ndarray:
-        dtype = {
-            torch.float32: numpy.float32,
-            torch.float64: numpy.float64
-        }[dtype]
-        bail_if(dtype is None,
-                f"torch type, {dtype} is neither float32 or float64")
-        data = numpy.frombuffer(tens, dtype=dtype)
-        return data.reshape(tens.shape)
+    # elif out_type is numpy.ndarray:
+    #     dtype = {
+    #         torch.float32: numpy.float32,
+    #         torch.float64: numpy.float64
+    #     }[dtype]
+    #     bail_if(dtype is None,
+    #             f"torch type, {dtype} is neither float32 or float64")
+    #     data = numpy.frombuffer(tens, dtype=dtype)
+    #     return data.reshape(tens.shape)
     elif out_type is None:
         return tens
     bail(f"unsupported type to transfer tensor to {out_type}")

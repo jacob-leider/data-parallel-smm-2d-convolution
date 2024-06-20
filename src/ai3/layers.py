@@ -1,13 +1,10 @@
-from ai3 import core, utils
-import torch
-from torch import fx, nn
 from typing import (
     Union,
     Sequence,
     Optional,
-    List
 )
 from abc import ABC
+from ai3 import core, utils
 
 
 class Layer(ABC):

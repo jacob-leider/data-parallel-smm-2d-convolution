@@ -8,14 +8,14 @@ def iscontainer(name: str) -> bool:
     return '.' in name
 
 
-def getmodule(module: nn.Module, name: str) -> nn.Module:
+def getmodule(module: nn.Module, name) -> nn.Module:
     if iscontainer(name):
         names = name.split('.', 1)
         return getmodule(getattr(module, names[0]), names[1])
     else:
         return getattr(module, name)
 
-def setmodule(module: nn.Module, name: str, new: nn. Module) -> nn.Module:
+def setmodule(module: nn.Module, name, new: nn. Module) -> nn.Module:
     if iscontainer(name):
         names = name.split('.', 1)
         setmodule(getattr(module, names[0]), names[1], new)
