@@ -1,3 +1,4 @@
+# TODO develop mode install numpy and torchvision
 [build-system]
 requires = ["scikit-build-core>=0.3.3", "pybind11"]
 build-backend = "scikit_build_core.build"
@@ -9,5 +10,10 @@ readme = "README.md"
 requires-python = ">=3.7"
 dependencies = ["torch"]
 
+[project.optional-dependencies]
+dev = ["numpy", "torchvision"]
+
 [tool.scikit-build]
 wheel.expand-macos-universal-tags = true
+cmake.build-type = "Release"
+cmake.define = {"FIND_ACPP"="OFF"}

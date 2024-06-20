@@ -3,7 +3,6 @@
 import subprocess
 import os
 from pathlib import Path
-import pybind11
 import argparse
 
 PY = "python -m"
@@ -12,6 +11,7 @@ C_FORMAT = "clang-format"
 PY_FORMAT = "autopep8"
 
 TEST_MOD = "test"
+EXAMPLE_MOD = "example"
 UNIT_TEST_MOD = TEST_MOD + ".unit"
 INTEGRATION_TEST_MOD = TEST_MOD + '.integration'
 BENCH_MOD = "bench"
@@ -30,6 +30,7 @@ def run_command(command):
         exit(1)
 
 def gen_clangd(file_path):
+    import pybind11
     flags = [
         '-Wall',
         '-Wextra',
@@ -64,7 +65,9 @@ if __name__ == "__main__":
             run_command(f"{PIP} install --editable .")
         elif cmd == "ext_ev":
             run_command(f"{PIP} install --editable . -vvv")
-        elif cmd.startswith("bench"):
+        elif cmd.startswith(BENCH_MOD):
+            run_command(f"{PY} {cmd}")
+        elif cmd.startswith(EXAMPLE_MOD):
             run_command(f"{PY} {cmd}")
         elif cmd.startswith("lbench"):
             updated_command = cmd.replace("lbench", LAYER_BENCH_MOD, 1)
@@ -75,7 +78,7 @@ if __name__ == "__main__":
         elif cmd.startswith("sbench"):
             updated_command = cmd.replace("sbench", SWAP_CONV2D_MOD, 1)
             run_command(f"{PY} {updated_command}")
-        elif cmd.startswith("test"):
+        elif cmd.startswith(TEST_MOD):
             run_command(f"{PY} {cmd}")
         elif cmd.startswith("utest"):
             updated_command = cmd.replace("utest", UNIT_TEST_MOD, 1)
