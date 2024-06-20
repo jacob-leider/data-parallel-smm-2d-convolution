@@ -12,8 +12,8 @@
 
 import torch
 from torch import nn
-from typing import Optional, Sequence
-from ai3 import layers, swap_torch, utils
+from typing import Optional, Sequence, Union
+from ai3 import layers, swap_torch, utils, core
 
 KN2ROW = 'kn2row'
 TORCH = 'torch'
@@ -48,14 +48,46 @@ def module_algorithms(holder: nn.Module, objective: str = 'latency', guess: Opti
 class Model():
     def __init__(self, dtype, layers: Sequence[layers.Layer]):
         cores = [layer.core for layer in layers]
-        self.core = utils.get_correct_from_type(
-            dtype, core.Model_float, core.Model_double)(cores)
+        (model, self.dtype) = utils.get_item_and_type(
+            dtype, core.Model_float, core.Model_double)
+        self.core = model(cores)
 
     def predict(self, input, out_type=None):
         out = self.core.predict(utils.get_address(
             input), utils.get_shape(input))
-        out = utils.tensor_to_type(out, out_type)
-        return out
+        out = Tensor(out)
+        return out.to(out_type)
+
+class Tensor():
+    def __init__(self, tens: Union[core.Tensor_float, core.Tensor_double]):
+        self.core = tens
+        if isinstance(tens, core.Tensor_float):
+            self.typestr = utils.FLOAT32_STR
+        else:
+            self.typestr = utils.FLOAT64_STR
+
+    def to(self, out_type):
+        if out_type is torch.Tensor:
+            return self.torch()
+        elif out_type is None:
+            return self
+        utils.bail(f"unsupported type to transfer tensor to {out_type}")
+
+    def numpy(self):
+        import numpy
+        dtype = {
+                 utils.FLOAT32_STR : numpy.float32,
+                 utils.FLOAT64_STR : numpy.float64
+                 }[self.typestr]
+        utils.bail_if(dtype is None,
+                f"type, {self.typestr} is neither float32 or float64")
+        data = numpy.frombuffer(self.core, dtype=dtype)
+        return data.reshape(self.core.shape)
+
+
+    def torch(self):
+        return torch.frombuffer(self.core,
+                                dtype=torch.__dict__[self.typestr]).view(self.core.shape)
 
 # TODO function: optimize(objective='memory'/'energy'/'latency',
 #                         guess=[users guess for best algorithms to use for each layer],

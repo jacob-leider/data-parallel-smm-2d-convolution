@@ -1,7 +1,7 @@
 import torch
 import ai3
 from test import compare_tensors
-from test.integration.created_conv2d import SimpleConvNet
+from example.simple_conv2d import SimpleConvNet
 
 
 def _run(data, mes):

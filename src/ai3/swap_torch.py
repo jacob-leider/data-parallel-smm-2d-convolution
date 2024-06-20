@@ -1,3 +1,4 @@
+import ai3
 from ai3 import layers, utils
 from typing import Optional, List
 import torch
@@ -29,8 +30,8 @@ class Conv2D(nn.Module):
         self.internal = internal
 
     def forward(self, x: torch.Tensor):
-        out = self.internal.forward(x)
-        return utils.tensor_to_type(out, torch.Tensor)
+        out = ai3.Tensor(self.internal.forward(x))
+        return out.to(torch.Tensor)
 
 def swap_conv2d(module: nn.Module, dtype) -> nn.Module:
     gm: fx.GraphModule = fx.symbolic_trace(module)

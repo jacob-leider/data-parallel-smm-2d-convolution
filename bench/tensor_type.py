@@ -6,15 +6,20 @@ from test import compare_tensors
 
 def _run(orig_torch):
     model = ai3.Model(torch.get_default_dtype(), [])
-    tens = model.predict(orig_torch)
-    assert (isinstance(tens, ai3.core.Tensor_float)
-            or isinstance(tens, ai3.core.Tensor_double))
+    tens= model.predict(orig_torch)
+    assert(isinstance(tens, ai3.Tensor))
     start = time.time()
-    back_to_torch = ai3.utils.tensor_to_type(tens, torch.Tensor)
+    back_to_torch = tens.torch()
     end = time.time()
     print(
         f" {orig_torch.size()} ai3 -> torch: {end-start}")
+    start = time.time()
+    as_numpy = tens.numpy()
+    end = time.time()
+    print(
+        f" {orig_torch.size()} ai3 -> numpy: {end-start}")
     compare_tensors(back_to_torch, orig_torch)
+    compare_tensors(as_numpy, orig_torch)
 
 
 def run():

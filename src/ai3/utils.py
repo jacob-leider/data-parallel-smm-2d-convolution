@@ -4,6 +4,8 @@ from typing import (
 )
 import torch
 
+FLOAT32_STR = "float32"
+FLOAT64_STR = "float64"
 
 def bail(message):
     raise AssertionError(message)
@@ -13,30 +15,11 @@ def bail_if(check, message):
     if check:
         bail(message)
 
-
-def tensor_to_type(tens, out_type):
-    dtype = torch.get_default_dtype()
-    if out_type is torch.Tensor:
-        return torch.frombuffer(tens, dtype=dtype).view(tens.shape)
-    # elif out_type is numpy.ndarray:
-    #     dtype = {
-    #         torch.float32: numpy.float32,
-    #         torch.float64: numpy.float64
-    #     }[dtype]
-    #     bail_if(dtype is None,
-    #             f"torch type, {dtype} is neither float32 or float64")
-    #     data = numpy.frombuffer(tens, dtype=dtype)
-    #     return data.reshape(tens.shape)
-    elif out_type is None:
-        return tens
-    bail(f"unsupported type to transfer tensor to {out_type}")
-
-
-def get_correct_from_type(dtype, float_item, double_item):
+def get_item_and_type(dtype, float_item, double_item):
     if str(dtype) == 'torch.float32':
-        return float_item
+        return float_item, FLOAT32_STR
     if str(dtype) == 'torch.float64':
-        return double_item
+        return double_item, FLOAT64_STR
     assert False, f'using bad dtype: {str(dtype)}'
 
 

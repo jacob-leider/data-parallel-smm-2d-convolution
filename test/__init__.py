@@ -3,7 +3,6 @@ import torch
 import numpy as np
 import atexit
 import torch
-from ai3 import utils
 import inspect
 
 FAILED_TESTS = []
@@ -26,10 +25,8 @@ def add_fail(mes):
 def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: Optional[str] = None, atol=1e-5) -> None:
     if isinstance(out_tensor, np.ndarray):
         out = out_tensor
-    elif isinstance(out_tensor, torch.Tensor):
-        out = np.array(out_tensor)
     else:
-        out = utils.tensor_to_type(out_tensor, np.ndarray)
+        out = out_tensor.numpy()
     tar = np.array(tar_tensor)
     assert (isinstance(out, np.ndarray))
 

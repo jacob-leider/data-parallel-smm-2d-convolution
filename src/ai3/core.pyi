@@ -1,3 +1,4 @@
+from collections.abc import Buffer
 from typing import Sequence, Union, Optional
 from enum import Enum
 
@@ -7,11 +8,11 @@ class PaddingMode(Enum):
     replicate: int
     circular: int
 
-class Tensor_float:
+class Tensor_float(Buffer):
     data: Sequence[float]
     shape: Sequence[int]
 
-class Tensor_double:
+class Tensor_double(Buffer):
     data: Sequence[float]
     shape: Sequence[int]
 
