@@ -5,7 +5,7 @@
 #include <vector>
 
 template <typename dtype>
-Tensor<dtype> flatten(Tensor<dtype> input, const int start_dim, int end_dim) {
+Tensor<dtype> _flatten(Tensor<dtype> input, const int start_dim, int end_dim) {
     errs::bail_if(end_dim != -1 && start_dim > end_dim,
                   "start dimension > end dimension in flattening function");
     if (end_dim == -1) {

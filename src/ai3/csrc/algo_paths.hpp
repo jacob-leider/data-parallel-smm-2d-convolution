@@ -1,58 +1,63 @@
 #pragma once
 #include "user_defined.hpp"
 
+// TODO label the function direct_conv2d and create smm_conv2d_plain and sycl,
+// add the string tests to utest
 #ifdef CONV2D_USER
-#define CONV2D_PATH CONV2D_USER
-#elif defined(USE_SYCL) && defined(CONV2D_SYCL)
-#define CONV2D_PATH "conv2d_sycl.hpp"
+#include CONV2D_USER
+#endif
+#if defined(USE_SYCL) && defined(CONV2D_SYCL)
+#include "direct_conv2d_sycl.hpp"
 #else
-#define CONV2D_PATH "conv2d_plain.hpp"
+#include "direct_conv2d_plain.hpp"
 #endif
 
 #ifdef LINEAR_USER
-#define CONV2D_PATH LINEAR_USER
-#elif defined(USE_SYCL) && defined(LINEAR_SYCL)
-#define LINEAR_PATH "linear_sycl.hpp"
+#include LINEAR_USER
+#endif
+#if defined(USE_SYCL) && defined(LINEAR_SYCL)
+#include "linear_sycl.hpp"
 #else
-#define LINEAR_PATH "linear_plain.hpp"
+#include "linear_plain.hpp"
 #endif
 
 #ifdef MAXPOOL2D_USER
-#define CONV2D_PATH MAXPOOL2D_USER
+#include MAXPOOL2D_USER
 #elif defined(USE_SYCL) && defined(MAXPOOL2D_SYCL)
-#define MAXPOOL2D_PATH "maxpool2d_sycl.hpp"
+#include "maxpool2d_sycl.hpp"
 #else
-#define MAXPOOL2D_PATH "maxpool2d_plain.hpp"
+#include "maxpool2d_plain.hpp"
 #endif
 
 #ifdef AVGPOOL2D_USER
-#define CONV2D_PATH AVGPOOL2D_USER
+#include AVGPOOL2D_USER
 #elif defined(USE_SYCL) && defined(AVGPOOL2D_SYCL)
-#define AVGPOOL2D_PATH "avgpool2d_sycl.hpp"
+#include "avgpool2d_sycl.hpp"
 #else
-#define AVGPOOL2D_PATH "avgpool2d_plain.hpp"
+#include "avgpool2d_plain.hpp"
 #endif
 
 #ifdef ADAPTIVEAVGPOOL2D_USER
-#define CONV2D_PATH ADAPTIVEAVGPOOL2D_USER
+#include ADAPTIVEAVGPOOL2D_USER
 #elif defined(USE_SYCL) && defined(ADAPTIVEAVGPOOL2D_SYCL)
-#define ADAPTIVEAVGPOOL2D_PATH "adaptiveavgpool2d_sycl.hpp"
+#include "adaptiveavgpool2d_sycl.hpp"
 #else
-#define ADAPTIVEAVGPOOL2D_PATH "adaptiveavgpool2d_plain.hpp"
+#include "adaptiveavgpool2d_plain.hpp"
 #endif
 
 #ifdef RELU_USER
-#define CONV2D_PATH RELU_USER
+#include RELU_USER
 #elif defined(USE_SYCL) && defined(RELU_SYCL)
-#define RELU_PATH "relu_sycl.hpp"
+#include "relu_sycl.hpp"
 #else
-#define RELU_PATH "relu_plain.hpp"
+#include "relu_plain.hpp"
 #endif
 
 #ifdef FLATTEN_USER
-#define CONV2D_PATH FLATTEN_USER
-#elif defined(USE_SYCL) && defined(FLATTEN_SYCL)
-#define FLATTEN_PATH "flatten_sycl.hpp"
+#include FLATTEN_USER
+#endif
+#if defined(USE_SYCL) && defined(FLATTEN_SYCL)
+#include "flatten_sycl.hpp"
 #else
-#define FLATTEN_PATH "flatten_plain.hpp"
+#include "flatten_plain.hpp"
 #endif

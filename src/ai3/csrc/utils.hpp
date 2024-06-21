@@ -7,6 +7,10 @@
 #include <sstream>
 #include <vector>
 
+#ifndef GROUP_SIZE_GUESS
+#define GROUP_SIZE_GUESS 256
+#endif
+
 enum PaddingMode { Zeros, Reflect, Replicate, Circular };
 
 inline int to_linear(int i, int j, int k, int l, int J, int K, int L) {
@@ -15,12 +19,15 @@ inline int to_linear(int i, int j, int k, int l, int J, int K, int L) {
 inline int to_linear(int i, int j, int J) { return i * J + j; }
 
 namespace errs {
-void bail_if(bool check, std::string &mes);
+template <typename... Args> [[noreturn]] void bail(Args... args) {
+    std::stringstream ss;
+    (ss << ... << args);
+    throw std::runtime_error(ss.str());
+}
+
 template <typename... Args> void bail_if(bool check, Args... args) {
     if (check) {
-        std::stringstream ss;
-        (ss << ... << args);
-        throw std::runtime_error(ss.str());
+        bail(args...);
     }
 }
 } // namespace errs

@@ -1,6 +1,7 @@
 # TODO try some way to do the normal pip install without compiling cpp code
 # then taking users cpp code and compiling the SO with that. This would stop
 # requiring building from source, this would be easier to do with CMAKE
+# see if we can include <ai3.hpp> and if that gets handled in cmake
 # TODO would be best to split up samples then each algorithm also has its way of
 # accelerating instead of doing all the samples in each layer
 # TODO onnx support, should be pretty easy to also iterate
@@ -9,6 +10,7 @@
 # once onnx support we can have two files which are the only places torch and onnx are imported
 # TODO not sure how to set up dependencies or this file, need either a Pytorch model or a .onnx file but not both
 # optional flag when installing, something like pip install --frontend=torch/onnx
+# TODO instead of defining CONV2D_USER in a file do it within cmake
 
 import torch
 from torch import nn
@@ -20,30 +22,7 @@ TORCH = 'torch'
 SUPPORTED_OBJECTIVES = ['energy', 'latency', 'memory']
 SUPPORTED_ALGORITHMS = [KN2ROW, TORCH]
 
-# TODO support for guess also being a dict mapping layer type to algorithm
-
-
-def module_algorithms(holder: nn.Module, objective: str = 'latency', guess: Optional[Sequence[str]] = None) -> Sequence[str]:
-    assert objective in SUPPORTED_OBJECTIVES
-    assert guess is None or len(guess) == len(list(holder.children()))
-
-    algos = []
-    for i, mod in enumerate(holder.children()):
-        if isinstance(mod, nn.Sequential):
-            if guess is not None:
-                assert isinstance(guess[i], list)
-                algos.append(module_algorithms(mod, objective, guess[i]))
-            algos.append(module_algorithms(mod, objective, None))
-        else:
-            if guess is not None:
-                # TODO some processing on whether to use the guess
-                assert guess[i] in SUPPORTED_ALGORITHMS
-            if isinstance(mod, nn.Conv2d):
-                algos.append(KN2ROW)
-            else:
-                algos.append(TORCH)
-    return algos
-
+DEFAULT_ALGOS = {key: "default" for key in ["conv2d", "linear", "relu", "maxpool2d", "avgpool2d", "adaptiveavgpool2d", "flatten"]}
 
 class Model():
     def __init__(self, dtype, layers: Sequence[layers.Layer]):
@@ -89,16 +68,15 @@ class Tensor():
         return torch.frombuffer(self.core,
                                 dtype=torch.__dict__[self.typestr]).view(self.core.shape)
 
-# TODO function: optimize(objective='memory'/'energy'/'latency',
-#                         guess=[users guess for best algorithms to use for each layer],
-#                         given=[each layers algorithm will be set to the algorithm in this list] # only one of given or guess can be used at a time
-#                         model=model to optimize layers for) -> New Model With Better Layers
-
-
-def swap_backend(module: nn.Module) -> Model:
+def swap_backend(module: nn.Module, algos: Optional[dict[str, str]] = None) -> Model:
+    if algos:
+        algos = DEFAULT_ALGOS | algos
+    else:
+        algos = DEFAULT_ALGOS
     dtype = torch.get_default_dtype()
-    return Model(dtype, swap_torch.get_layers(module, dtype))
+    return Model(dtype, swap_torch.get_layers(module, dtype, algos))
 
-
-def swap_conv2d(module: nn.Module):
-    swap_torch.swap_conv2d(module, torch.get_default_dtype())
+def swap_conv2d(module: nn.Module, algo: Optional[str] = None):
+    if not algo:
+        algo = DEFAULT_ALGOS["conv2d"]
+    swap_torch.swap_conv2d(module, torch.get_default_dtype(), algo)

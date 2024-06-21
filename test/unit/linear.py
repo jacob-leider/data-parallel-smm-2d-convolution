@@ -18,7 +18,7 @@ def test(*, num_samples, in_features: int, out_features: int,
     else:
         bias = None
 
-    model = Model(input.dtype, [Linear(input.dtype, weight, bias)])
+    model = Model(input.dtype, [Linear(input.dtype, weight, bias, "default")])
     ai3_output = model.predict(input)
     torch_output = F.linear(input, weight, bias=bias)
     compare_tensors(ai3_output, torch_output, test_name, atol=atol)

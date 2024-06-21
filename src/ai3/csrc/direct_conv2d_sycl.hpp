@@ -1,15 +1,17 @@
 #include "ai3.hpp"
+#include "utils.hpp"
 #include <CL/sycl.hpp>
 #include <optional>
 using namespace cl;
 
+// TODO groups and padding modes
 template <typename dtype>
-Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
-                     const std::optional<const Tensor<dtype>> &bias,
-                     const std::vector<int> &padding,
-                     const std::vector<int> &stride,
-                     const std::vector<int> &dilation,
-                     const PaddingMode padding_mode, int groups) {
+Tensor<dtype>
+direct_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
+              const std::optional<const Tensor<dtype>> &bias,
+              const std::vector<int> &padding, const std::vector<int> &stride,
+              const std::vector<int> &dilation, const PaddingMode padding_mode,
+              int groups) {
     errs::bail_if(padding_mode != Zeros, "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
 
@@ -54,23 +56,23 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     sycl::buffer<dtype> bias_buf =
         has_bias ? sycl::buffer<dtype>(bias->data, bias->count())
                  : sycl::buffer<dtype>(sycl::range<1>(0));
+
+    const int output_size_per_channel = output_height * output_width;
     sycl::buffer<dtype> output_buf(output.data, output.count());
 
-    const int total_out = output.count();
     const int max_work_group_size =
         queue.get_device().get_info<sycl::info::device::max_work_group_size>();
-
-    int work_group;
-    if (total_out < max_work_group_size) {
-        work_group = total_out;
-    } else {
-        work_group = max_work_group_size;
-        while (total_out % work_group != 0) {
-            work_group--;
-        }
+    int work_group_size = max_work_group_size;
+    if (GROUP_SIZE_GUESS < work_group_size) {
+        work_group_size = GROUP_SIZE_GUESS;
+    }
+    if (output_size_per_channel < work_group_size) {
+        work_group_size = output_size_per_channel;
     }
 
-    const int num_batch = total_out / work_group;
+    const int output_size_per_channel_total =
+        ((output_size_per_channel + work_group_size - 1) / work_group_size) *
+        work_group_size;
 
     queue
         .submit([&](sycl::handler &h) {
@@ -81,20 +83,20 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
             sycl::accessor abias = sycl::accessor(bias_buf, h, sycl::read_only);
             sycl::accessor aoutput =
                 sycl::accessor(output_buf, h, sycl::write_only, sycl::no_init);
-            h.parallel_for(
-                sycl::nd_range(sycl::range(total_out),
-                               sycl::range(total_out / num_batch)),
-                [=](sycl::nd_item<1> item) {
-                    int glob_id = item.get_global_id(0);
 
-                    int idx = glob_id;
-                    int out_w = idx % output_width;
-                    idx /= output_width;
-                    int out_h = idx % output_height;
-                    idx /= output_height;
-                    int out_c = idx % output_channels;
-                    idx /= output_channels;
-                    int samp = idx;
+            h.parallel_for(
+                sycl::nd_range(sycl::range(num_samples, output_channels,
+                                           output_size_per_channel_total),
+                               sycl::range(1, 1, work_group_size)),
+                [=](sycl::nd_item<3> item) {
+                    int samp = item.get_global_id(0);
+                    int out_c = item.get_global_id(1);
+                    int area_id = item.get_global_id(2);
+                    if (area_id >= output_size_per_channel) {
+                        return;
+                    }
+                    int out_h = area_id / output_width;
+                    int out_w = area_id % output_width;
                     dtype sum = 0;
                     int h_offset_base = out_h * stride_h - padding_h;
                     int w_offset_base = out_w * stride_w - padding_w;
@@ -122,7 +124,9 @@ Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                     if (has_bias) {
                         sum += abias[out_c];
                     }
-                    aoutput[glob_id] = sum;
+                    aoutput[to_linear(samp, out_c, out_h, out_w,
+                                      output_channels, output_height,
+                                      output_width)] = sum;
                 });
         })
         .wait_and_throw();

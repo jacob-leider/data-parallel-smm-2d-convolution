@@ -35,7 +35,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
                 padding[1]) == ceil_mode_note_width)
 
     model = Model(input.dtype, [MaxPool2D(input.dtype, kernel_shape,
-                                          stride, padding, dilation, ceil_mode)])
+                                          stride, padding, dilation, ceil_mode, "default")])
     ai3_output = model.predict(input)
     torch_output = nn.MaxPool2d(kernel_shape, dilation=dilation,
                                 padding=padding, stride=stride, ceil_mode=ceil_mode)(input)

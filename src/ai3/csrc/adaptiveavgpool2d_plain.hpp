@@ -6,7 +6,7 @@
 #include <vector>
 
 template <typename dtype>
-Tensor<dtype> adaptiveavgpool2d(
+Tensor<dtype> _adaptiveavgpool2d(
     const Tensor<dtype> &input,
     const std::optional<std::vector<std::optional<int>>> output_shape) {
     int input_height = dims::height(input.shape);
@@ -28,6 +28,6 @@ Tensor<dtype> adaptiveavgpool2d(
     std::vector<int> kernel_shape = {
         input_height - ((output_height - 1) * stride[0]),
         input_width - ((output_width - 1) * stride[1])};
-    return avgpool2d<dtype>(input, kernel_shape, {0, 0}, stride, false, false,
-                            std::nullopt);
+    return _avgpool2d<dtype>(input, kernel_shape, {0, 0}, stride, false, false,
+                             std::nullopt);
 }

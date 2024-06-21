@@ -6,10 +6,10 @@
 
 template <typename dtype>
 Tensor<dtype>
-avgpool2d(const Tensor<dtype> &input, const std::vector<int> kernel_shape,
-          const std::vector<int> &padding, const std::vector<int> &stride,
-          const bool ceil_mode, const bool count_include_pad,
-          const std::optional<int> divisor_override) {
+_avgpool2d(const Tensor<dtype> &input, const std::vector<int> kernel_shape,
+           const std::vector<int> &padding, const std::vector<int> &stride,
+           const bool ceil_mode, const bool count_include_pad,
+           const std::optional<int> divisor_override) {
     const int input_channels = dims::input_channels(input.shape);
     const int input_height = dims::height(input.shape);
     const int input_width = dims::width(input.shape);

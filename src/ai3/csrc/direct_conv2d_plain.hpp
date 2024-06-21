@@ -8,12 +8,12 @@
 
 // TODO groups and padding modes
 template <typename dtype>
-Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
-                     const std::optional<const Tensor<dtype>> &bias,
-                     const std::vector<int> &padding,
-                     const std::vector<int> &stride,
-                     const std::vector<int> &dilation,
-                     const PaddingMode padding_mode, int groups) {
+Tensor<dtype>
+direct_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
+              const std::optional<const Tensor<dtype>> &bias,
+              const std::vector<int> &padding, const std::vector<int> &stride,
+              const std::vector<int> &dilation, const PaddingMode padding_mode,
+              int groups) {
     errs::bail_if(padding_mode != Zeros, "padding mode must be zeros");
     errs::bail_if(groups != 1, "groups must be 1");
 

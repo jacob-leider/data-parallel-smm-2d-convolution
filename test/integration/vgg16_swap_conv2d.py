@@ -5,7 +5,7 @@ import torchvision
 
 
 def run():
-    print("VGG16 SWAPPING LAYERS")
+    print("VGG16 SWAPPING CONV2D")
     input_data = torch.randn(2, 3, 224, 224)
     with torch.inference_mode():
         vgg16 = torchvision.models.vgg16(

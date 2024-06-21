@@ -24,11 +24,16 @@ def test(*, input_channels: int, in_height: int, in_width: int,
         bias = None
 
     model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
-                                       stride, padding, dilation, 'zeros', 1)])
+                                       stride, padding, dilation, 'zeros', 1, 'direct')])
     ai3_output = model.predict(input, out_type=torch.Tensor)
     torch_output = F.conv2d(input, kernel, bias=bias, dilation=dilation,
                             padding=padding, stride=stride, groups=groups)
-    compare_tensors(ai3_output, torch_output, test_name, atol=atol)
+    compare_tensors(ai3_output, torch_output, test_name + " direct", atol=atol)
+
+    # model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
+    #                                    stride, padding, dilation, 'zeros', 1, 'smm')])
+    # ai3_output= model.predict(input, out_type=torch.Tensor)
+    # compare_tensors(ai3_output, torch_output, test_name + " smm", atol=atol)
 
 
 def run():

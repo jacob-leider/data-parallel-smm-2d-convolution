@@ -8,7 +8,7 @@ from test import compare_tensors
 def test(*, input_shape,
          test_name: str, atol=1e-5) -> None:
     input = torch.randn(input_shape, dtype=torch.float32)
-    model = Model(input.dtype, [ReLU(input.dtype)])
+    model = Model(input.dtype, [ReLU(input.dtype, "default")])
     ai3_output = model.predict(input)
     torch_output = F.relu(input)
     compare_tensors(ai3_output, torch_output, test_name, atol=atol)

@@ -4,7 +4,6 @@ from typing import Optional, List
 import torch
 from torch import nn, fx
 
-
 def iscontainer(name: str) -> bool:
     return '.' in name
 
@@ -33,19 +32,19 @@ class Conv2D(nn.Module):
         out = ai3.Tensor(self.internal.forward(x))
         return out.to(torch.Tensor)
 
-def swap_conv2d(module: nn.Module, dtype) -> nn.Module:
+def swap_conv2d(module: nn.Module, dtype, algo: str) -> nn.Module:
     gm: fx.GraphModule = fx.symbolic_trace(module)
     for node in gm.graph.nodes:
         if node.op == 'call_module':
             mod = getmodule(module, node.target)
             if isinstance(mod, nn.Conv2d):
-                swapped = swap_layer(mod, dtype)
+                swapped = swap_layer(mod, dtype, {'conv2d': algo})
                 assert(isinstance(swapped, layers.Conv2D))
                 module = setmodule(module, node.target, Conv2D(swapped))
     return module
 
 
-def get_layers(module: nn.Module, dtype) -> List[layers.Layer]:
+def get_layers(module: nn.Module, dtype, algos: dict[str,str]) -> List[layers.Layer]:
     gm: fx.GraphModule = fx.symbolic_trace(module)
     forwards = []
     for node in gm.graph.nodes:
@@ -63,15 +62,15 @@ def get_layers(module: nn.Module, dtype) -> List[layers.Layer]:
                     start_dim = node.kwargs['start_dim']
                 if 'end_dim' in node.kwargs:
                     end_dim = node.kwargs['end_dim']
-                forwards.append(layers.Flatten(dtype, start_dim, end_dim))
+                forwards.append(layers.Flatten(dtype, start_dim, end_dim, algos['flatten']))
             elif node.target == torch.relu:
-                forwards.append(layers.ReLU(dtype))
+                forwards.append(layers.ReLU(dtype, algos['relu']))
             else:
                 utils.bail(f"unsupported function: {node.target}")
         elif node.op == 'call_module':
             mod = getmodule(module, node.target)
             if not isinstance(mod, nn.Dropout):
-                swapped = swap_layer(mod, dtype)
+                swapped = swap_layer(mod, dtype, algos)
                 if not swapped:
                     utils.bail(f"unsupported module: {mod}")
                 forwards.append(swapped)
@@ -81,26 +80,28 @@ def get_layers(module: nn.Module, dtype) -> List[layers.Layer]:
     return forwards
 
 
-def swap_layer(module: nn.Module, dtype) -> Optional[layers.Layer]:
+# TODO add a dict here for algorithms to use at specific layers
+# implement it for all the other layers
+def swap_layer(module: nn.Module, dtype, algos: dict[str,str]) -> Optional[layers.Layer]:
     if isinstance(module, nn.Conv2d):
         return layers.Conv2D(dtype, module.weight, module.bias, module.stride,
                       module.padding, module.dilation, module.padding_mode,
-                      module.groups)
+                      module.groups, algos["conv2d"])
     elif isinstance(module, nn.Linear):
-        return layers.Linear(dtype, module.weight, module.bias)
+        return layers.Linear(dtype, module.weight, module.bias, algos['linear'])
     elif isinstance(module, nn.MaxPool2d):
         return layers.MaxPool2D(dtype, module.kernel_size, module.stride,
-                         module.padding, module.dilation, module.ceil_mode)
+                         module.padding, module.dilation, module.ceil_mode, algos['maxpool2d'])
     elif isinstance(module, nn.AvgPool2d):
         return layers.AvgPool2D(dtype, module.kernel_size, module.stride,
                          module.padding, module.ceil_mode,
                          module.count_include_pad,
-                         module.divisor_override)
+                         module.divisor_override, algos['avgpool2d'])
     elif isinstance(module, nn.AdaptiveAvgPool2d):
-        return layers.AdaptiveAvgPool2D(dtype, module.output_size)
+        return layers.AdaptiveAvgPool2D(dtype, module.output_size, algos['adaptiveavgpool2d'])
     elif isinstance(module, nn.ReLU):
-        return layers.ReLU(dtype)
+        return layers.ReLU(dtype, algos['relu'])
     elif isinstance(module, nn.Flatten):
-        return layers.Flatten(dtype, start_dim=module.start_dim, end_dim=module.end_dim)
+        return layers.Flatten(dtype, module.start_dim, module.end_dim, algos['flatten'])
     return None
 

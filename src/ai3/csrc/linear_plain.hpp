@@ -7,8 +7,8 @@
 #include <vector>
 
 template <typename dtype>
-Tensor<dtype> linear(const Tensor<dtype> &input, const Tensor<dtype> &weight,
-                     const std::optional<const Tensor<dtype>> &bias) {
+Tensor<dtype> _linear(const Tensor<dtype> &input, const Tensor<dtype> &weight,
+                      const std::optional<const Tensor<dtype>> &bias) {
     errs::bail_if(
         dims::width(input.shape) != dims::width(weight.shape),
         "Invalid matrix multiplication: input width=", dims::width(input.shape),

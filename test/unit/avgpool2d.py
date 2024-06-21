@@ -38,7 +38,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
                 padding[1]) == ceil_mode_note_width)
 
     model = Model(input.dtype, [AvgPool2D(input.dtype, kernel_shape,
-                                          stride, padding, ceil_mode, count_include_pad, divisor_override)])
+                                          stride, padding, ceil_mode, count_include_pad, divisor_override, "default")])
     ai3_output = model.predict(input)
     torch_output = nn.AvgPool2d(kernel_shape,
                                 padding=padding, stride=stride, ceil_mode=ceil_mode, count_include_pad=count_include_pad,

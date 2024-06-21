@@ -7,9 +7,9 @@
 
 template <typename dtype>
 Tensor<dtype>
-maxpool2d(const Tensor<dtype> &input, const std::vector<int> kernel_shape,
-          const std::vector<int> &padding, const std::vector<int> &stride,
-          const std::vector<int> &dilation, const bool ceil_mode) {
+_maxpool2d(const Tensor<dtype> &input, const std::vector<int> kernel_shape,
+           const std::vector<int> &padding, const std::vector<int> &stride,
+           const std::vector<int> &dilation, const bool ceil_mode) {
     const int input_channels = dims::input_channels(input.shape);
     const int input_height = dims::height(input.shape);
     const int input_width = dims::width(input.shape);
