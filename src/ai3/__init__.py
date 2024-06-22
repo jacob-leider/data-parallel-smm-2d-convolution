@@ -1,16 +1,16 @@
+# TODO instead of defining CONV2D_USER in a file do it within cmake
 # TODO try some way to do the normal pip install without compiling cpp code
 # then taking users cpp code and compiling the SO with that. This would stop
 # requiring building from source, this would be easier to do with CMAKE
 # see if we can include <ai3.hpp> and if that gets handled in cmake
-# TODO would be best to split up samples then each algorithm also has its way of
-# accelerating instead of doing all the samples in each layer
 # TODO onnx support, should be pretty easy to also iterate
 # through the onnx layers and hyperparametrs, could also use the pytorch way
 # of loading .onnx, .onnx -> nn.Module -> ai3.optimize -> ai3.Model
 # once onnx support we can have two files which are the only places torch and onnx are imported
 # TODO not sure how to set up dependencies or this file, need either a Pytorch model or a .onnx file but not both
 # optional flag when installing, something like pip install --frontend=torch/onnx
-# TODO instead of defining CONV2D_USER in a file do it within cmake
+# TODO would be best to split up samples then each algorithm also has its way of
+# accelerating instead of doing all the samples in each layer
 
 import torch
 from torch import nn

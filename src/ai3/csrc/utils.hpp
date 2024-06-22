@@ -13,8 +13,19 @@
 
 enum PaddingMode { Zeros, Reflect, Replicate, Circular };
 
+inline int to_linear(int i, int j, int k, int l, int m, int J, int K, int L,
+                     int M) {
+    return (((i * J + j) * K + k) * L + l) * M + m;
+}
+inline int to_linear(int i, int j, int k, int l, int m, int n, int J, int K,
+                     int L, int M, int N) {
+    return ((((i * J + j) * K + k) * L + l) * M + m) * N + n;
+}
 inline int to_linear(int i, int j, int k, int l, int J, int K, int L) {
-    return i * J * K * L + j * K * L + k * L + l;
+    return ((i * J + j) * K + k) * L + l;
+}
+inline int to_linear(int i, int j, int k, int J, int K) {
+    return (i * J + j) * K + k;
 }
 inline int to_linear(int i, int j, int J) { return i * J + j; }
 

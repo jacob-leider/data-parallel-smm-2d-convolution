@@ -274,10 +274,8 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
             return direct_conv2d<dtype>(input, weight, bias, padding, stride,
                                         dilation, padding_mode, groups);
         } else if (algorithm == "smm") {
-            errs::bail("need to do this one");
-            // return conv2d<dtype>(input, weight, bias, padding, stride,
-            // dilation,
-            //                      padding_mode, groups);
+            return smm_conv2d<dtype>(input, weight, bias, padding, stride,
+                                     dilation, padding_mode, groups);
         }
         errs::bail("invalid convolution algorithm: ", algorithm);
     }

@@ -80,8 +80,6 @@ def get_layers(module: nn.Module, dtype, algos: dict[str,str]) -> List[layers.La
     return forwards
 
 
-# TODO add a dict here for algorithms to use at specific layers
-# implement it for all the other layers
 def swap_layer(module: nn.Module, dtype, algos: dict[str,str]) -> Optional[layers.Layer]:
     if isinstance(module, nn.Conv2d):
         return layers.Conv2D(dtype, module.weight, module.bias, module.stride,
