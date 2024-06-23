@@ -26,6 +26,10 @@ def test(*, num_samples = None, input_channels: int, in_height: int, in_width: i
     else:
         bias = None
 
+    # model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
+    #                                     stride, padding, dilation, 'zeros', 1, 'user')])
+    # user_out = model.predict(input, out_type=torch.Tensor)
+
     model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
                                         stride, padding, dilation, 'zeros', 1, 'direct')])
     direct_out = model.predict(input, out_type=torch.Tensor)
@@ -35,11 +39,22 @@ def test(*, num_samples = None, input_channels: int, in_height: int, in_width: i
     smm_out = model.predict(input, out_type=torch.Tensor)
     torch_output = F.conv2d(input, kernel, bias=bias, dilation=dilation,
                              padding=padding, stride=stride, groups=groups)
+    # compare_tensors(user_out, torch_output, test_name + ' user', atol=atol)
     compare_tensors(smm_out, torch_output, test_name + ' smm', atol=atol)
     compare_tensors(direct_out, torch_output, test_name + ' direct', atol=atol)
 
 def run():
     print('CONV2D')
+
+    test(input_channels=1,
+         in_height=100,
+         in_width=150,
+         output_channels=1,
+         kernel_height=15,
+         kernel_width=12,
+         with_bias=True,
+         atol=1e-4,
+         test_name='with bias')
 
     test(input_channels=1,
          in_height=5,
@@ -162,16 +177,6 @@ def run():
          stride=(2, 3),
          atol=1e-4,
          test_name='2d stride')
-
-    test(input_channels=1,
-         in_height=100,
-         in_width=150,
-         output_channels=1,
-         kernel_height=15,
-         kernel_width=12,
-         with_bias=True,
-         atol=1e-4,
-         test_name='with bias')
 
     test(input_channels=1,
          in_height=10,
