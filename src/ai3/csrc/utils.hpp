@@ -1,8 +1,6 @@
 #pragma once
 
-#include <cmath>
-#include <functional>
-#include <iterator>
+using uint = unsigned int;
 #include <optional>
 #include <sstream>
 #include <vector>
@@ -13,21 +11,21 @@
 
 enum PaddingMode { Zeros, Reflect, Replicate, Circular };
 
-inline int to_linear(int i, int j, int k, int l, int m, int J, int K, int L,
-                     int M) {
+inline uint to_linear(uint i, uint j, uint k, uint l, uint m, uint J, uint K,
+                      uint L, uint M) {
     return (((i * J + j) * K + k) * L + l) * M + m;
 }
-inline int to_linear(int i, int j, int k, int l, int m, int n, int J, int K,
-                     int L, int M, int N) {
+inline uint to_linear(uint i, uint j, uint k, uint l, uint m, uint n, uint J,
+                      uint K, uint L, uint M, uint N) {
     return ((((i * J + j) * K + k) * L + l) * M + m) * N + n;
 }
-inline int to_linear(int i, int j, int k, int l, int J, int K, int L) {
+inline uint to_linear(uint i, uint j, uint k, uint l, uint J, uint K, uint L) {
     return ((i * J + j) * K + k) * L + l;
 }
-inline int to_linear(int i, int j, int k, int J, int K) {
+inline uint to_linear(uint i, uint j, uint k, uint J, uint K) {
     return (i * J + j) * K + k;
 }
-inline int to_linear(int i, int j, int J) { return i * J + j; }
+inline uint to_linear(uint i, uint j, uint J) { return i * J + j; }
 
 namespace errs {
 template <typename... Args> [[noreturn]] void bail(Args... args) {
@@ -45,15 +43,15 @@ template <typename... Args> void bail_if(bool check, Args... args) {
 
 namespace dims {
 template <typename dtype>
-inline int output_dim(const int input, const int kernel, const int padding,
-                      const std::optional<int> dilation, const int stride,
-                      const bool ceil_mode) {
-    const int top =
+inline uint output_dim(const uint input, const uint kernel, const uint padding,
+                       const std::optional<uint> dilation, const uint stride,
+                       const bool ceil_mode) {
+    const uint top =
         input + (2 * padding) - (dilation.value_or(1) * (kernel - 1)) - 1;
-    const int bot = stride;
+    const uint bot = stride;
 
-    const int poss =
-        (ceil_mode ? static_cast<int>(std::ceil(static_cast<dtype>(top) / bot))
+    const uint poss =
+        (ceil_mode ? static_cast<uint>(std::ceil(static_cast<dtype>(top) / bot))
                    : top / bot) +
         1;
 
@@ -64,7 +62,7 @@ inline int output_dim(const int input, const int kernel, const int padding,
     return (poss - 1) * stride >= input + padding ? poss - 1 : poss;
 }
 
-inline bool has_dim_for_batch_size(const std::vector<int> &shape,
+inline bool has_dim_for_batch_size(const std::vector<uint> &shape,
                                    int data_dim = -1) {
     if (data_dim == -1) {
         return false;
@@ -72,21 +70,21 @@ inline bool has_dim_for_batch_size(const std::vector<int> &shape,
     return shape.size() != unsigned(data_dim + 1);
 }
 
-inline int batch_size(const std::vector<int> &shape, const int input_dims) {
+inline uint batch_size(const std::vector<uint> &shape, const uint input_dims) {
     return shape[shape.size() - 1 - input_dims];
 }
 
-inline int out_channels(const std::vector<int> &shape) {
+inline uint out_channels(const std::vector<uint> &shape) {
     return shape[shape.size() - 4];
 }
 
-inline int input_channels(const std::vector<int> &shape) {
+inline uint input_channels(const std::vector<uint> &shape) {
     return shape[shape.size() - 3];
 }
-inline int height(const std::vector<int> &shape) {
+inline uint height(const std::vector<uint> &shape) {
     return shape[shape.size() - 2];
 }
-inline int width(const std::vector<int> &shape) {
+inline uint width(const std::vector<uint> &shape) {
     return shape[shape.size() - 1];
 }
 namespace input {
@@ -97,18 +95,3 @@ const int ACTIVATION = -1;
 const int FLATTEN = -1;
 }; // namespace input
 } // namespace dims
-
-template <typename dtype>
-void loop_over_out(int num_samples, int output_channels, int output_height,
-                   int output_width,
-                   std::function<void(int, int, int, int)> inner_processing) {
-    for (int samp = 0; samp < num_samples; samp++) {
-        for (int out_c = 0; out_c < output_channels; out_c++) {
-            for (int out_h = 0; out_h < output_height; out_h++) {
-                for (int out_w = 0; out_w < output_width; out_w++) {
-                    inner_processing(samp, out_c, out_h, out_w);
-                }
-            }
-        }
-    }
-}

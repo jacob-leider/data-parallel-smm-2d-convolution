@@ -1,7 +1,6 @@
 #define CONV2D_SYCL
 #include "ai3.hpp"
 #include "algo_paths.hpp"
-#include <cstdint>
 #include <optional>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -20,9 +19,9 @@ template <typename dtype> class Layer {
 
 template <typename dtype> class MaxPool2D : virtual public Layer<dtype> {
   public:
-    MaxPool2D(const std::vector<int> kernel_shape,
-              const std::vector<int> padding, const std::vector<int> stride,
-              const std::vector<int> dilation, const bool ceil_mode,
+    MaxPool2D(const std::vector<uint> kernel_shape,
+              const std::vector<uint> padding, const std::vector<uint> stride,
+              const std::vector<uint> dilation, const bool ceil_mode,
               const std::string algorithm)
         : kernel_shape(kernel_shape), padding(padding), stride(stride),
           dilation(dilation), ceil_mode(ceil_mode), algorithm(algorithm) {}
@@ -53,20 +52,20 @@ template <typename dtype> class MaxPool2D : virtual public Layer<dtype> {
     ~MaxPool2D() = default;
 
   private:
-    const std::vector<int> kernel_shape;
-    const std::vector<int> padding;
-    const std::vector<int> stride;
-    const std::vector<int> dilation;
+    const std::vector<uint> kernel_shape;
+    const std::vector<uint> padding;
+    const std::vector<uint> stride;
+    const std::vector<uint> dilation;
     const std::string algorithm;
     const bool ceil_mode;
 };
 
 template <typename dtype> class AvgPool2D : virtual public Layer<dtype> {
   public:
-    AvgPool2D(const std::vector<int> kernel_shape,
-              const std::vector<int> padding, const std::vector<int> stride,
+    AvgPool2D(const std::vector<uint> kernel_shape,
+              const std::vector<uint> padding, const std::vector<uint> stride,
               const bool ceil_mode, const bool count_include_pad,
-              const std::optional<int> divisor_override,
+              const std::optional<uint> divisor_override,
               const std::string algorithm)
         : kernel_shape(kernel_shape), padding(padding), stride(stride),
           ceil_mode(ceil_mode), count_include_pad(count_include_pad),
@@ -102,12 +101,12 @@ template <typename dtype> class AvgPool2D : virtual public Layer<dtype> {
     ~AvgPool2D() = default;
 
   private:
-    const std::vector<int> kernel_shape;
-    const std::vector<int> padding;
-    const std::vector<int> stride;
+    const std::vector<uint> kernel_shape;
+    const std::vector<uint> padding;
+    const std::vector<uint> stride;
     const bool ceil_mode;
     const bool count_include_pad;
-    const std::optional<int> divisor_override;
+    const std::optional<uint> divisor_override;
     const std::string algorithm;
 };
 
@@ -115,7 +114,7 @@ template <typename dtype>
 class AdaptiveAvgPool2D : virtual public Layer<dtype> {
   public:
     AdaptiveAvgPool2D(
-        std::optional<std::vector<std::optional<int>>> output_shape,
+        std::optional<std::vector<std::optional<uint>>> output_shape,
         const std::string algorithm)
         : output_shape(output_shape), algorithm(algorithm) {}
 
@@ -141,7 +140,7 @@ class AdaptiveAvgPool2D : virtual public Layer<dtype> {
     ~AdaptiveAvgPool2D() = default;
 
   private:
-    const std::optional<std::vector<std::optional<int>>> output_shape;
+    const std::optional<std::vector<std::optional<uint>>> output_shape;
     const std::string algorithm;
 };
 
@@ -175,7 +174,7 @@ template <typename dtype> class ReLU : virtual public Layer<dtype> {
 
 template <typename dtype> class Linear : virtual public Layer<dtype> {
   public:
-    Linear(const intptr_t weight_address, const std::vector<int> weight_shape,
+    Linear(const intptr_t weight_address, const std::vector<uint> weight_shape,
            const std::optional<intptr_t> bias_addr, const std::string algorithm)
         : weight(weight_address, weight_shape),
           bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]})),
@@ -211,7 +210,8 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
 
 template <typename dtype> class Flatten : virtual public Layer<dtype> {
   public:
-    Flatten(const int start_dim, const int end_dim, const std::string algorithm)
+    Flatten(const uint start_dim, const int end_dim,
+            const std::string algorithm)
         : start_dim(start_dim), end_dim(end_dim), algorithm(algorithm) {}
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
@@ -236,18 +236,18 @@ template <typename dtype> class Flatten : virtual public Layer<dtype> {
     ~Flatten() = default;
 
   private:
-    const int start_dim;
+    const uint start_dim;
     const int end_dim;
     const std::string algorithm;
 };
 
 template <typename dtype> class Conv2D : virtual public Layer<dtype> {
   public:
-    Conv2D(const intptr_t weight_address, const std::vector<int> weight_shape,
+    Conv2D(const intptr_t weight_address, const std::vector<uint> weight_shape,
            const std::optional<intptr_t> bias_addr,
-           const std::vector<int> padding, const std::vector<int> stride,
-           const std::vector<int> dilation, const PaddingMode padding_mode,
-           const int groups, const std::string algorithm)
+           const std::vector<uint> padding, const std::vector<uint> stride,
+           const std::vector<uint> dilation, const PaddingMode padding_mode,
+           const uint groups, const std::string algorithm)
         : weight(weight_address, weight_shape),
           bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]})),
           padding(padding), stride(stride), dilation(dilation),
@@ -281,7 +281,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
     }
 
     Tensor<dtype> forward(const intptr_t input_address,
-                          std::vector<int> input_shape) {
+                          std::vector<uint> input_shape) {
 
         return _forward(Tensor<dtype>(input_address, input_shape));
     }
@@ -291,11 +291,11 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
   private:
     const Tensor<dtype> weight;
     const std::optional<const Tensor<dtype>> bias;
-    const std::vector<int> padding;
-    const std::vector<int> stride;
-    const std::vector<int> dilation;
+    const std::vector<uint> padding;
+    const std::vector<uint> stride;
+    const std::vector<uint> dilation;
     const PaddingMode padding_mode;
-    const int groups;
+    const uint groups;
     const std::string algorithm;
 };
 
@@ -305,7 +305,10 @@ template <typename dtype> class Model {
         : layers(layers) {}
 
     Tensor<dtype> predict(const intptr_t input_address,
-                          std::vector<int> input_shape) {
+                          std::vector<uint> input_shape) {
+        // TODO to parallerize over each input
+        // create tensors starting at each new samples data
+        // copy back and concat the output tensors to a single memory block
         Tensor<dtype> output(input_address, input_shape, true);
         for (const std::shared_ptr<Layer<dtype>> &layer : layers) {
             output = layer->_forward(std::move(output));
@@ -336,21 +339,21 @@ void define_layer_classes(py::module &m, std::string type_str) {
     py::class_<MaxPool2D<dtype>, Layer<dtype>,
                std::shared_ptr<MaxPool2D<dtype>>>(
         m, ("MaxPool2D_" + type_str).c_str())
-        .def(py::init<const std::vector<int>, const std::vector<int>,
-                      const std::vector<int>, const std::vector<int>,
+        .def(py::init<const std::vector<uint>, const std::vector<uint>,
+                      const std::vector<uint>, const std::vector<uint>,
                       const bool, const std::string>());
 
     py::class_<Conv2D<dtype>, Layer<dtype>, std::shared_ptr<Conv2D<dtype>>>(
         m, ("Conv2D_" + type_str).c_str())
-        .def(py::init<const intptr_t, const std::vector<int>,
-                      const std::optional<intptr_t>, const std::vector<int>,
-                      const std::vector<int>, const std::vector<int>,
-                      const PaddingMode, const int, const std::string>())
+        .def(py::init<const intptr_t, const std::vector<uint>,
+                      const std::optional<intptr_t>, const std::vector<uint>,
+                      const std::vector<uint>, const std::vector<uint>,
+                      const PaddingMode, const uint, const std::string>())
         .def("forward", &Conv2D<dtype>::forward);
 
     py::class_<Linear<dtype>, Layer<dtype>, std::shared_ptr<Linear<dtype>>>(
         m, ("Linear_" + type_str).c_str())
-        .def(py::init<const intptr_t, const std::vector<int>,
+        .def(py::init<const intptr_t, const std::vector<uint>,
                       const std::optional<intptr_t>, const std::string>());
 
     py::class_<ReLU<dtype>, Layer<dtype>, std::shared_ptr<ReLU<dtype>>>(
@@ -360,19 +363,19 @@ void define_layer_classes(py::module &m, std::string type_str) {
     py::class_<AvgPool2D<dtype>, Layer<dtype>,
                std::shared_ptr<AvgPool2D<dtype>>>(
         m, ("AvgPool2D_" + type_str).c_str())
-        .def(py::init<const std::vector<int>, const std::vector<int>,
-                      const std::vector<int>, const bool, const bool,
-                      const std::optional<int>, const std::string>());
+        .def(py::init<const std::vector<uint>, const std::vector<uint>,
+                      const std::vector<uint>, const bool, const bool,
+                      const std::optional<uint>, const std::string>());
 
     py::class_<AdaptiveAvgPool2D<dtype>, Layer<dtype>,
                std::shared_ptr<AdaptiveAvgPool2D<dtype>>>(
         m, ("AdaptiveAvgPool2D_" + type_str).c_str())
-        .def(py::init<std::optional<std::vector<std::optional<int>>>,
+        .def(py::init<std::optional<std::vector<std::optional<uint>>>,
                       const std::string>());
 
     py::class_<Flatten<dtype>, Layer<dtype>, std::shared_ptr<Flatten<dtype>>>(
         m, ("Flatten_" + type_str).c_str())
-        .def(py::init<const int, const int, const std::string>());
+        .def(py::init<const uint, const int, const std::string>());
 }
 
 PYBIND11_MODULE(core, m) {

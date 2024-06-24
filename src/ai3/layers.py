@@ -40,13 +40,13 @@ class Conv2D(Layer):
         (layer, self.typestr) = utils.get_item_and_type(dtype, core.Conv2D_float,
                                                 core.Conv2D_double)
         self.core = layer(weight_addr,
-                              weight_shape,
-                              bias_addr,
-                              padding,
-                              stride,
-                              dilation,
-                              pad_mode,
-                              groups,
+                          weight_shape,
+                          bias_addr,
+                          padding,
+                          stride,
+                          dilation,
+                          pad_mode,
+                          groups,
                           algorithm)
 
     def forward(self, input) -> Union[core.Tensor_float, core.Tensor_double]:

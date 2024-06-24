@@ -1,7 +1,6 @@
 #pragma once
 
-#include <memory>
-#include <numeric>
+#include "utils.hpp"
 #include <optional>
 #include <pybind11/pybind11.h>
 #include <vector>
@@ -10,7 +9,7 @@ namespace py = pybind11;
 
 template <typename dtype> class Tensor {
   public:
-    Tensor(const intptr_t data_address, const std::vector<int> &s,
+    Tensor(const intptr_t data_address, const std::vector<uint> &s,
            bool input_data = false)
         : shape(s), owned(!input_data) {
         if (owned) {
@@ -22,12 +21,12 @@ template <typename dtype> class Tensor {
         }
     }
 
-    Tensor(const std::vector<int> &s)
+    Tensor(const std::vector<uint> &s)
         : data(new dtype[_count(s)]), shape(s), owned(true) {}
 
     static std::optional<Tensor>
     from_optional(const std::optional<intptr_t> &data_address,
-                  const std::vector<int> &s, bool input_data = false) {
+                  const std::vector<uint> &s, bool input_data = false) {
         if (data_address.has_value()) {
             return Tensor<dtype>((*data_address), s, input_data);
         } else {
@@ -56,7 +55,7 @@ template <typename dtype> class Tensor {
     }
 
     py::buffer_info buffer() {
-        std::vector<int> stride(shape.size());
+        std::vector<uint> stride(shape.size());
         stride[shape.size() - 1] = sizeof(dtype);
         for (int i = shape.size() - 2; i >= 0; --i) {
             stride[i] = stride[i + 1] * shape[i + 1];
@@ -72,11 +71,11 @@ template <typename dtype> class Tensor {
     Tensor &operator=(const Tensor &) = delete;
 
     dtype *data;
-    std::vector<int> shape;
+    std::vector<uint> shape;
     bool owned;
 
   private:
-    static int _count(const std::vector<int> &s) {
+    static int _count(const std::vector<uint> &s) {
         int count = 1;
         for (int v : s) {
             count *= v;

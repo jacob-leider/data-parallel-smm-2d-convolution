@@ -7,10 +7,10 @@
 template <typename dtype>
 Tensor<dtype> conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                      const std::optional<const Tensor<dtype>> &bias,
-                     const std::vector<int> &padding,
-                     const std::vector<int> &stride,
-                     const std::vector<int> &dilation,
-                     const PaddingMode padding_mode, int groups) {
+                     const std::vector<uint> &padding,
+                     const std::vector<uint> &stride,
+                     const std::vector<uint> &dilation,
+                     const PaddingMode padding_mode, uint groups) {
     (void)input;
     (void)kernel;
     (void)bias;
