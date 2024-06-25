@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ai3.hpp"
+#include "hipSYCL/sycl/usm.hpp"
 #include "utils.hpp"
 #include <CL/sycl.hpp>
 #include <cstddef>
@@ -56,8 +57,10 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     const uint kernel_area = kernel_height * kernel_width;
     uint col_height = input_channels * kernel_area;
     uint col_width = output_height * output_width;
-    dtype *col_data =
-        sycl::malloc_device<dtype>(num_samples * col_height * col_width, queue);
+    dtype **cols = sycl::malloc_device<dtype *>(num_samples, queue);
+    for (uint i = 0; i < num_samples; i++) {
+        cols[i] = sycl::malloc_device<dtype>(col_height * col_width, queue);
+    }
     dtype *input_data = sycl::malloc_device<dtype>(input.count(), queue);
     queue.memcpy(input_data, input.data, input.count() * sizeof(dtype));
 
@@ -75,28 +78,36 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
 
     const uint max_work_group_size =
         queue.get_device().get_info<sycl::info::device::max_work_group_size>();
-    uint work_group_size = max_work_group_size;
-    if (GROUP_SIZE_GUESS < work_group_size) {
-        work_group_size = GROUP_SIZE_GUESS;
+    uint col_each = max_work_group_size;
+    if (GROUP_SIZE_GUESS < col_each) {
+        col_each = GROUP_SIZE_GUESS;
     }
-    if (kernel_area < work_group_size) {
-        work_group_size = kernel_area;
+    if (kernel_area < col_each) {
+        col_each = kernel_area;
     }
 
-    const uint total_work_group_size =
-        ((kernel_area + work_group_size - 1) / work_group_size) *
-        work_group_size;
+    const uint col_total = ((kernel_area + col_each - 1) / col_each) * col_each;
 
-    queue
-        .submit([&](sycl::handler &h) {
+    const uint output_area = output_height * output_width;
+    uint output_each = max_work_group_size;
+    if (GROUP_SIZE_GUESS < output_each) {
+        output_each = GROUP_SIZE_GUESS;
+    }
+    if (output_area < output_each) {
+        output_each = output_area;
+    }
+    const uint output_total =
+        ((output_area + output_each - 1) / output_each) * output_each;
+
+    for (uint samp = 0; samp < num_samples; samp++) {
+        dtype *col = cols[samp];
+        auto set_col = queue.submit([&](sycl::handler &h) {
             h.parallel_for(
-                sycl::nd_range(sycl::range(num_samples, input_channels,
-                                           total_work_group_size),
-                               sycl::range(1, 1, work_group_size)),
-                [=](sycl::nd_item<3> item) {
-                    uint samp = item.get_global_id(0);
-                    uint in_c = item.get_global_id(1);
-                    uint ker = item.get_global_id(2);
+                sycl::nd_range(sycl::range(input_channels, col_total),
+                               sycl::range(1, col_each)),
+                [=](sycl::nd_item<2> item) {
+                    uint in_c = item.get_global_id(0);
+                    uint ker = item.get_global_id(1);
                     if (ker >= kernel_area)
                         return;
                     uint ker_w = ker % kernel_width;
@@ -108,53 +119,37 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                                             ker_h * dilation_h;
                             uint w_offset = out_w * stride_w - padding_w +
                                             ker_w * dilation_w;
-                            uint col_index = to_linear(
-                                samp, in_c, ker, out_h, out_w, input_channels,
-                                kernel_area, output_height, output_width);
+                            uint col_index =
+                                to_linear(in_c, ker, out_h, out_w, kernel_area,
+                                          output_height, output_width);
                             if (h_offset >= 0 && h_offset < input_height &&
                                 w_offset >= 0 && w_offset < input_width) {
-                                col_data[col_index] = input_data[to_linear(
+                                col[col_index] = input_data[to_linear(
                                     samp, in_c, h_offset, w_offset,
                                     input_channels, input_height, input_width)];
                             } else {
-                                col_data[col_index] = 0;
+                                col[col_index] = 0;
                             }
                         }
                     }
                 });
-        })
-        .wait_and_throw();
+        });
 
-    const uint output_area = output_height * output_width;
-    work_group_size = max_work_group_size;
-    if (GROUP_SIZE_GUESS < work_group_size) {
-        work_group_size = GROUP_SIZE_GUESS;
-    }
-    if (output_area < work_group_size) {
-        work_group_size = output_area;
-    }
-    const uint output_size_per_channel_total =
-        ((output_area + work_group_size - 1) / work_group_size) *
-        work_group_size;
-
-    queue
-        .submit([&](sycl::handler &h) {
+        queue.submit([&](sycl::handler &h) {
+            h.depends_on(set_col);
             h.parallel_for(
-                sycl::nd_range(sycl::range(num_samples, output_channels,
-                                           output_size_per_channel_total),
-                               sycl::range(1, 1, work_group_size)),
-                [=](sycl::nd_item<3> item) {
-                    uint samp = item.get_global_id(0);
-                    uint out_c = item.get_global_id(1);
-                    uint out_id = item.get_global_id(2);
+                sycl::nd_range(sycl::range(output_channels, output_total),
+                               sycl::range(1, output_each)),
+                [=](sycl::nd_item<2> item) {
+                    uint out_c = item.get_global_id(0);
+                    uint out_id = item.get_global_id(1);
                     if (out_id >= output_area)
                         return;
                     dtype res = 0;
                     for (uint in_c = 0; in_c < input_channels; in_c++) {
                         for (uint ker = 0; ker < kernel_area; ker++) {
-                            res += col_data[to_linear(
-                                       samp, in_c, ker, out_id, input_channels,
-                                       kernel_area, output_area)] *
+                            res += col[to_linear(in_c, ker, out_id, kernel_area,
+                                                 output_area)] *
                                    kernel_data[to_linear(out_c, in_c, ker,
                                                          input_channels,
                                                          kernel_area)];
@@ -166,12 +161,16 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                     output_data[to_linear(samp, out_c, out_id, output_channels,
                                           output_height * output_width)] = res;
                 });
-        })
-        .wait_and_throw();
+        });
+    }
+    queue.wait_and_throw();
 
     queue.memcpy(output.data, output_data, output.count() * sizeof(dtype));
     queue.wait();
-    sycl::free(col_data, queue);
+    for (uint i = 0; i < num_samples; i++) {
+        sycl::free(cols[i], queue);
+    }
+    sycl::free(cols, queue);
     sycl::free(input_data, queue);
     sycl::free(kernel_data, queue);
     if (bias_data != nullptr) {
