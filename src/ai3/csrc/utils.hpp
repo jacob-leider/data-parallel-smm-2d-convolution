@@ -1,6 +1,7 @@
 #pragma once
 
 using uint = unsigned int;
+#include <cmath>
 #include <optional>
 #include <sstream>
 #include <vector>

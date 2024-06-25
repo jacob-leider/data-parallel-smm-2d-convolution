@@ -65,7 +65,7 @@ template <typename dtype> class Tensor {
                                shape.size(), shape, stride);
     }
 
-    int count() const { return _count(shape); }
+    uint count() const { return _count(shape); }
 
     Tensor(const Tensor &) = delete;
     Tensor &operator=(const Tensor &) = delete;
@@ -75,9 +75,12 @@ template <typename dtype> class Tensor {
     bool owned;
 
   private:
-    static int _count(const std::vector<uint> &s) {
-        int count = 1;
-        for (int v : s) {
+    static uint _count(const std::vector<uint> &s) {
+        if (s.empty()) {
+            return 0;
+        }
+        uint count = 1;
+        for (uint v : s) {
             count *= v;
         }
         return count;

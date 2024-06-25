@@ -1,7 +1,6 @@
 #include "ai3.hpp"
 #include "utils.hpp"
 #include <CL/sycl.hpp>
-#include <chrono>
 #include <optional>
 using namespace cl;
 
@@ -13,7 +12,6 @@ direct_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
               const std::vector<uint> &padding, const std::vector<uint> &stride,
               const std::vector<uint> &dilation, const PaddingMode padding_mode,
               int groups) {
-    auto enter = std::chrono::high_resolution_clock::now();
     errs::bail_if(padding_mode != Zeros, "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
 
@@ -51,19 +49,20 @@ direct_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
 
     sycl::queue queue(sycl::default_selector_v);
 
-    // TODO try it with num_samples equal to 1 and see the delay
-    // TODO try USM to see if it is better can queue the memcpy
-    sycl::buffer<dtype> input_buf(input.data, input.count());
-    sycl::buffer<dtype> kernel_buf(kernel.data, kernel.count());
-
+    dtype *input_data = sycl::malloc_device<dtype>(input.count(), queue);
+    queue.memcpy(input_data, input.data, input.count() * sizeof(dtype));
+    dtype *kernel_data = sycl::malloc_device<dtype>(kernel.count(), queue);
+    queue.memcpy(kernel_data, kernel.data, kernel.count() * sizeof(dtype));
     const bool has_bias = bias.has_value();
-    sycl::buffer<dtype> bias_buf =
-        has_bias ? sycl::buffer<dtype>(bias->data, bias->count())
-                 : sycl::buffer<dtype>(sycl::range<1>(0));
+    dtype *bias_data = nullptr;
+    if (has_bias) {
+        bias_data = sycl::malloc_device<dtype>(bias->count(), queue);
+        queue.memcpy(bias_data, bias->data, bias->count() * sizeof(dtype));
+    }
+    dtype *output_data = sycl::malloc_device<dtype>(output.count(), queue);
+    queue.wait();
 
     const uint output_size_per_channel = output_height * output_width;
-    sycl::buffer<dtype> output_buf(output.data, output.count());
-
     const uint max_work_group_size =
         queue.get_device().get_info<sycl::info::device::max_work_group_size>();
     uint work_group_size = max_work_group_size;
@@ -77,60 +76,64 @@ direct_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     const uint output_size_per_channel_total =
         ((output_size_per_channel + work_group_size - 1) / work_group_size) *
         work_group_size;
-    queue.submit([&](sycl::handler &h) {
-        sycl::accessor ainput = sycl::accessor(input_buf, h, sycl::read_only);
-        sycl::accessor akernel = sycl::accessor(kernel_buf, h, sycl::read_only);
-        sycl::accessor abias = sycl::accessor(bias_buf, h, sycl::read_only);
-        sycl::accessor aoutput =
-            sycl::accessor(output_buf, h, sycl::write_only, sycl::no_init);
-        h.parallel_for(
-            sycl::nd_range(sycl::range(num_samples, output_channels,
-                                       output_size_per_channel_total),
-                           sycl::range(1, 1, work_group_size)),
-            [=](sycl::nd_item<3> item) {
-                uint samp = item.get_global_id(0);
-                uint out_c = item.get_global_id(1);
-                uint area_id = item.get_global_id(2);
-                if (area_id >= output_size_per_channel) {
-                    return;
-                }
-                uint out_h = area_id / output_width;
-                uint out_w = area_id % output_width;
-                dtype sum = 0;
-                uint h_offset_base = out_h * stride_h - padding_h;
-                uint w_offset_base = out_w * stride_w - padding_w;
-                for (uint in_c = 0; in_c < input_channels; ++in_c) {
-                    for (uint ker_h = 0; ker_h < kernel_height; ++ker_h) {
-                        for (uint ker_w = 0; ker_w < kernel_width; ++ker_w) {
-                            uint h_offset = h_offset_base + ker_h * dilation_h;
-                            uint w_offset = w_offset_base + ker_w * dilation_w;
-                            if (h_offset >= 0 && h_offset < input_height &&
-                                w_offset >= 0 && w_offset < input_width) {
-                                sum += ainput[to_linear(
-                                           samp, in_c, h_offset, w_offset,
-                                           input_channels, input_height,
-                                           input_width)] *
-                                       akernel[to_linear(out_c, in_c, ker_h,
-                                                         ker_w, input_channels,
-                                                         kernel_height,
-                                                         kernel_width)];
+
+    queue
+        .submit([&](sycl::handler &h) {
+            h.parallel_for(
+                sycl::nd_range(sycl::range(num_samples, output_channels,
+                                           output_size_per_channel_total),
+                               sycl::range(1, 1, work_group_size)),
+                [=](sycl::nd_item<3> item) {
+                    uint samp = item.get_global_id(0);
+                    uint out_c = item.get_global_id(1);
+                    uint area_id = item.get_global_id(2);
+                    if (area_id >= output_size_per_channel) {
+                        return;
+                    }
+                    uint out_h = area_id / output_width;
+                    uint out_w = area_id % output_width;
+                    dtype sum = 0;
+                    uint h_offset_base = out_h * stride_h - padding_h;
+                    uint w_offset_base = out_w * stride_w - padding_w;
+                    for (uint in_c = 0; in_c < input_channels; ++in_c) {
+                        for (uint ker_h = 0; ker_h < kernel_height; ++ker_h) {
+                            for (uint ker_w = 0; ker_w < kernel_width;
+                                 ++ker_w) {
+                                uint h_offset =
+                                    h_offset_base + ker_h * dilation_h;
+                                uint w_offset =
+                                    w_offset_base + ker_w * dilation_w;
+                                if (h_offset >= 0 && h_offset < input_height &&
+                                    w_offset >= 0 && w_offset < input_width) {
+                                    sum += input_data[to_linear(
+                                               samp, in_c, h_offset, w_offset,
+                                               input_channels, input_height,
+                                               input_width)] *
+                                           kernel_data[to_linear(
+                                               out_c, in_c, ker_h, ker_w,
+                                               input_channels, kernel_height,
+                                               kernel_width)];
+                                }
                             }
                         }
                     }
-                }
-                if (has_bias) {
-                    sum += abias[out_c];
-                }
-                aoutput[to_linear(samp, out_c, out_h, out_w, output_channels,
-                                  output_height, output_width)] = sum;
-            });
-    });
-    auto before_wait = std::chrono::high_resolution_clock::now();
-    queue.wait_and_throw();
-    auto after_wait = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> time_before_queue = before_wait - enter;
-    std::chrono::duration<double> time_in_queue = after_wait - before_wait;
-    std::cout << "Before Queue: " << time_before_queue.count() << " seconds\n";
-    std::cout << "In Queue: " << time_in_queue.count() << " seconds\n";
+                    if (has_bias) {
+                        sum += bias_data[out_c];
+                    }
+                    output_data[to_linear(samp, out_c, out_h, out_w,
+                                          output_channels, output_height,
+                                          output_width)] = sum;
+                });
+        })
+        .wait_and_throw();
+
+    queue.memcpy(output.data, output_data, output.count() * sizeof(dtype));
+    queue.wait();
+    sycl::free(input_data, queue);
+    sycl::free(kernel_data, queue);
+    if (bias_data != nullptr) {
+        sycl::free(bias_data, queue);
+    }
+    sycl::free(output_data, queue);
     return output;
 }
