@@ -10,7 +10,8 @@ def test(*, in_shape,
          test_name: str, atol=1e-5) -> None:
     input = torch.randn(in_shape, dtype=torch.float32)
 
-    model = Model(input.dtype, [Flatten(input.dtype, start_dim, end_dim, "default")])
+    model = Model(input.dtype, [Flatten(
+        input.dtype, start_dim, end_dim, "default")])
     ai3_output = model.predict(input)
     torch_output = torch.flatten(input, start_dim=start_dim, end_dim=end_dim)
     compare_tensors(ai3_output, torch_output, test_name, atol=atol)

@@ -3,6 +3,7 @@ from torch import nn
 import ai3
 import time
 
+
 class SimpleConvNet(nn.Module):
     def __init__(self):
         super(SimpleConvNet, self).__init__()
@@ -21,6 +22,7 @@ class SimpleConvNet(nn.Module):
         x = torch.flatten(x, 1)
         return x
 
+
 def run():
     print('SIMPLE CREATED')
     input_data = torch.randn(100, 3, 224, 224)
@@ -29,13 +31,13 @@ def run():
     torch_out = torch_model(input_data)
     tend = time.time()
     assert (isinstance(torch_out, torch.Tensor))
-    ai3_model = ai3.swap_backend(torch_model, {"conv2d":"default"})
+    ai3_model = ai3.swap_backend(torch_model, {"conv2d": "default"})
     astart = time.time()
     ai3_out = ai3_model(input_data)
     aend = time.time()
     print(f"Time torch: {tend-tstart}")
     print(f"Time ai3: {aend-astart}")
-    assert(isinstance(ai3_out, torch.Tensor))
+    assert (isinstance(ai3_out, torch.Tensor))
     assert torch.allclose(torch_out, ai3_out, atol=1e-4)
 
 

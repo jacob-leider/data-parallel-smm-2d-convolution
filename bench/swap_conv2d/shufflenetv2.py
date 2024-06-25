@@ -2,6 +2,7 @@ import torch
 import torchvision
 from bench.swap_conv2d import swap_conv2d_and_time
 
+
 def run():
     print(' SHUFFLENETV2')
     print('Skipping as shufflenet requires groups > 1')

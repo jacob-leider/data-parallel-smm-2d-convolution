@@ -7,6 +7,7 @@ import torch
 FLOAT32_STR = "float32"
 FLOAT64_STR = "float64"
 
+
 def bail(message):
     raise AssertionError(message)
 
@@ -14,6 +15,7 @@ def bail(message):
 def bail_if(check, message):
     if check:
         bail(message)
+
 
 def get_item_and_type(dtype, float_item, double_item):
     if str(dtype) == 'torch.float32':

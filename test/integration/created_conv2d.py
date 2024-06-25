@@ -3,6 +3,7 @@ import ai3
 from test import compare_tensors
 from example.simple_conv2d import SimpleConvNet
 
+
 def _run(data, mes):
     model = SimpleConvNet()
     ai3_model = ai3.swap_backend(model)

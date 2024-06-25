@@ -3,6 +3,7 @@ import ai3
 from bench import predict_show_time
 from test import compare_tensors
 
+
 def run():
     print('MODELS SWAPPING CONV2D')
     from . import (vgg16, alexnet, convnext, densenet, efficientnet, googlenet,
@@ -24,6 +25,7 @@ def run():
     vision_transformer.run()
     swin_transformer.run()
     maxvit.run()
+
 
 def swap_conv2d_and_time(orig: torch.nn.Module, input: torch.Tensor):
     torch_out = predict_show_time(orig, input, "pytorch")

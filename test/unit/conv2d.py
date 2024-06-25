@@ -5,7 +5,8 @@ from ai3.layers import Conv2D
 from test import compare_tensors
 from typing import Union, Sequence
 
-def test(*, num_samples = None, input_channels: int, in_height: int, in_width: int,
+
+def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int,
          output_channels: int, kernel_height: int, kernel_width: int,
          with_bias: bool = False,
          padding: Union[str, Union[int, Sequence[int]]] = 1,
@@ -31,17 +32,18 @@ def test(*, num_samples = None, input_channels: int, in_height: int, in_width: i
     # user_out = model.predict(input, out_type=torch.Tensor)
 
     model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
-                                        stride, padding, dilation, 'zeros', 1, 'direct')])
+                                       stride, padding, dilation, 'zeros', 1, 'direct')])
     direct_out = model.predict(input, out_type=torch.Tensor)
 
     model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
                                        stride, padding, dilation, 'zeros', 1, 'smm')])
     smm_out = model.predict(input, out_type=torch.Tensor)
     torch_output = F.conv2d(input, kernel, bias=bias, dilation=dilation,
-                             padding=padding, stride=stride, groups=groups)
+                            padding=padding, stride=stride, groups=groups)
     # compare_tensors(user_out, torch_output, test_name + ' user', atol=atol)
     compare_tensors(smm_out, torch_output, test_name + ' smm', atol=atol)
     compare_tensors(direct_out, torch_output, test_name + ' direct', atol=atol)
+
 
 def run():
     print('CONV2D')
@@ -227,6 +229,7 @@ def run():
          with_bias=True,
          atol=1e-4,
          test_name='batched multi channel with bias')
+
 
 if __name__ == "__main__":
     run()

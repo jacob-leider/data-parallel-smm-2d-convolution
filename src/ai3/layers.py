@@ -38,7 +38,7 @@ class Conv2D(Layer):
         else:
             bias_addr = None
         (layer, self.typestr) = utils.get_item_and_type(dtype, core.Conv2D_float,
-                                                core.Conv2D_double)
+                                                        core.Conv2D_double)
         self.core = layer(weight_addr,
                           weight_shape,
                           bias_addr,
@@ -68,7 +68,7 @@ class Linear(Layer):
 
 class ReLU(Layer):
     def __init__(self, dtype, algorithm: str):
-        (layer, self.typestr)= utils.get_item_and_type(
+        (layer, self.typestr) = utils.get_item_and_type(
             dtype, core.ReLU_float, core.ReLU_double)
         self.core = layer(algorithm)
 
@@ -86,7 +86,8 @@ class MaxPool2D(Layer):
         padding = utils.make_2d(padding)
         ceil_mode = ceil_mode
 
-        (layer, self.typestr) = utils.get_item_and_type(dtype, core.MaxPool2D_float, core.MaxPool2D_double)
+        (layer, self.typestr) = utils.get_item_and_type(
+            dtype, core.MaxPool2D_float, core.MaxPool2D_double)
         self.core = layer(kernel_shape,
                           padding, stride, dilation, ceil_mode, algorithm)
 
@@ -103,7 +104,8 @@ class AvgPool2D(Layer):
         kernel_shape = utils.make_2d(kernel_shape)
         padding = utils.make_2d(padding)
 
-        (layer, self.typestr) = utils.get_item_and_type(dtype, core.AvgPool2D_float, core.AvgPool2D_double)
+        (layer, self.typestr) = utils.get_item_and_type(
+            dtype, core.AvgPool2D_float, core.AvgPool2D_double)
         self.core = layer(kernel_shape,
                           padding, stride, ceil_mode, count_include_pad, divisor_override, algorithm)
 

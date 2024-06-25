@@ -2,6 +2,7 @@ import torch
 import torchvision
 from bench.swap_conv2d import swap_conv2d_and_time
 
+
 def run():
     print('  REGNET')
     print('Skipping as regnet requires groups > 1')

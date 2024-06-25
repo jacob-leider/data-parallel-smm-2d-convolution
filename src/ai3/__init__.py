@@ -26,7 +26,9 @@ TORCH = 'torch'
 SUPPORTED_OBJECTIVES = ['energy', 'latency', 'memory']
 SUPPORTED_ALGORITHMS = [KN2ROW, TORCH]
 
-DEFAULT_ALGOS = {key: "default" for key in ["conv2d", "linear", "relu", "maxpool2d", "avgpool2d", "adaptiveavgpool2d", "flatten"]}
+DEFAULT_ALGOS = {key: "default" for key in [
+    "conv2d", "linear", "relu", "maxpool2d", "avgpool2d", "adaptiveavgpool2d", "flatten"]}
+
 
 class Model():
     def __init__(self, dtype, layers: Sequence[layers.Layer]):
@@ -43,6 +45,7 @@ class Model():
             input), utils.get_shape(input))
         out = Tensor(out)
         return out.to(out_type)
+
 
 class Tensor():
     def __init__(self, tens: Union[core.Tensor_float, core.Tensor_double]):
@@ -62,18 +65,18 @@ class Tensor():
     def numpy(self):
         import numpy
         dtype = {
-                 utils.FLOAT32_STR : numpy.float32,
-                 utils.FLOAT64_STR : numpy.float64
-                 }[self.typestr]
+            utils.FLOAT32_STR: numpy.float32,
+            utils.FLOAT64_STR: numpy.float64
+        }[self.typestr]
         utils.bail_if(dtype is None,
-                f"type, {self.typestr} is neither float32 or float64")
+                      f"type, {self.typestr} is neither float32 or float64")
         data = numpy.frombuffer(self.core, dtype=dtype)
         return data.reshape(self.core.shape)
-
 
     def torch(self):
         return torch.frombuffer(self.core,
                                 dtype=torch.__dict__[self.typestr]).view(self.core.shape)
+
 
 def swap_backend(module: nn.Module, algos: Optional[dict[str, str]] = None) -> Model:
     if algos:
@@ -82,6 +85,7 @@ def swap_backend(module: nn.Module, algos: Optional[dict[str, str]] = None) -> M
         algos = DEFAULT_ALGOS
     dtype = torch.get_default_dtype()
     return Model(dtype, swap_torch.get_layers(module, dtype, algos))
+
 
 def swap_conv2d(module: nn.Module, algo: Optional[str] = None):
     if not algo:

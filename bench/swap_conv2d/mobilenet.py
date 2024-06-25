@@ -2,6 +2,7 @@ import torch
 import torchvision
 from bench.swap_conv2d import swap_conv2d_and_time
 
+
 def run():
     print('  MOBILENET')
     print('Skipping as mobilenet requires groups > 1')

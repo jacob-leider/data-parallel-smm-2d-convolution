@@ -6,8 +6,8 @@ from test import compare_tensors
 
 def _run(orig_torch):
     model = ai3.Model(torch.get_default_dtype(), [])
-    tens= model.predict(orig_torch)
-    assert(isinstance(tens, ai3.Tensor))
+    tens = model.predict(orig_torch)
+    assert (isinstance(tens, ai3.Tensor))
     start = time.time()
     back_to_torch = tens.torch()
     end = time.time()
