@@ -5,8 +5,8 @@ import os
 from pathlib import Path
 import argparse
 
-PY = "python -m"
-PIP = "pip"
+PY = "python3.11 -m"
+PIP = "pip3.11"
 C_FORMAT = "clang-format"
 PY_FORMAT = "autopep8"
 
@@ -65,6 +65,8 @@ if __name__ == "__main__":
             run_command(f"{PIP} install --editable .")
         elif cmd == "ext_ev":
             run_command(f"{PIP} install --editable . -vvv")
+        elif cmd == "ext_d":
+            run_command(f"{PIP} install .[dev]")
         elif cmd.startswith(BENCH_MOD):
             run_command(f"{PY} {cmd}")
         elif cmd.startswith(EXAMPLE_MOD):
