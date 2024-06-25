@@ -4,15 +4,25 @@ import torch
 
 USE_TORCH_COMPILE = False
 
+def warm_up(runner, data):
+    data_batch = None
+    if data.dim() == 4:
+        data_batch = data[0]
+    elif data.dim() == 3:
+        data_batch = data
+    assert(data_batch is not None)
+    runner(data_batch)
 
 def predict_show_time(runner, data, runner_name: str, recur: bool = True):
     out = None
     start_time = -1
     if isinstance(runner, torch.nn.Module):
+        warm_up(runner, data)
         with torch.inference_mode():
             start_time = time.time()
             out = runner(data)
     elif isinstance(runner, ai3.Model):
+        warm_up(runner, data)
         start_time = time.time()
         out = runner.predict(data, out_type=torch.Tensor)
     else:
