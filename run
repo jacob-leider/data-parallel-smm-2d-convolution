@@ -23,6 +23,7 @@ CSRC_FILES = [str(f) for f in Path('.').rglob('*') if f.suffix in ['.cpp', '.hpp
 PY_FILES = [str(f) for f in Path('.').rglob('*.py') if 'venv' not in f.parts]
 
 def run_command(command):
+    print(f'Running: {command}')
     try:
         subprocess.run(command, shell=True, check=True)
     except subprocess.CalledProcessError as e:
@@ -47,26 +48,55 @@ def gen_clangd(file_path):
         for flag in flags:
             f.write(f'    - "{flag}"\n')
 
-def format_files():
-    run_command(f"{C_FORMAT} -i {' '.join(CSRC_FILES)}")
-    run_command(f"{PY_FORMAT} --in-place {' '.join(PY_FILES)}")
+def build(parser, editable: bool = False, verbose: bool = False, dev: bool = False):
+    cxx_flags = []
+    if parser.CONV2D_USER:
+        cxx_flags.append(f'-DCONV2D_USER=\\"{parser.CONV2D_USER}\\"')
+    if parser.LINEAR_USER:
+        cxx_flags.append(f'-DLINEAR_USER=\\"{parser.LINEAR_USER}\\"')
+    if parser.AVGPOOL2D_USER:
+        cxx_flags.append(f'-DAVGPOOL2D_USER=\\"{parser.AVGPOOL2D_USER}\\"')
+    if parser.ADAPTIVEAVGPOOL2D_USER:
+        cxx_flags.append(f'-DADAPTIVEAVGPOOL2D_USER=\\"{parser.ADAPTIVEAVGPOOL2D_USER}\\"')
+    if parser.MAXPOOL2D_USER:
+        cxx_flags.append(f'-DMAXPOOL2D_USER=\\"{parser.MAXPOOL2D_USER}\\"')
+    if parser.RELU_USER:
+        cxx_flags.append(f'-DRELU_USER=\\"{parser.RELU_USER}\\"')
+    if parser.FLATTEN_USER:
+        cxx_flags.append(f'-DFLATTEN_USER=\\"{parser.FLATTEN_USER}\\"')
+
+    cxx_flags = " ".join(cxx_flags)
+    cmd = f"{PIP} install"
+    if editable:
+        cmd += " --editable"
+    cmd += " ."
+    if dev:
+        cmd += "[dev]"
+    if verbose:
+        cmd += " --verbose"
+    if cxx_flags:
+        cmd += f" --config-settings=cmake.define.CMAKE_CXX_FLAGS=\'{cxx_flags}\'"
+    run_command(cmd)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run various development commands")
     parser.add_argument("commands", nargs='+')
+    for algo in ["conv2d", "linear", "avgpool2d", "adaptiveavgpool2d", "maxpool2d", "relu", "flatten"]:
+        parser.add_argument(f"--{algo.upper()}_USER", type=str, help=f"path for user {algo} algorithm")
     args = parser.parse_args()
 
     for cmd in args.commands:
         if cmd == "gen_clangd":
             gen_clangd('.clangd')
         elif cmd == "ext":
-            run_command(f"{PIP} install .")
+            build(args)
         elif cmd == "ext_e":
-            run_command(f"{PIP} install --editable .")
+            build(args, editable=True)
         elif cmd == "ext_ev":
-            run_command(f"{PIP} install --editable . -vvv")
+            build(args, editable=True, verbose=True)
         elif cmd == "ext_d":
-            run_command(f"{PIP} install .[dev]")
+            build(args, dev=True)
         elif cmd.startswith(BENCH_MOD):
             run_command(f"{PY} {cmd}")
         elif cmd.startswith(EXAMPLE_MOD):
@@ -89,6 +119,8 @@ if __name__ == "__main__":
             updated_command = cmd.replace("itest", INTEGRATION_TEST_MOD, 1)
             run_command(f"{PY} {updated_command}")
         elif cmd == "format":
-            format_files()
+            run_command(f"{C_FORMAT} -i {' '.join(CSRC_FILES)}")
+            run_command(f"{PY_FORMAT} --in-place {' '.join(PY_FILES)}")
         else:
             print(f'Error: unsupported command: {cmd}')
+            exit(1)

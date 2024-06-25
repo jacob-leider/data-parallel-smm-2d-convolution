@@ -1,4 +1,3 @@
-# TODO put a function in run to call the run with whatever macro user gives
 # TODO try some way to do the normal pip install without compiling cpp code
 # then taking users cpp code and compiling the SO with that. This would stop
 # requiring building from source, this would be easier to do with CMAKE
