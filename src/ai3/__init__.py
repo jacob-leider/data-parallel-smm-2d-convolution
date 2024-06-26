@@ -6,28 +6,14 @@
 # through the onnx layers and hyperparametrs, could also use the pytorch way
 # of loading .onnx, .onnx -> nn.Module -> ai3.optimize -> ai3.Model
 # once onnx support we can have two files which are the only places torch and onnx are imported
-# TODO not sure how to set up dependencies or this file, need either a Pytorch model or a .onnx file but not both
-# optional flag when installing, something like pip install --frontend=torch/onnx
-# TODO would be best to split up samples then each algorithm also has its way of
-# accelerating instead of doing all the samples in each layer, this can be done
-# by creating a list<buffer> where each buffer is a view for its sample
-# or in predict creating tensors that are just one input and sending those,
-# maybe in the predict() function we can accell over CPU and the embedded kernels
-# will run wherever, don't use SYCL there just do builtin threads
 
 import torch
 from torch import nn
 from typing import Optional, Sequence, Union
 from ai3 import layers, swap_torch, utils, core
 
-KN2ROW = 'kn2row'
-TORCH = 'torch'
-SUPPORTED_OBJECTIVES = ['energy', 'latency', 'memory']
-SUPPORTED_ALGORITHMS = [KN2ROW, TORCH]
-
 DEFAULT_ALGOS = {key: "default" for key in [
     "conv2d", "linear", "relu", "maxpool2d", "avgpool2d", "adaptiveavgpool2d", "flatten"]}
-
 
 class Model():
     def __init__(self, dtype, layers: Sequence[layers.Layer]):

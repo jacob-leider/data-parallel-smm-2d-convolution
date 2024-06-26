@@ -45,7 +45,7 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
 
     uint col_height = input_channels * kernel_height * kernel_width;
     uint col_width = output_height * output_width;
-    Tensor<dtype> col({num_samples, col_height, col_width});
+    Tensor<dtype> col({col_height, col_width});
 
     const bool has_bias = bias.has_value();
 

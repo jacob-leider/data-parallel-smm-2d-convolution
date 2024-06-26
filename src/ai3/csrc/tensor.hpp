@@ -1,6 +1,8 @@
 #pragma once
 
 #include "utils.hpp"
+#include <algorithm>
+#include <cstring>
 #include <optional>
 #include <pybind11/pybind11.h>
 #include <vector>
@@ -10,8 +12,8 @@ namespace py = pybind11;
 template <typename dtype> class Tensor {
   public:
     Tensor(const intptr_t data_address, const std::vector<uint> &s,
-           bool input_data = false)
-        : shape(s), owned(!input_data) {
+           bool owned = true)
+        : shape(s), owned(owned) {
         if (owned) {
             data = new dtype[_count(s)];
             std::memcpy(data, reinterpret_cast<const dtype *>(data_address),
@@ -23,6 +25,17 @@ template <typename dtype> class Tensor {
 
     Tensor(const std::vector<uint> &s)
         : data(new dtype[_count(s)]), shape(s), owned(true) {}
+
+    static Tensor<dtype> concat(Tensor<dtype> *tens, uint len) {
+        uint each_size = tens[0].count();
+        tens[0].shape.insert(tens[0].shape.begin(), len);
+        Tensor<dtype> output(tens[0].shape);
+        for (uint i = 0; i < len; ++i) {
+            std::memcpy(&output.data[i * each_size], tens[i].data,
+                        each_size * sizeof(dtype));
+        }
+        return output;
+    }
 
     static std::optional<Tensor>
     from_optional(const std::optional<intptr_t> &data_address,
@@ -46,10 +59,11 @@ template <typename dtype> class Tensor {
 
     Tensor &operator=(Tensor &&other) noexcept {
         if (this != &other) {
-            data = other.data;
             shape = std::move(other.shape);
+            data = other.data;
             owned = other.owned;
             other.data = nullptr;
+            other.owned = false;
         }
         return *this;
     }

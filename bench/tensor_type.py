@@ -6,7 +6,11 @@ from test import compare_tensors
 
 def _run(orig_torch):
     model = ai3.Model(torch.get_default_dtype(), [])
+    start = time.time()
     tens = model.predict(orig_torch)
+    end = time.time()
+    print(
+        f" {orig_torch.size()} torch -> ai3: {end-start}")
     assert (isinstance(tens, ai3.Tensor))
     start = time.time()
     back_to_torch = tens.torch()

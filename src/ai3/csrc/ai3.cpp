@@ -306,10 +306,7 @@ template <typename dtype> class Model {
 
     Tensor<dtype> predict(const intptr_t input_address,
                           std::vector<uint> input_shape) {
-        // TODO to parallerize over each input
-        // create tensors starting at each new samples data
-        // copy back and concat the output tensors to a single memory block
-        Tensor<dtype> output(input_address, input_shape, true);
+        Tensor<dtype> output(input_address, input_shape, false);
         for (const std::shared_ptr<Layer<dtype>> &layer : layers) {
             output = layer->_forward(std::move(output));
         }
