@@ -165,6 +165,7 @@ template <typename dtype> class ReLU : virtual public Layer<dtype> {
         } else if (AI3(algorithm)) {
             return _relu<dtype>(std::move(input));
         }
+        errs::bail("invalid relu algorithm: ", algorithm);
     }
     ~ReLU() = default;
 
@@ -251,7 +252,11 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
         : weight(weight_address, weight_shape),
           bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]})),
           padding(padding), stride(stride), dilation(dilation),
-          padding_mode(padding_mode), groups(groups), algorithm(algorithm) {}
+          padding_mode(padding_mode), groups(groups), algorithm(algorithm) {
+        // TODO try creating the queue here as well as malloc_device here
+#if defined(USE_SYCL) && defined(CONV2D_SYCL)
+#endif
+    }
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
         if (DEFAULT(algorithm)) {

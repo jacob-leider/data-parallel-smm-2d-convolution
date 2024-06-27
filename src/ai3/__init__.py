@@ -6,6 +6,8 @@
 # through the onnx layers and hyperparametrs, could also use the pytorch way
 # of loading .onnx, .onnx -> nn.Module -> ai3.optimize -> ai3.Model
 # once onnx support we can have two files which are the only places torch and onnx are imported
+# TODO in cpp when with SYCL support try making queue an instance of the model which is
+# used everywhere and make each layer have a device alloc for weights and biases
 
 import torch
 from torch import nn

@@ -24,7 +24,7 @@ endif()
 set(SYCL_FLAGS "-fsycl")
 find_package(CUDA)
 if(CUDA_FOUND)
-    set(SYCL_FLAGS "${SYCL_FLAGS} -fsycl-targets=nvptx64-nvidia-cuda,spir64")
+    set(SYCL_FLAGS "${SYCL_FLAGS} -fsycl-targets=nvptx64-nvidia-cuda")
 endif()
 
 set(SYCL_CFLAGS "${SYCL_FLAGS}")
