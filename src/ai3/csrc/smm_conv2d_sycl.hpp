@@ -16,12 +16,12 @@ using namespace cl;
 
 // TODO groups and padding modes
 template <typename dtype>
-Tensor<dtype>
-smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
-           const std::optional<const Tensor<dtype>> &bias,
-           const std::vector<uint> &padding, const std::vector<uint> &stride,
-           const std::vector<uint> &dilation, const PaddingMode padding_mode,
-           int groups) {
+Tensor<dtype> smm_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
+                         const std::optional<const Tensor<dtype>> &bias,
+                         const std::vector<uint> &padding,
+                         const std::vector<uint> &stride,
+                         const std::vector<uint> &dilation,
+                         const PaddingMode padding_mode, int groups) {
     auto start = std::chrono::steady_clock::now();
     errs::bail_if(padding_mode != Zeros, "padding mode must be zeros");
     errs::bail_if(groups != 1, "groups must be 1");

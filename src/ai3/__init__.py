@@ -1,9 +1,8 @@
-# TODO change USER to CUSTOM everywhere
 # TODO in benchmarks include Intel Extension for PyTorch
+# TODO When with SYCL support try making queue an instance of the model or layer
+# which is used everywhere and make each layer have a device alloc for weights and biases
 # TODO When with SYCL support don't need to copy the output back to host if the
 # next operation will solely access it on device
-# TODO When with SYCL support try making queue an instance of the model which is
-# used everywhere and make each layer have a device alloc for weights and biases
 
 # TODO try some way to do the normal pip install without compiling cpp code
 # then taking users cpp code and compiling the SO with that. This would stop

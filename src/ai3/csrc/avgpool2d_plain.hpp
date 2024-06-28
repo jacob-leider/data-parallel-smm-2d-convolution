@@ -6,7 +6,7 @@
 
 template <typename dtype>
 Tensor<dtype>
-_avgpool2d(const Tensor<dtype> &input, const std::vector<uint> kernel_shape,
+_avgpool2d(Tensor<dtype> input, const std::vector<uint> kernel_shape,
            const std::vector<uint> &padding, const std::vector<uint> &stride,
            const bool ceil_mode, const bool count_include_pad,
            const std::optional<int> divisor_override) {
