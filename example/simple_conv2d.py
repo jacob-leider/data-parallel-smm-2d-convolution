@@ -25,15 +25,25 @@ class SimpleConvNet(nn.Module):
 
 def run():
     print('SIMPLE CREATED')
-    input_data = torch.randn(100, 3, 224, 224)
+    input_data = torch.randn(10, 3, 224, 224)
     torch_model = SimpleConvNet()
     tstart = time.time()
     torch_out = torch_model(input_data)
     tend = time.time()
     assert (isinstance(torch_out, torch.Tensor))
-    ai3_model = ai3.swap_backend(torch_model, {"conv2d": "default"})
+    # swapping everything
+    ai3_model = ai3.swap_backend(torch_model, {"conv2d": ["direct", "smm"]})
     astart = time.time()
     ai3_out = ai3_model(input_data)
+    aend = time.time()
+    print(f"Time torch: {tend-tstart}")
+    print(f"Time ai3: {aend-astart}")
+    assert (isinstance(ai3_out, torch.Tensor))
+    assert torch.allclose(torch_out, ai3_out, atol=1e-4)
+    # swapping conv2d
+    ai3.swap_conv2d(torch_model, ["direct", "smm"])
+    astart = time.time()
+    ai3_out = torch_model(input_data)
     aend = time.time()
     print(f"Time torch: {tend-tstart}")
     print(f"Time ai3: {aend-astart}")
