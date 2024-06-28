@@ -1,12 +1,17 @@
 #pragma once
 
 #include "ai3.hpp"
-#include "hipSYCL/sycl/usm.hpp"
+#if __has_include("oneapi/mkl/blas.hpp")
+#define GEMM
+#include "oneapi/mkl/blas.hpp"
+#endif
 #include "utils.hpp"
 #include <CL/sycl.hpp>
+#include <chrono>
 #include <cstddef>
 #include <optional>
 #include <vector>
+
 using namespace cl;
 
 // TODO groups and padding modes
@@ -17,6 +22,7 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
            const std::vector<uint> &padding, const std::vector<uint> &stride,
            const std::vector<uint> &dilation, const PaddingMode padding_mode,
            int groups) {
+    auto start = std::chrono::steady_clock::now();
     errs::bail_if(padding_mode != Zeros, "padding mode must be zeros");
     errs::bail_if(groups != 1, "groups must be 1");
 
@@ -57,10 +63,6 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     const uint kernel_area = kernel_height * kernel_width;
     uint col_height = input_channels * kernel_area;
     uint col_width = output_height * output_width;
-    dtype **cols = sycl::malloc_device<dtype *>(num_samples, queue);
-    for (uint i = 0; i < num_samples; i++) {
-        cols[i] = sycl::malloc_device<dtype>(col_height * col_width, queue);
-    }
     dtype *input_data = sycl::malloc_device<dtype>(input.count(), queue);
     queue.memcpy(input_data, input.data, input.count() * sizeof(dtype));
 
@@ -99,6 +101,17 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     const uint output_total =
         ((output_area + output_each - 1) / output_each) * output_each;
 
+    std::cout << "allocing cols\n";
+    dtype **cols = new dtype *[num_samples];
+    for (uint i = 0; i < num_samples; i++) {
+        cols[i] = sycl::malloc_device<dtype>(col_height * col_width, queue);
+    }
+
+    auto end = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration<double>(end - start);
+    std::cout << "time to start submitting: " << elapsed.count()
+              << " seconds\n";
+    start = std::chrono::steady_clock::now();
     for (uint samp = 0; samp < num_samples; samp++) {
         dtype *col = cols[samp];
         auto set_col = queue.submit([&](sycl::handler &h) {
@@ -163,14 +176,24 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                 });
         });
     }
-    queue.wait_and_throw();
+    end = std::chrono::steady_clock::now();
+    elapsed = std::chrono::duration<double>(end - start);
+    std::cout << "time taken to submit: " << elapsed.count() << " seconds\n";
+    start = std::chrono::steady_clock::now();
 
+    queue.wait_and_throw();
     queue.memcpy(output.data, output_data, output.count() * sizeof(dtype));
     queue.wait();
+
+    end = std::chrono::steady_clock::now();
+    elapsed = std::chrono::duration<double>(end - start);
+    std::cout << "time taken for queue to finish: " << elapsed.count()
+              << " seconds\n";
+
     for (uint i = 0; i < num_samples; i++) {
         sycl::free(cols[i], queue);
     }
-    sycl::free(cols, queue);
+    std::free(cols);
     sycl::free(input_data, queue);
     sycl::free(kernel_data, queue);
     if (bias_data != nullptr) {

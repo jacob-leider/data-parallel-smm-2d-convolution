@@ -9,6 +9,9 @@ using uint = unsigned int;
 #ifndef GROUP_SIZE_GUESS
 #define GROUP_SIZE_GUESS 256
 #endif
+#ifndef SAMPLES_PER_KERNEL
+#define SAMPLES_PER_KERNEL 10
+#endif
 
 enum PaddingMode { Zeros, Reflect, Replicate, Circular };
 

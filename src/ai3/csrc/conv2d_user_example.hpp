@@ -1,5 +1,3 @@
-// To use this impl instead of the default put
-// #define CONV2D_USER `path to this file` at top of `user_defined.hpp`
 #pragma once
 #include "ai3.hpp"
 #include <iostream>
