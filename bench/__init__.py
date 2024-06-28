@@ -4,14 +4,16 @@ import torch
 
 USE_TORCH_COMPILE = False
 
+
 def warm_up(runner, data):
     data_batch = None
     if data.dim() == 4:
         data_batch = data[0]
     elif data.dim() == 3:
         data_batch = data
-    assert(data_batch is not None)
+    assert (data_batch is not None)
     runner(data_batch)
+
 
 def predict_show_time(runner, data, runner_name: str, recur: bool = True):
     out = None
