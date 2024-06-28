@@ -13,30 +13,35 @@ set(CMAKE_CXX_EXTENSIONS NO)
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG REQUIRED)
 
-python_add_library(core MODULE src/ai3/csrc/ai3.cpp WITH_SOABI)
+set(CSRC_DIR src/ai3/csrc)
+
+python_add_library(core MODULE ${CSRC_DIR}/ai3.cpp WITH_SOABI)
 target_link_libraries(core PRIVATE pybind11::headers)
+target_include_directories(core PRIVATE ${CSRC_DIR})
 
 find_package(SYCL)
 if(SYCL_FOUND)
     message(STATUS "Using SYCL")
     set(CMAKE_CXX_COMPILER "${SYCL_COMPILER}")
-    include_directories(${SYCL_INCLUDE_DIR})
-    include_directories(${SYCL_SYCL_INCLUDE_DIR})
-    link_directories(${SYCL_LIBRARY_DIR})
+
+    target_include_directories(core PRIVATE ${SYCL_INCLUDE_DIR})
+    target_include_directories(core PRIVATE ${SYCL_SYCL_INCLUDE_DIR})
+    target_link_directories(core PRIVATE ${SYCL_LIBRARY_DIR})
+
     separate_arguments(SYCL_CFLAGS)
-    separate_arguments(SYCL_LFLAGS)
     target_compile_options(core PRIVATE "${SYCL_CFLAGS}")
+
+    separate_arguments(SYCL_LFLAGS)
     target_link_options(core PRIVATE "${SYCL_LFLAGS}")
-    add_compile_definitions(USE_SYCL)
+
+    target_compile_definitions(core PRIVATE USE_SYCL)
 elseif(FIND_ACPP)
     find_program(ACPP acpp)
     if(ACPP)
         message(STATUS "Using acpp")
         set(CMAKE_CXX_COMPILER ${ACPP})
-        message(STATUS ${CMAKE_CXX_COMPILER})
-        add_compile_definitions(USE_SYCL)
+        target_compile_definitions(core PRIVATE USE_SYCL)
     endif()
 endif()
 
 install(TARGETS core DESTINATION ${SKBUILD_PROJECT_NAME})
-
