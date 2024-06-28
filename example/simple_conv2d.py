@@ -1,12 +1,10 @@
 import torch
 from torch import nn
-import ai3
-import time
+import ai3 # the framework
 
-
-class SimpleConvNet(nn.Module):
+class ConvNet(nn.Module):
     def __init__(self):
-        super(SimpleConvNet, self).__init__()
+        super(ConvNet, self).__init__()
         self.conv1 = nn.Conv2d(
             in_channels=3, out_channels=16, kernel_size=3, stride=1, padding=1)
         self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
@@ -22,34 +20,12 @@ class SimpleConvNet(nn.Module):
         x = torch.flatten(x, 1)
         return x
 
-
-def run():
-    print('SIMPLE CREATED')
-    input_data = torch.randn(10, 3, 224, 224)
-    torch_model = SimpleConvNet()
-    tstart = time.time()
-    torch_out = torch_model(input_data)
-    tend = time.time()
-    assert (isinstance(torch_out, torch.Tensor))
-    # swapping everything
-    ai3_model = ai3.swap_backend(torch_model, {"conv2d": ["direct", "smm"]})
-    astart = time.time()
-    ai3_out = ai3_model(input_data)
-    aend = time.time()
-    print(f"Time torch: {tend-tstart}")
-    print(f"Time ai3: {aend-astart}")
-    assert (isinstance(ai3_out, torch.Tensor))
-    assert torch.allclose(torch_out, ai3_out, atol=1e-4)
-    # swapping conv2d
-    ai3.swap_conv2d(torch_model, ["direct", "smm"])
-    astart = time.time()
-    ai3_out = torch_model(input_data)
-    aend = time.time()
-    print(f"Time torch: {tend-tstart}")
-    print(f"Time ai3: {aend-astart}")
-    assert (isinstance(ai3_out, torch.Tensor))
-    assert torch.allclose(torch_out, ai3_out, atol=1e-4)
-
-
-if __name__ == "__main__":
-    run()
+input_data = torch.randn(10, 3, 224, 224)
+torch_model = ConvNet()
+torch_out = torch_model(input_data)
+model: ai3.Model = ai3.swap_backend(torch_model, {"conv2d": ["direct", "smm"]})
+ai3_out = model(input_data)
+ai3.swap_conv2d(torch_model, ["direct", "smm"])
+using_swapped_layers_out = torch_model(input_data)
+assert torch.allclose(torch_out, ai3_out, atol=1e-7)
+assert torch.allclose(torch_out, using_swapped_layers_out, atol=1e-7)

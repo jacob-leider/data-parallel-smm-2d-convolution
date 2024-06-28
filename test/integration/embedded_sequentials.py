@@ -36,7 +36,10 @@ def _run(data, mes):
     ai3_model = ai3.swap_backend(model)
     target = model(data)
     output = ai3_model.predict(data)
+    ai3.swap_conv2d(model)
+    output_swap = model(data)
     compare_tensors(output, target.detach().numpy(), mes)
+    compare_tensors(output_swap, target.detach().numpy(), mes + " swapping")
 
 
 def run():

@@ -1,11 +1,11 @@
 import torch
 import ai3
 from test import compare_tensors
-from example.simple_conv2d import SimpleConvNet
+from example.simple_conv2d import ConvNet
 
 
 def _run(data, mes):
-    model = SimpleConvNet()
+    model = ConvNet()
     ai3_model = ai3.swap_backend(model)
     target = model(data)
     output = ai3_model.predict(data)
