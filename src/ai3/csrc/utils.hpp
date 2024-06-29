@@ -31,25 +31,11 @@ inline uint to_linear(uint i, uint j, uint k, uint J, uint K) {
 }
 inline uint to_linear(uint i, uint j, uint J) { return i * J + j; }
 
-namespace errs {
-template <typename... Args> [[noreturn]] void bail(Args... args) {
-    std::stringstream ss;
-    (ss << ... << args);
-    throw std::runtime_error(ss.str());
-}
-
-template <typename... Args> void bail_if(bool check, Args... args) {
-    if (check) {
-        bail(args...);
-    }
-}
-} // namespace errs
-
-namespace dims {
 template <typename dtype>
-inline uint output_dim(const uint input, const uint kernel, const uint padding,
-                       const std::optional<uint> dilation, const uint stride,
-                       const bool ceil_mode) {
+inline uint output_size_for_2d(const uint input, const uint kernel,
+                               const uint padding,
+                               const std::optional<uint> dilation,
+                               const uint stride, const bool ceil_mode) {
     const uint top =
         input + (2 * padding) - (dilation.value_or(1) * (kernel - 1)) - 1;
     const uint bot = stride;
@@ -66,36 +52,24 @@ inline uint output_dim(const uint input, const uint kernel, const uint padding,
     return (poss - 1) * stride >= input + padding ? poss - 1 : poss;
 }
 
-inline bool has_dim_for_batch_size(const std::vector<uint> &shape,
-                                   int data_dim = -1) {
-    if (data_dim == -1) {
-        return false;
+namespace errs {
+template <typename... Args> [[noreturn]] void bail(Args... args) {
+    std::stringstream ss;
+    (ss << ... << args);
+    throw std::runtime_error(ss.str());
+}
+
+template <typename... Args> void bail_if(bool check, Args... args) {
+    if (check) {
+        bail(args...);
     }
-    return shape.size() != unsigned(data_dim + 1);
 }
+} // namespace errs
 
-inline uint batch_size(const std::vector<uint> &shape, const uint input_dims) {
-    return shape[shape.size() - 1 - input_dims];
-}
-
-inline uint out_channels(const std::vector<uint> &shape) {
-    return shape[shape.size() - 4];
-}
-
-inline uint input_channels(const std::vector<uint> &shape) {
-    return shape[shape.size() - 3];
-}
-inline uint height(const std::vector<uint> &shape) {
-    return shape[shape.size() - 2];
-}
-inline uint width(const std::vector<uint> &shape) {
-    return shape[shape.size() - 1];
-}
-namespace input {
+namespace input_dims {
 const int LINEAR = 1;
 const int POOL2D = 3;
 const int CONV2D = 3;
 const int ACTIVATION = -1;
 const int FLATTEN = -1;
-}; // namespace input
-} // namespace dims
+}; // namespace input_dims

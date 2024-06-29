@@ -9,8 +9,8 @@ template <typename dtype>
 Tensor<dtype> _adaptiveavgpool2d(
     Tensor<dtype> input,
     const std::optional<std::vector<std::optional<uint>>> output_shape) {
-    uint input_height = dims::height(input.shape);
-    uint input_width = dims::width(input.shape);
+    uint input_height = input.height();
+    uint input_width = input.width();
     const std::vector<std::optional<uint>> opt_in_shape = {input_height,
                                                            input_width};
     const uint output_height =

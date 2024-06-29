@@ -79,7 +79,21 @@ template <typename dtype> class Tensor {
                                shape.size(), shape, stride);
     }
 
-    uint count() const { return _count(shape); }
+    inline bool has_dim_for_batch_size(int data_dim = -1) const {
+        if (data_dim == -1) {
+            return false;
+        }
+        return shape.size() != unsigned(data_dim + 1);
+    }
+    inline uint batch_size(const uint input_dims) const {
+        return shape[shape.size() - 1 - input_dims];
+    }
+    inline uint out_channels() const { return shape[shape.size() - 4]; }
+    inline uint input_channels() const { return shape[shape.size() - 3]; }
+    inline uint height() const { return shape[shape.size() - 2]; }
+    inline uint width() const { return shape[shape.size() - 1]; }
+
+    inline uint count() const { return _count(shape); }
 
     Tensor(const Tensor &) = delete;
     Tensor &operator=(const Tensor &) = delete;

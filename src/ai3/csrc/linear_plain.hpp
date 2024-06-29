@@ -5,23 +5,22 @@
 #include <vector>
 
 template <typename dtype>
-Tensor<dtype> _linear(const Tensor<dtype> input, const Tensor<dtype> &weight,
+Tensor<dtype> _linear(Tensor<dtype> input, const Tensor<dtype> &weight,
                       const std::optional<const Tensor<dtype>> &bias) {
-    errs::bail_if(
-        dims::width(input.shape) != dims::width(weight.shape),
-        "Invalid matrix multiplication: input width=", dims::width(input.shape),
-        " weight width=", dims::width(weight.shape));
+    errs::bail_if(input.width() != weight.width(),
+                  "Invalid matrix multiplication: input width=", input.width(),
+                  " weight width=", weight.width());
 
-    const uint in_features = dims::width(input.shape);
-    const uint out_features = dims::height(weight.shape);
+    const uint in_features = input.width();
+    const uint out_features = weight.height();
 
     Tensor<dtype> output;
     uint num_samples;
-    if (dims::has_dim_for_batch_size(input.shape, dims::input::LINEAR)) {
+    if (input.has_dim_for_batch_size(input_dims::LINEAR)) {
         num_samples = 1;
         output = Tensor<dtype>({out_features});
     } else {
-        num_samples = dims::batch_size(input.shape, dims::input::LINEAR);
+        num_samples = input.batch_size(input_dims::LINEAR);
         output = Tensor<dtype>({num_samples, out_features});
     }
 

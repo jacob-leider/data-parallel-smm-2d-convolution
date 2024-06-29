@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ai3.hpp"
+#include "utils.hpp"
 #include <cstddef>
 #include <iostream>
 #include <optional>
@@ -17,27 +18,27 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
     errs::bail_if(padding_mode != Zeros, "padding mode must be zeros");
     errs::bail_if(groups != 1, "groups must be 1");
 
-    const uint input_channels = dims::input_channels(input.shape);
-    const uint input_height = dims::height(input.shape);
-    const uint input_width = dims::width(input.shape);
+    const uint input_channels = input.input_channels();
+    const uint input_height = input.height();
+    const uint input_width = input.width();
 
-    const uint kernel_height = dims::height(kernel.shape);
-    const uint kernel_width = dims::width(kernel.shape);
+    const uint kernel_height = kernel.height();
+    const uint kernel_width = kernel.width();
 
-    const uint output_channels = dims::out_channels(kernel.shape);
+    const uint output_channels = kernel.out_channels();
 
-    const uint output_height = dims::output_dim<dtype>(
+    const uint output_height = output_size_for_2d<dtype>(
         input_height, kernel_height, padding[0], dilation[0], stride[0], false);
-    const uint output_width = dims::output_dim<dtype>(
+    const uint output_width = output_size_for_2d<dtype>(
         input_width, kernel_width, padding[1], dilation[1], stride[1], false);
 
     uint num_samples;
     Tensor<dtype> output;
-    if (dims::has_dim_for_batch_size(input.shape, dims::input::CONV2D)) {
+    if (input.has_dim_for_batch_size(input_dims::CONV2D)) {
         num_samples = 1;
         output = Tensor<dtype>({output_channels, output_height, output_width});
     } else {
-        num_samples = dims::batch_size(input.shape, dims::input::POOL2D);
+        num_samples = input.batch_size(input_dims::POOL2D);
         output = Tensor<dtype>(
             {num_samples, output_channels, output_height, output_width});
     }

@@ -9,27 +9,29 @@ Tensor<dtype>
 _maxpool2d(Tensor<dtype> input, const std::vector<uint> kernel_shape,
            const std::vector<uint> &padding, const std::vector<uint> &stride,
            const std::vector<uint> &dilation, const bool ceil_mode) {
-    const uint input_channels = dims::input_channels(input.shape);
-    const uint input_height = dims::height(input.shape);
-    const uint input_width = dims::width(input.shape);
+    const uint input_channels = input.input_channels();
+    const uint input_height = input.height();
+    const uint input_width = input.width();
 
-    const uint kernel_height = dims::height(kernel_shape);
-    const uint kernel_width = dims::width(kernel_shape);
+    const uint kernel_height = kernel_shape[0];
+    const uint kernel_width = kernel_shape[1];
 
     const uint output_channels = input_channels;
+
     const uint output_height =
-        dims::output_dim<dtype>(input_height, kernel_height, padding[0],
-                                dilation[0], stride[0], ceil_mode);
+        output_size_for_2d<dtype>(input_height, kernel_height, padding[0],
+                                  dilation[0], stride[0], ceil_mode);
     const uint output_width =
-        dims::output_dim<dtype>(input_width, kernel_width, padding[1],
-                                dilation[1], stride[1], ceil_mode);
+        output_size_for_2d<dtype>(input_width, kernel_width, padding[1],
+                                  dilation[1], stride[1], ceil_mode);
+
     Tensor<dtype> output;
     uint num_samples;
-    if (dims::has_dim_for_batch_size(input.shape, dims::input::CONV2D)) {
+    if (input.has_dim_for_batch_size(input_dims::POOL2D)) {
         num_samples = 1;
         output = Tensor<dtype>({output_channels, output_height, output_width});
     } else {
-        num_samples = dims::batch_size(input.shape, dims::input::POOL2D);
+        num_samples = input.batch_size(input_dims::POOL2D);
         output = Tensor<dtype>(
             {num_samples, output_channels, output_height, output_width});
     }
