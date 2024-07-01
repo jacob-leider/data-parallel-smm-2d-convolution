@@ -287,7 +287,6 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
 
     Tensor<dtype> forward(const intptr_t input_address,
                           std::vector<uint> input_shape) {
-
         return _forward(Tensor<dtype>(input_address, input_shape));
     }
 

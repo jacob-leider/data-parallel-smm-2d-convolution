@@ -79,7 +79,7 @@ template <typename dtype> class Tensor {
                                shape.size(), shape, stride);
     }
 
-    inline bool has_dim_for_batch_size(int data_dim = -1) const {
+    inline bool has_dim_for_batch_size(const int data_dim = -1) const {
         if (data_dim == -1) {
             return false;
         }

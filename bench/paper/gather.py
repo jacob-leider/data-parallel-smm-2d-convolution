@@ -1,5 +1,4 @@
 from collections import defaultdict
-from time import time
 import torch
 from bench import predict_show_time
 from torch import nn
@@ -29,15 +28,15 @@ input = torch.randn(100, 3, 224, 224)
 orig = Conv2D(3, 3, 3)
 orig.eval()
 torch_out = predict_show_time(orig, input, "torch conv2d", times_for_layer)
+assert(isinstance(torch_out, torch.Tensor))
 swap_direct = ai3.swap_backend(orig, {"conv2d": "direct"})
 swap_direct_out = predict_show_time(swap_direct, input, "ai3 direct conv2d", times_for_layer)
 swap_smm = ai3.swap_backend(orig, {"conv2d": "smm"})
 swap_smm_out = predict_show_time(swap_smm, input, "ai3 smm conv2d", times_for_layer)
 if ipex_found:
-    ipex_model = ipex.optimize(orig, dtype=torch.float32)
-    print(isinstance(ipex_model, torch.nn.Module))
-    ipex_out = ipex_model(input)
-    compare_tensors(ipex_out, torch_out)
+     ipex_model = ipex.optimize(orig, dtype=torch.float32)
+     ipex_out = predict_show_time(ipex_model, input, "ipex conv2d", times_for_layer)
+     compare_tensors(ipex_out, torch_out)
 compare_tensors(swap_smm_out, torch_out)
 compare_tensors(swap_direct_out, torch_out)
 
