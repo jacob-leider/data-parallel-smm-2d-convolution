@@ -14,7 +14,8 @@ def warm_up(runner, data):
     elif data.dim() == 3:
         data_batch = data
     assert (data_batch is not None)
-    runner(data_batch)
+    data_shape = (1,) + data_batch.size()
+    runner(data_batch.view(data_shape))
 
 
 def predict_show_time(runner, data, runner_name: str, store: Optional[defaultdict[str, float]] = None, recur: bool = True):

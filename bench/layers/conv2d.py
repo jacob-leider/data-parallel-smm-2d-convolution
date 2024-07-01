@@ -19,8 +19,8 @@ class Conv2D(nn.Module):
 def run():
     print("Conv2D")
     # input = torch.randn(500, 3, 500, 500)
-    input = torch.randn(1, 5, 500, 500)
-    orig = Conv2D(5, 4, (5, 5))
+    input = torch.randn(100, 3, 224, 224)
+    orig = Conv2D(3, 4, (3, 3))
     orig_out = predict_show_time(orig, input, "pytorch")
     assert (isinstance(orig_out, torch.Tensor))
 

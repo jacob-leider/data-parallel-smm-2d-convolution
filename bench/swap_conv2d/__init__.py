@@ -31,6 +31,7 @@ def swap_conv2d_and_time(orig: torch.nn.Module, input: torch.Tensor):
     torch_out = predict_show_time(orig, input, "pytorch")
 
     ai3.swap_conv2d(orig)
-    assert (isinstance(torch_out, torch.Tensor))
     ai3_out = predict_show_time(orig, input, "ai3")
+
+    assert (isinstance(torch_out, torch.Tensor))
     compare_tensors(ai3_out, torch_out, "")
