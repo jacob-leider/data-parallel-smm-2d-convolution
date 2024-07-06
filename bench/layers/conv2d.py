@@ -4,6 +4,8 @@ from torch import nn
 import ai3
 from test import compare_tensors
 
+N = 100
+
 
 class Conv2D(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0):
@@ -16,11 +18,8 @@ class Conv2D(nn.Module):
         return x
 
 
-def run():
-    print("Conv2D")
-    # input = torch.randn(500, 3, 500, 500)
-    input = torch.randn(100, 3, 224, 224)
-    orig = Conv2D(3, 4, (3, 3))
+def run_on(input):
+    orig = Conv2D(input.shape[1], input.shape[1], (3, 3))
     orig_out = predict_show_time(orig, input, "pytorch")
     assert (isinstance(orig_out, torch.Tensor))
 
@@ -32,6 +31,14 @@ def run():
 
     compare_tensors(direct_out, orig_out.detach().numpy(), "direct")
     compare_tensors(smm_out, orig_out.detach().numpy(), "smm")
+
+
+def run():
+    print("Conv2D")
+    # input = torch.randn(N, 3, 224, 224)
+    # run_on(input)
+    input = torch.randn(N, 512, 14, 14)
+    run_on(input)
 
 
 if __name__ == "__main__":

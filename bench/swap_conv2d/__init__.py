@@ -1,6 +1,7 @@
 import torch
 import ai3
 from bench import predict_show_time
+from typing import Optional, Callable
 from test import compare_tensors
 
 
@@ -27,10 +28,10 @@ def run():
     maxvit.run()
 
 
-def swap_conv2d_and_time(orig: torch.nn.Module, input: torch.Tensor):
+def swap_conv2d_and_time(orig: torch.nn.Module, input: torch.Tensor, selector_func: Optional[Callable] = None):
     torch_out = predict_show_time(orig, input, "pytorch")
 
-    ai3.swap_conv2d(orig)
+    ai3.swap_conv2d(orig, selector_func)
     ai3_out = predict_show_time(orig, input, "ai3")
 
     assert (isinstance(torch_out, torch.Tensor))

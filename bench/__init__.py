@@ -8,6 +8,7 @@ USE_TORCH_COMPILE = False
 
 
 def warm_up(runner, data):
+    print('warming')
     data_batch = None
     if data.dim() == 4:
         data_batch = data[0]
@@ -25,6 +26,7 @@ def predict_show_time(runner, data, runner_name: str, store: Optional[defaultdic
         warm_up(runner, data)
         with torch.inference_mode():
             start_time = time.time()
+            print('actual')
             out = runner(data)
     elif isinstance(runner, ai3.Model):
         warm_up(runner, data)

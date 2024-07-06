@@ -9,7 +9,7 @@
 #define GROUP_SIZE_GUESS 1024
 #endif
 
-enum PaddingMode { Zeros, Reflect, Replicate, Circular };
+enum class PaddingMode { Zeros, Reflect, Replicate, Circular };
 
 struct GroupSplit2D {
     uint each_a;

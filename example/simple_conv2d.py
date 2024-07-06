@@ -1,6 +1,7 @@
 import torch
 from torch import nn
-import ai3 # the framework
+import ai3  # the framework
+
 
 class ConvNet(nn.Module):
     def __init__(self):
@@ -19,6 +20,7 @@ class ConvNet(nn.Module):
         x = self.avgpool(x)
         x = torch.flatten(x, 1)
         return x
+
 
 input_data = torch.randn(10, 3, 224, 224)
 torch_model = ConvNet()

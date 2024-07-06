@@ -14,7 +14,8 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
            const std::vector<uint> &padding, const std::vector<uint> &stride,
            const std::vector<uint> &dilation, const PaddingMode padding_mode,
            int groups) {
-    errs::bail_if(padding_mode != Zeros, "padding mode must be zeros");
+    errs::bail_if(padding_mode != PaddingMode::Zeros,
+                  "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
 
     const uint input_channels = input.input_channels();
