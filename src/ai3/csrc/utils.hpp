@@ -1,19 +1,51 @@
 #pragma once
 
-using uint = unsigned int;
 #include <cmath>
 #include <optional>
 #include <sstream>
 #include <vector>
 
 #ifndef GROUP_SIZE_GUESS
-#define GROUP_SIZE_GUESS 256
-#endif
-#ifndef SAMPLES_PER_KERNEL
-#define SAMPLES_PER_KERNEL 10
+#define GROUP_SIZE_GUESS 1024
 #endif
 
 enum PaddingMode { Zeros, Reflect, Replicate, Circular };
+
+struct GroupSplit2D {
+    uint each_a;
+    uint each_b;
+    uint total_a;
+    uint total_b;
+};
+
+template <typename dtype>
+void proportionate_2d_work_split(uint num_a, uint num_b, uint total,
+                                 uint *set_each_a, uint *set_each_b,
+                                 uint *set_total_a, uint *set_total_b) {
+    dtype scaler = std::sqrt(dtype(total) / (num_a * num_b));
+    uint each_a = num_a * scaler;
+    uint each_b = num_b * scaler;
+    if (each_a == 0) {
+        each_a = 1;
+        scaler = 1 / (scaler * num_a);
+        each_b /= scaler;
+        if (each_b == 0) {
+            each_b = 1;
+        }
+    }
+    if (each_b == 0) {
+        each_b = 1;
+        scaler = 1 / (scaler * num_b);
+        each_a /= scaler;
+        if (each_a == 0) {
+            each_a = 1;
+        }
+    }
+    *set_each_a = each_a;
+    *set_each_b = each_b;
+    *set_total_a = ((num_a + each_a - 1) / each_a) * each_a;
+    *set_total_b = ((num_b + each_b - 1) / each_b) * each_b;
+}
 
 inline uint to_linear(uint i, uint j, uint k, uint l, uint m, uint J, uint K,
                       uint L, uint M) {

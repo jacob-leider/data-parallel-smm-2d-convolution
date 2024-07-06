@@ -51,131 +51,126 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
 
     sycl::queue queue(sycl::default_selector_v);
 
-    dtype *kernel_data = sycl::malloc_device<dtype>(kernel.count(), queue);
-    queue.memcpy(kernel_data, kernel.data, kernel.count() * sizeof(dtype));
+    sycl::buffer<dtype> buf_input(input.data, input.count());
+    sycl::buffer<dtype> buf_ker(kernel.data, kernel.count());
+    sycl::buffer<dtype> buf_output(output.data, output.count());
     const bool has_bias = bias.has_value();
-    dtype *bias_data = nullptr;
-    if (has_bias) {
-        bias_data = sycl::malloc_device<dtype>(bias->count(), queue);
-        queue.memcpy(bias_data, bias->data, bias->count() * sizeof(dtype));
-    }
-    dtype *input_data = sycl::malloc_device<dtype>(input.count(), queue);
-    dtype *output_data = sycl::malloc_device<dtype>(output.count(), queue);
+    sycl::buffer<dtype> buf_bias =
+        has_bias ? sycl::buffer<dtype>(bias->data, bias->count())
+                 : sycl::buffer<dtype>(sycl::range<1>(0));
 
-    queue.wait();
+    std::cout << "ic: " << input_channels << " oc: " << output_channels << "\n";
+    std::cout << "ih: " << input_height << " oh: " << output_height << "\n";
+    std::cout << "iw: " << input_width << " ow: " << output_width << "\n";
+    std::cout << "ti: " << (input_channels * input_height * input_width)
+              << " to: " << (output_channels * output_height * output_width)
+              << "\n";
 
-    const uint output_size_per_channel = output_height * output_width;
+    const uint output_area = output_height * output_width;
     const uint max_work_group_size =
         queue.get_device().get_info<sycl::info::device::max_work_group_size>();
     uint work_group_size = max_work_group_size;
     if (GROUP_SIZE_GUESS < work_group_size) {
         work_group_size = GROUP_SIZE_GUESS;
     }
-    if (output_size_per_channel < work_group_size) {
-        work_group_size = output_size_per_channel;
+    if (output_area < work_group_size) {
+        work_group_size = output_area;
+    }
+    dtype scaler =
+        std::sqrt(dtype(work_group_size) / (output_channels * output_area));
+    uint each_channel = output_channels * scaler;
+    uint each_output_area = output_area * scaler;
+    if (each_channel == 0) {
+        each_channel = 1;
+        scaler = 1 / (scaler * output_channels);
+        each_output_area /= scaler;
+        if (each_output_area == 0) {
+            each_output_area = 1;
+        }
+    }
+    if (each_output_area == 0) {
+        scaler = 1 / (scaler * each_output_area);
+        each_output_area = 1;
+        each_channel /= scaler;
+        if (each_channel == 0) {
+            each_channel = 1;
+        }
     }
 
-    const uint output_sample_size =
-        output_channels * output_height * output_width;
-    const uint input_sample_size = input_channels * input_height * input_width;
-    const uint output_size_per_channel_total =
-        ((output_size_per_channel + work_group_size - 1) / work_group_size) *
-        work_group_size;
+    const uint total_output_area =
+        ((output_area + each_output_area - 1) / each_output_area) *
+        each_output_area;
+    const uint total_channels =
+        ((output_channels + each_channel - 1) / each_channel) * each_channel;
 
-    auto end = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration<double>(end - start);
-    std::cout << "time before starting to submit: " << elapsed.count()
-              << " seconds\n";
+    // const uint each_channel = 1;
+    // uint each_output_area = output_work_group_size;
+    // if (output_area < each_output_area) {
+    //     each_output_area = output_area;
+    // }
+    // const uint total_output_area =
+    //     ((output_area + each_output_area - 1) / each_output_area) *
+    //     each_output_area;
 
-    start = std::chrono::steady_clock::now();
-    for (uint start_samp = 0; start_samp < num_samples;
-         start_samp += SAMPLES_PER_KERNEL) {
-        uint samps_in_window = SAMPLES_PER_KERNEL;
-        if (num_samples - start_samp < SAMPLES_PER_KERNEL) {
-            samps_in_window = num_samples - start_samp;
-        }
-        sycl::event cpy_input =
-            queue.memcpy(input_data + (start_samp * input_sample_size),
-                         input.data + (start_samp * input_sample_size),
-                         samps_in_window * input_sample_size * sizeof(dtype));
-        sycl::event e = queue.submit([&](sycl::handler &h) {
-            h.depends_on(cpy_input);
-            h.parallel_for(
-                sycl::nd_range(sycl::range(samps_in_window, output_channels,
-                                           output_size_per_channel_total),
-                               sycl::range(1, 1, work_group_size)),
-                [=](sycl::nd_item<3> item) {
-                    const uint samp_in_window = item.get_global_id(0);
-                    const uint out_c = item.get_global_id(1);
-                    const uint area_id = item.get_global_id(2);
-                    if (area_id >= output_size_per_channel) {
-                        return;
-                    }
-                    const uint out_h = area_id / output_width;
-                    const uint out_w = area_id % output_width;
-                    dtype sum = 0;
-                    uint h_offset_base = out_h * stride_h - padding_h;
-                    uint w_offset_base = out_w * stride_w - padding_w;
-                    for (uint in_c = 0; in_c < input_channels; ++in_c) {
-                        for (uint ker_h = 0; ker_h < kernel_height; ++ker_h) {
-                            for (uint ker_w = 0; ker_w < kernel_width;
-                                 ++ker_w) {
-                                uint h_offset =
-                                    h_offset_base + ker_h * dilation_h;
-                                uint w_offset =
-                                    w_offset_base + ker_w * dilation_w;
-                                if (h_offset >= 0 && h_offset < input_height &&
-                                    w_offset >= 0 && w_offset < input_width) {
-                                    sum +=
-                                        input_data[to_linear(
-                                            start_samp + samp_in_window, in_c,
-                                            h_offset, w_offset, input_channels,
-                                            input_height, input_width)] *
-                                        kernel_data[to_linear(
-                                            out_c, in_c, ker_h, ker_w,
-                                            input_channels, kernel_height,
-                                            kernel_width)];
-                                }
+    queue.submit([&](sycl::handler &h) {
+        auto acc_input =
+            buf_input.template get_access<sycl::access::mode::read>(h);
+        auto acc_bias =
+            buf_bias.template get_access<sycl::access::mode::read>(h);
+        auto acc_kernel =
+            buf_ker.template get_access<sycl::access::mode::read>(h);
+        auto acc_output =
+            buf_output.template get_access<sycl::access::mode::write>(h);
+        h.parallel_for(
+            sycl::nd_range(
+                sycl::range(num_samples, total_channels, total_output_area),
+                sycl::range(1, each_channel, each_output_area)),
+            [=](sycl::nd_item<3> item) {
+                const uint samp = item.get_global_id(0);
+                const uint out_c = item.get_global_id(1);
+                if (out_c >= output_channels) {
+                    return;
+                }
+                const uint area_id = item.get_global_id(2);
+                if (area_id >= output_area) {
+                    return;
+                }
+                const uint out_h = area_id / output_width;
+                const uint out_w = area_id % output_width;
+                dtype sum = 0;
+                uint h_offset_base = out_h * stride_h - padding_h;
+                uint w_offset_base = out_w * stride_w - padding_w;
+                for (uint in_c = 0; in_c < input_channels; ++in_c) {
+                    for (uint ker_h = 0; ker_h < kernel_height; ++ker_h) {
+                        for (uint ker_w = 0; ker_w < kernel_width; ++ker_w) {
+                            uint h_offset = h_offset_base + ker_h * dilation_h;
+                            uint w_offset = w_offset_base + ker_w * dilation_w;
+                            if (h_offset >= 0 && h_offset < input_height &&
+                                w_offset >= 0 && w_offset < input_width) {
+                                sum += acc_input[to_linear(
+                                           samp, in_c, h_offset, w_offset,
+                                           input_channels, input_height,
+                                           input_width)] *
+                                       acc_kernel[to_linear(
+                                           out_c, in_c, ker_h, ker_w,
+                                           input_channels, kernel_height,
+                                           kernel_width)];
                             }
                         }
                     }
-                    if (has_bias) {
-                        sum += bias_data[out_c];
-                    }
-                    output_data[to_linear(start_samp + samp_in_window, out_c,
-                                          out_h, out_w, output_channels,
-                                          output_height, output_width)] = sum;
-                });
-        });
-        queue.memcpy(output.data + (start_samp * output_sample_size),
-                     output_data + (start_samp * output_sample_size),
-                     samps_in_window * output_sample_size * sizeof(dtype), e);
-    }
+                }
+                if (has_bias) {
+                    sum += acc_bias[out_c];
+                }
+                acc_output[to_linear(samp, out_c, out_h, out_w, output_channels,
+                                     output_height, output_width)] = sum;
+            });
+    });
 
-    end = std::chrono::steady_clock::now();
-    elapsed = std::chrono::duration<double>(end - start);
-    std::cout << "time taken to submit all: " << elapsed.count()
-              << " seconds\n";
-
-    start = std::chrono::steady_clock::now();
     queue.wait_and_throw();
-    end = std::chrono::steady_clock::now();
-    elapsed = std::chrono::duration<double>(end - start);
-    std::cout << "time for queue to finish: " << elapsed.count()
-              << " seconds\n";
 
-    // start = std::chrono::steady_clock::now();
-    // queue.memcpy(output.data, output_data, output.count() * sizeof(dtype));
-    // queue.wait();
-    // end = std::chrono::steady_clock::now();
-    // elapsed = std::chrono::duration<double>(end - start);
-    // std::cout << "time for copy outback to host: " << elapsed.count()
-    //           << " seconds\n";
-    // sycl::free(input_data, queue);
-    sycl::free(kernel_data, queue);
-    if (bias_data != nullptr) {
-        sycl::free(bias_data, queue);
-    }
-    sycl::free(output_data, queue);
+    auto end = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration<double>(end - start);
+    std::cout << "time in func: " << elapsed.count() << " seconds\n";
     return output;
 }
