@@ -3,19 +3,15 @@
 # which is used everywhere and make each layer have a device alloc for weights and biases
 # TODO When with SYCL support don't need to copy the output back to host if the
 # next operation will solely access it on device
+# TODO before paper gets published put the code on pypi
 
-# TODO try some way to do the normal pip install without compiling cpp code
-# then taking users cpp code and compiling the SO with that. This would stop
-# requiring building from source, this would be easier to do with CMAKE
-# see if we can include <ai3.hpp> and if that gets handled in cmake
 # TODO onnx support, should be pretty easy to also iterate
 # through the onnx layers and hyperparametrs, could also use the pytorch way
 # of loading .onnx, .onnx -> nn.Module -> ai3.optimize -> ai3.Model
 # once onnx support we can have two files which are the only places torch and onnx are imported
 
 import torch
-from torch import nn
-from typing import Mapping, Optional, Sequence, Union
+from typing import Mapping, Optional, Sequence, Union, Callable
 from ai3 import layers, swap_torch, utils, core
 
 DEFAULT_ALGOS: Mapping[str, str] = {key: "default" for key in [
@@ -70,16 +66,17 @@ class Tensor():
                                 dtype=torch.__dict__[self.typestr]).view(self.core.shape)
 
 
-def swap_backend(module: nn.Module, algos: Optional[Mapping[str, Union[str, Sequence[str]]]] = None) -> Model:
+def swap_backend(module: torch.nn.Module, algos: Optional[Mapping[str, Union[str, Sequence[str], Callable]]] = None, dtype=None) -> Model:
     if algos:
         algos = {**DEFAULT_ALGOS, **algos}
     else:
         algos = DEFAULT_ALGOS
-    dtype = torch.get_default_dtype()
+    if not dtype:
+        dtype = torch.get_default_dtype()
     return Model(dtype, swap_torch.get_layers(module, dtype, algos))
 
 
-def swap_conv2d(module: nn.Module, algo: Optional[Union[str, Sequence[str]]] = None):
-    if not algo:
-        algo = DEFAULT_ALGOS["conv2d"]
-    swap_torch.swap_conv2d(module, torch.get_default_dtype(), algo)
+def swap_conv2d(module: torch.nn.Module, algos: Optional[Union[str, Sequence[str], Callable]] = None):
+    if not algos:
+        algos = DEFAULT_ALGOS["conv2d"]
+    swap_torch.swap_conv2d(module, torch.get_default_dtype(), algos)

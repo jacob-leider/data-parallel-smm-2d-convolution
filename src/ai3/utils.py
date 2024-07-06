@@ -1,4 +1,5 @@
 from typing import (
+    NoReturn,
     Union,
     Sequence
 )
@@ -8,7 +9,7 @@ FLOAT32_STR = "float32"
 FLOAT64_STR = "float64"
 
 
-def bail(message):
+def bail(message) -> NoReturn:
     raise AssertionError(message)
 
 
