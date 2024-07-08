@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ai3.hpp"
 #include "utils.hpp"
 #include <CL/sycl.hpp>

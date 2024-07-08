@@ -91,11 +91,21 @@ template <typename... Args> [[noreturn]] void bail(Args... args) {
     throw std::runtime_error(ss.str());
 }
 
+[[noreturn]] inline void no_user_def(const std::string &name) {
+    bail("trying to use custom ", name, " when no implementation exists");
+}
+
+[[noreturn]] inline void invalid_algo(const std::string &op,
+                                      const std::string &algo) {
+    bail("invalid ", op, " algorithm: ", algo);
+}
+
 template <typename... Args> void bail_if(bool check, Args... args) {
     if (check) {
         bail(args...);
     }
 }
+
 } // namespace errs
 
 namespace input_dims {

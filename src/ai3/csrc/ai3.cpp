@@ -1,3 +1,4 @@
+#include "utils.hpp"
 #define CONV2D_SYCL
 #include "ai3.hpp"
 #include "algo_paths.hpp"
@@ -28,26 +29,21 @@ template <typename dtype> class MaxPool2D : virtual public Layer<dtype> {
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
         if (DEFAULT(algorithm)) {
-#ifdef MAXPOOL2D_CUSTOM
-            return maxpool2d<dtype>(std::move(input), kernel_shape, padding,
-                                    stride, dilation, ceil_mode);
-#else
-            return _maxpool2d<dtype>(std::move(input), kernel_shape, padding,
-                                     stride, dilation, ceil_mode);
-#endif
+            if constexpr (DEFAULT_TO_CUSTOM_MAXPOOL2D) {
+                return maxpool2d<dtype>(std::move(input), kernel_shape, padding,
+                                        stride, dilation, ceil_mode);
+            } else {
+                return _maxpool2d<dtype>(std::move(input), kernel_shape,
+                                         padding, stride, dilation, ceil_mode);
+            }
         } else if (CUSTOM(algorithm)) {
-#ifdef LINEAR_CUSTOM
             return maxpool2d<dtype>(std::move(input), kernel_shape, padding,
                                     stride, dilation, ceil_mode);
-#else
-            errs::bail(
-                "trying to use user maxpool2d when no implementation exists");
-#endif
         } else if (BUILTIN(algorithm)) {
             return _maxpool2d<dtype>(std::move(input), kernel_shape, padding,
                                      stride, dilation, ceil_mode);
         }
-        errs::bail("invalid maxpool2d algorithm: ", algorithm);
+        errs::invalid_algo("maxpool2d", algorithm);
     }
     ~MaxPool2D() = default;
 
@@ -73,30 +69,25 @@ template <typename dtype> class AvgPool2D : virtual public Layer<dtype> {
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
         if (DEFAULT(algorithm)) {
-#ifdef AVGPOOL2D_CUSTOM
-            return avgpool2d<dtype>(std::move(input), kernel_shape, padding,
-                                    stride, ceil_mode, count_include_pad,
-                                    divisor_override);
-#else
-            return _avgpool2d<dtype>(std::move(input), kernel_shape, padding,
-                                     stride, ceil_mode, count_include_pad,
-                                     divisor_override);
-#endif
+            if constexpr (DEFAULT_TO_CUSTOM_AVGPOOL2D) {
+                return avgpool2d<dtype>(std::move(input), kernel_shape, padding,
+                                        stride, ceil_mode, count_include_pad,
+                                        divisor_override);
+            } else {
+                return _avgpool2d<dtype>(std::move(input), kernel_shape,
+                                         padding, stride, ceil_mode,
+                                         count_include_pad, divisor_override);
+            }
         } else if (CUSTOM(algorithm)) {
-#ifdef AVGPOOL2D_CUSTOM
             return avgpool2d<dtype>(std::move(input), kernel_shape, padding,
                                     stride, ceil_mode, count_include_pad,
                                     divisor_override);
-#else
-            errs::bail("trying to use user avgpool2d when no "
-                       "implementation exists");
-#endif
         } else if (BUILTIN(algorithm)) {
             return _avgpool2d<dtype>(std::move(input), kernel_shape, padding,
                                      stride, ceil_mode, count_include_pad,
                                      divisor_override);
         }
-        errs::bail("invalid avgpool2d algorithm: ", algorithm);
+        errs::invalid_algo("avgpool2d", algorithm);
     }
     ~AvgPool2D() = default;
 
@@ -120,22 +111,17 @@ class AdaptiveAvgPool2D : virtual public Layer<dtype> {
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
         if (DEFAULT(algorithm)) {
-#ifdef AVGPOOL2D_CUSTOM
-            return adaptiveavgpool2d(std::move(input), output_shape);
-#else
-            return _adaptiveavgpool2d(std::move(input), output_shape);
-#endif
+            if constexpr (DEFAULT_TO_CUSTOM_ADAPTIVEAVGPOOL2D) {
+                return adaptiveavgpool2d(std::move(input), output_shape);
+            } else {
+                return _adaptiveavgpool2d(std::move(input), output_shape);
+            }
         } else if (CUSTOM(algorithm)) {
-#ifdef AVGPOOL2D_CUSTOM
             return adaptiveavgpool2d(std::move(input), output_shape);
-#else
-            errs::bail("trying to use user adaptiveavgpool2d when no "
-                       "implementation exists");
-#endif
         } else if (BUILTIN(algorithm)) {
             return _adaptiveavgpool2d(std::move(input), output_shape);
         }
-        errs::bail("invalid adaptiveavgpool2d algorithm: ", algorithm);
+        errs::invalid_algo("adaptiveavgpool2d", algorithm);
     }
     ~AdaptiveAvgPool2D() = default;
 
@@ -150,22 +136,17 @@ template <typename dtype> class ReLU : virtual public Layer<dtype> {
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
         if (DEFAULT(algorithm)) {
-#ifdef LINEAR_CUSTOM
-            return relu<dtype>(std::move(input));
-#else
-            return _relu<dtype>(std::move(input));
-#endif
+            if constexpr (DEFAULT_TO_CUSTOM_RELU) {
+                return relu<dtype>(std::move(input));
+            } else {
+                return _relu<dtype>(std::move(input));
+            }
         } else if (CUSTOM(algorithm)) {
-#ifdef LINEAR_CUSTOM
             return relu<dtype>(std::move(input));
-#else
-            errs::bail(
-                "trying to use user flatten when no implementation exists");
-#endif
         } else if (BUILTIN(algorithm)) {
             return _relu<dtype>(std::move(input));
         }
-        errs::bail("invalid relu algorithm: ", algorithm);
+        errs::invalid_algo("relu", algorithm);
     }
     ~ReLU() = default;
 
@@ -183,22 +164,17 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
         if (DEFAULT(algorithm)) {
-#ifdef LINEAR_CUSTOM
-            return linear<dtype>(std::move(input), weight, bias);
-#else
-            return _linear<dtype>(std::move(input), weight, bias);
-#endif
+            if constexpr (DEFAULT_TO_CUSTOM_LINEAR) {
+                return linear<dtype>(std::move(input), weight, bias);
+            } else {
+                return _linear<dtype>(std::move(input), weight, bias);
+            }
         } else if (CUSTOM(algorithm)) {
-#ifdef LINEAR_CUSTOM
             return linear<dtype>(std::move(input), weight, bias);
-#else
-            errs::bail(
-                "trying to use user flatten when no implementation exists");
-#endif
         } else if (BUILTIN(algorithm)) {
             return _linear<dtype>(std::move(input), weight, bias);
         }
-        errs::bail("invalid linear algorithm: ", algorithm);
+        errs::invalid_algo("linear", algorithm);
     }
 
     ~Linear() = default;
@@ -217,22 +193,17 @@ template <typename dtype> class Flatten : virtual public Layer<dtype> {
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
         if (DEFAULT(algorithm)) {
-#ifdef FLATTEN_CUSTOM
-            return flatten<dtype>(std::move(input), start_dim, end_dim);
-#else
-            return _flatten<dtype>(std::move(input), start_dim, end_dim);
-#endif
+            if constexpr (DEFAULT_TO_CUSTOM_FLATTEN) {
+                return flatten<dtype>(std::move(input), start_dim, end_dim);
+            } else {
+                return _flatten<dtype>(std::move(input), start_dim, end_dim);
+            }
         } else if (CUSTOM(algorithm)) {
-#ifdef FLATTEN_CUSTOM
             return flatten<dtype>(std::move(input), start_dim, end_dim);
-#else
-            errs::bail(
-                "trying to use user linear when no implementation exists");
-#endif
         } else if (BUILTIN(algorithm)) {
             return _flatten<dtype>(std::move(input), start_dim, end_dim);
         }
-        errs::bail("invalid flatten algorithm: ", algorithm);
+        errs::invalid_algo("flatten", algorithm);
     }
     ~Flatten() = default;
 
@@ -252,29 +223,21 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
         : weight(weight_address, weight_shape),
           bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]})),
           padding(padding), stride(stride), dilation(dilation),
-          padding_mode(padding_mode), groups(groups), algorithm(algorithm) {
-        // TODO try creating the queue here as well as malloc_device here
-#if defined(USE_SYCL) && defined(CONV2D_SYCL)
-#endif
-    }
+          padding_mode(padding_mode), groups(groups), algorithm(algorithm) {}
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
         if (DEFAULT(algorithm)) {
-#ifdef CONV2D_CUSTOM
-            return conv2d<dtype>(std::move(input), weight, bias, padding,
-                                 stride, dilation, padding_mode, groups);
-#else
-            return direct_conv2d<dtype>(std::move(input), weight, bias, padding,
-                                        stride, dilation, padding_mode, groups);
-#endif
+            if constexpr (DEFAULT_TO_CUSTOM_CONV2D) {
+                return conv2d<dtype>(std::move(input), weight, bias, padding,
+                                     stride, dilation, padding_mode, groups);
+            } else {
+                return direct_conv2d<dtype>(std::move(input), weight, bias,
+                                            padding, stride, dilation,
+                                            padding_mode, groups);
+            }
         } else if (CUSTOM(algorithm)) {
-#ifdef CONV2D_CUSTOM
             return conv2d<dtype>(std::move(input), weight, bias, padding,
                                  stride, dilation, padding_mode, groups);
-#else
-            errs::bail(
-                "trying to use custom conv2d when no implementation was found");
-#endif
         } else if (algorithm == "direct" || BUILTIN(algorithm)) {
             return direct_conv2d<dtype>(std::move(input), weight, bias, padding,
                                         stride, dilation, padding_mode, groups);
@@ -282,7 +245,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
             return smm_conv2d<dtype>(std::move(input), weight, bias, padding,
                                      stride, dilation, padding_mode, groups);
         }
-        errs::bail("invalid convolution algorithm: ", algorithm);
+        errs::invalid_algo("conv2d", algorithm);
     }
 
     Tensor<dtype> forward(const intptr_t input_address,

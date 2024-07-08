@@ -2,8 +2,11 @@
 
 #include <ai3.hpp>
 
-// #define ADAPTIVE_CUSTOM
+constexpr bool DEFAULT_TO_CUSTOM_ADAPTIVEAVGPOOL2D = false;
+
 template <typename dtype>
-Tensor<dtype> _adaptiveavgpool2d(
+Tensor<dtype> adaptiveavgpool2d(
     Tensor<dtype> input,
-    const std::optional<std::vector<std::optional<uint>>> output_shape);
+    const std::optional<std::vector<std::optional<uint>>> output_shape) {
+    errs::no_user_def("adaptiveavgpool2d");
+}
