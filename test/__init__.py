@@ -52,7 +52,8 @@ def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: Optional[str] = N
             print(f'  Passed Test {mes}')
     else:
         add_fail(mes)
-        print(f'Failed Test {mes}')
+        print(
+            f'Failed Test {mes}, {len(different_elements[0])} different elements out of {out.size}')
         print('  Tensors differ at the following indices:')
         for index in zip(*different_elements):
             index = tuple(map(int, index))

@@ -16,7 +16,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
          ceil_mode: bool = False,
          ceil_mode_note_height: bool = False,
          ceil_mode_note_width: bool = False,
-         test_name: str, atol=1e-5) -> None:
+         test_name: str) -> None:
     input = torch.randn(input_channels, in_height,
                         in_width, dtype=torch.float32)
     kernel_shape = (kernel_height, kernel_width)
@@ -39,7 +39,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
     ai3_output = model.predict(input)
     torch_output = nn.MaxPool2d(kernel_shape, dilation=dilation,
                                 padding=padding, stride=stride, ceil_mode=ceil_mode)(input)
-    compare_tensors(ai3_output, torch_output, test_name, atol=atol)
+    compare_tensors(ai3_output, torch_output, test_name)
 
 
 def run():
@@ -50,7 +50,6 @@ def run():
          kernel_height=7,
          kernel_width=5,
          dilation=(2, 2),
-         atol=1e-4,
          test_name='same odd kernel')
 
     test(input_channels=4,
@@ -59,7 +58,6 @@ def run():
          kernel_height=8,
          kernel_width=4,
          dilation=(2, 2),
-         atol=1e-4,
          test_name='same even kernel')
 
     test(input_channels=4,
@@ -68,7 +66,6 @@ def run():
          kernel_height=8,
          kernel_width=4,
          dilation=(1, 2),
-         atol=1e-4,
          test_name='valid even kernel')
 
     test(input_channels=4,
@@ -77,7 +74,6 @@ def run():
          kernel_height=7,
          kernel_width=5,
          dilation=(1, 2),
-         atol=1e-4,
          test_name='valid odd kernel')
 
     test(input_channels=4,
@@ -86,7 +82,6 @@ def run():
          kernel_height=7,
          kernel_width=5,
          dilation=(1, 2),
-         atol=1e-4,
          test_name='2d dilation')
 
     test(input_channels=4,
@@ -95,7 +90,6 @@ def run():
          kernel_height=7,
          kernel_width=5,
          dilation=3,
-         atol=1e-4,
          test_name='1d dilation')
 
     test(input_channels=4,
@@ -104,7 +98,6 @@ def run():
          kernel_height=7,
          kernel_width=5,
          padding=2,
-         atol=1e-4,
          test_name='1d padding')
 
     test(input_channels=4,
@@ -113,7 +106,6 @@ def run():
          kernel_height=7,
          kernel_width=10,
          padding=(2, 5),
-         atol=1e-4,
          test_name='2d padding')
 
     test(input_channels=4,
@@ -122,7 +114,6 @@ def run():
          kernel_height=7,
          kernel_width=5,
          stride=2,
-         atol=1e-4,
          test_name='1d stride')
 
     test(input_channels=4,
@@ -131,7 +122,6 @@ def run():
          kernel_height=7,
          kernel_width=5,
          stride=(2, 3),
-         atol=1e-4,
          test_name='2d stride')
 
     test(input_channels=1,
@@ -146,7 +136,6 @@ def run():
          in_width=15,
          kernel_height=10,
          kernel_width=15,
-         atol=1e-4,
          test_name='kern.shape = input.shape')
 
     test(input_channels=3,
@@ -154,7 +143,6 @@ def run():
          in_width=150,
          kernel_height=10,
          kernel_width=10,
-         atol=1e-4,
          test_name='multi channel')
 
     test(input_channels=3,

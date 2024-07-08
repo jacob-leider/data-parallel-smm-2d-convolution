@@ -19,7 +19,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
          ceil_mode_note_width: bool = False,
          count_include_pad=True,
          divisor_override: Optional[int] = None,
-         test_name: str, atol=1e-5) -> None:
+         test_name: str) -> None:
     input = torch.randn(input_channels, in_height,
                         in_width, dtype=torch.float32)
     kernel_shape = (kernel_height, kernel_width)
@@ -43,7 +43,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
     torch_output = nn.AvgPool2d(kernel_shape,
                                 padding=padding, stride=stride, ceil_mode=ceil_mode, count_include_pad=count_include_pad,
                                 divisor_override=divisor_override)(input)
-    compare_tensors(ai3_output, torch_output, test_name, atol=atol)
+    compare_tensors(ai3_output, torch_output, test_name)
 
 
 def run():

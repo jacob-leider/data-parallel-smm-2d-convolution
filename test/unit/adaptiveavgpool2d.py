@@ -7,7 +7,7 @@ from test import compare_tensors
 
 def test(*, input_channels: int, in_height: int, in_width: int,
          output_shape,
-         test_name: str, atol=1e-5) -> None:
+         test_name: str) -> None:
     input = torch.randn(input_channels, in_height,
                         in_width, dtype=torch.float32)
 
@@ -15,7 +15,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
         input.dtype, output_shape, "default")])
     ai3_output = model.predict(input)
     torch_output = nn.AdaptiveAvgPool2d(output_shape)(input)
-    compare_tensors(ai3_output, torch_output, test_name, atol=atol)
+    compare_tensors(ai3_output, torch_output, test_name)
 
 
 def run():

@@ -182,7 +182,7 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
                     res += acc_bias[out_c];
                 }
                 acc_output[to_linear(samp, out_c, out_id, output_channels,
-                                     output_height * output_width)] = res;
+                                     output_area)] = res;
             });
     });
     queue.wait_and_throw();

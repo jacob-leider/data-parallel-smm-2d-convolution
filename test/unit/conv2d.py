@@ -13,7 +13,7 @@ def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int
          dilation: Union[int, Sequence[int]] = 1,
          stride: Union[int, Sequence[int]] = 1,
          groups: int = 1,
-         test_name: str, atol=1e-5) -> None:
+         test_name: str) -> None:
     if num_samples:
         input = torch.randn(num_samples, input_channels, in_height,
                             in_width, dtype=torch.float64)
@@ -40,9 +40,9 @@ def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int
     smm_out = model.predict(input, out_type=torch.Tensor)
     torch_output = F.conv2d(input, kernel, bias=bias, dilation=dilation,
                             padding=padding, stride=stride, groups=groups)
-    compare_tensors(default, torch_output, test_name + ' user', atol=atol)
-    compare_tensors(smm_out, torch_output, test_name + ' smm', atol=atol)
-    compare_tensors(direct_out, torch_output, test_name + ' direct', atol=atol)
+    compare_tensors(default, torch_output, test_name + ' user')
+    compare_tensors(smm_out, torch_output, test_name + ' smm')
+    compare_tensors(direct_out, torch_output, test_name + ' direct')
 
 
 def run():
@@ -55,7 +55,6 @@ def run():
          kernel_height=15,
          kernel_width=12,
          with_bias=True,
-         atol=1e-4,
          test_name='with bias')
 
     test(input_channels=1,
@@ -75,7 +74,6 @@ def run():
          with_bias=True,
          padding='same',
          dilation=(2, 2),
-         atol=1e-4,
          test_name='same odd kernel')
 
     test(input_channels=4,
@@ -87,7 +85,6 @@ def run():
          with_bias=True,
          padding='same',
          dilation=(2, 2),
-         atol=1e-4,
          test_name='same even kernel')
 
     test(input_channels=4,
@@ -99,7 +96,6 @@ def run():
          with_bias=True,
          padding='valid',
          dilation=(1, 2),
-         atol=1e-4,
          test_name='valid even kernel')
 
     test(input_channels=4,
@@ -111,7 +107,6 @@ def run():
          with_bias=True,
          padding='valid',
          dilation=(1, 2),
-         atol=1e-4,
          test_name='valid odd kernel')
 
     test(input_channels=4,
@@ -122,7 +117,6 @@ def run():
          kernel_width=5,
          with_bias=True,
          dilation=(1, 2),
-         atol=1e-4,
          test_name='2d dilation')
 
     test(input_channels=4,
@@ -133,7 +127,6 @@ def run():
          kernel_width=5,
          with_bias=True,
          dilation=3,
-         atol=1e-4,
          test_name='1d dilation')
 
     test(input_channels=4,
@@ -144,7 +137,6 @@ def run():
          kernel_width=5,
          with_bias=True,
          padding=5,
-         atol=1e-4,
          test_name='1d padding')
 
     test(input_channels=4,
@@ -155,7 +147,6 @@ def run():
          kernel_width=5,
          with_bias=True,
          padding=(2, 5),
-         atol=1e-4,
          test_name='2d padding')
 
     test(input_channels=4,
@@ -166,7 +157,6 @@ def run():
          kernel_width=5,
          with_bias=True,
          stride=2,
-         atol=1e-4,
          test_name='1d stride')
 
     test(input_channels=4,
@@ -177,7 +167,6 @@ def run():
          kernel_width=5,
          with_bias=True,
          stride=(2, 3),
-         atol=1e-4,
          test_name='2d stride')
 
     test(input_channels=1,
@@ -187,7 +176,6 @@ def run():
          kernel_height=10,
          kernel_width=15,
          with_bias=True,
-         atol=1e-4,
          test_name='kern.shape = input.shape')
 
     test(input_channels=3,
@@ -196,7 +184,6 @@ def run():
          output_channels=4,
          kernel_height=10,
          kernel_width=10,
-         atol=1e-4,
          test_name='multi channel')
 
     test(input_channels=4,
@@ -206,7 +193,6 @@ def run():
          kernel_height=10,
          kernel_width=10,
          with_bias=True,
-         atol=1e-4,
          test_name='multi channel with bias')
 
     test(input_channels=4,
@@ -216,7 +202,6 @@ def run():
          kernel_height=10,
          kernel_width=10,
          with_bias=True,
-         atol=1e-4,
          test_name='multi channel with bias')
 
     test(num_samples=5,
@@ -227,7 +212,6 @@ def run():
          kernel_height=10,
          kernel_width=10,
          with_bias=True,
-         atol=1e-4,
          test_name='batched multi channel with bias')
 
 

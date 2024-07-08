@@ -7,14 +7,14 @@ from test import compare_tensors
 def test(*, in_shape,
          start_dim: int = 0,
          end_dim: int = -1,
-         test_name: str, atol=1e-5) -> None:
+         test_name: str) -> None:
     input = torch.randn(in_shape, dtype=torch.float32)
 
     model = Model(input.dtype, [Flatten(
         input.dtype, start_dim, end_dim, "default")])
     ai3_output = model.predict(input)
     torch_output = torch.flatten(input, start_dim=start_dim, end_dim=end_dim)
-    compare_tensors(ai3_output, torch_output, test_name, atol=atol)
+    compare_tensors(ai3_output, torch_output, test_name)
 
 
 def run():

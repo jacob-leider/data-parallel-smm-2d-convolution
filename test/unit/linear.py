@@ -7,7 +7,7 @@ from test import compare_tensors
 
 def test(*, num_samples, in_features: int, out_features: int,
          with_bias: bool = False,
-         test_name: str, atol=1e-5) -> None:
+         test_name: str) -> None:
     if num_samples:
         input = torch.randn((num_samples, in_features), dtype=torch.float32)
     else:
@@ -21,7 +21,7 @@ def test(*, num_samples, in_features: int, out_features: int,
     model = Model(input.dtype, [Linear(input.dtype, weight, bias, "default")])
     ai3_output = model.predict(input)
     torch_output = F.linear(input, weight, bias=bias)
-    compare_tensors(ai3_output, torch_output, test_name, atol=atol)
+    compare_tensors(ai3_output, torch_output, test_name)
 
 
 def run():
@@ -52,14 +52,12 @@ def run():
          in_features=348,
          out_features=498,
          with_bias=True,
-         test_name='100s with bias',
-         atol=1e-4)
+         test_name='100s with bias')
     test(num_samples=5,
          in_features=348,
          out_features=498,
          with_bias=True,
-         test_name='100s with bias multiple samples',
-         atol=1e-4)
+         test_name='100s with bias multiple samples')
 
 
 if __name__ == "__main__":

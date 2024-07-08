@@ -5,6 +5,7 @@ from collections import defaultdict
 import torch
 from torch import nn, fx
 
+
 def mod_to_op(mod: nn.Module) -> str:
     if isinstance(mod, nn.Conv2d):
         return "conv2d"
@@ -53,6 +54,7 @@ class Conv2D(nn.Module):
         out = ai3.Tensor(self.internal.forward(x))
         return out.to(torch.Tensor)
 
+
 def get_algo_inc_counter(orig: nn.Module,  algos: Mapping[str, Union[str, Sequence[str], Callable]], layer_counters: defaultdict[str, int]) -> str:
     op = mod_to_op(orig)
     if callable(algos[op]):
@@ -86,13 +88,17 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
                     start_dim = node.kwargs['start_dim']
                 if 'end_dim' in node.kwargs:
                     end_dim = node.kwargs['end_dim']
-                algo = get_algo_inc_counter(torch.nn.Flatten(), algos, layer_counters)
-                utils.bail_if(algo == "torch", "can't use torch backend when in swap_backend")
+                algo = get_algo_inc_counter(
+                    torch.nn.Flatten(), algos, layer_counters)
+                utils.bail_if(algo == "torch",
+                              "can't use torch backend when in swap_backend")
                 forwards.append(layers.Flatten(
                     dtype, start_dim, end_dim, algo))
             elif node.target == torch.relu:
-                algo = get_algo_inc_counter(torch.nn.ReLU(), algos, layer_counters)
-                utils.bail_if(algo == "torch", "can't use torch backend when in swap_backend")
+                algo = get_algo_inc_counter(
+                    torch.nn.ReLU(), algos, layer_counters)
+                utils.bail_if(algo == "torch",
+                              "can't use torch backend when in swap_backend")
                 forwards.append(layers.ReLU(dtype, algo))
             else:
                 utils.bail(f"unsupported function: {node.target}")
@@ -100,7 +106,8 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
             mod = getmodule(complete_module, node.target)
             if not isinstance(mod, nn.Dropout):
                 algo = get_algo_inc_counter(mod, algos, layer_counters)
-                utils.bail_if(algo == "torch", "can't use torch backend when in swap_backend")
+                utils.bail_if(algo == "torch",
+                              "can't use torch backend when in swap_backend")
                 swapped = swap_layer(mod, dtype, algo)
                 if not swapped:
                     utils.bail(f"unsupported module: {mod}")
@@ -110,6 +117,7 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
 
     return forwards
 
+
 def swap_conv2d(complete_module: nn.Module, dtype, algo: Union[str, Sequence[str], Callable]) -> nn.Module:
     gm: fx.GraphModule = fx.symbolic_trace(complete_module)
     layer_counters = defaultdict(int)
@@ -117,13 +125,16 @@ def swap_conv2d(complete_module: nn.Module, dtype, algo: Union[str, Sequence[str
         if node.op == 'call_module':
             mod = getmodule(complete_module, node.target)
             if isinstance(mod, nn.Conv2d):
-                algo = get_algo_inc_counter(mod, {'conv2d': algo}, layer_counters)
+                algo = get_algo_inc_counter(
+                    mod, {'conv2d': algo}, layer_counters)
                 if algo == "torch":
                     continue
                 swapped = swap_layer(mod, dtype, algo)
                 assert (isinstance(swapped, layers.Conv2D))
-                complete_module = setmodule(complete_module, node.target, Conv2D(swapped))
+                complete_module = setmodule(
+                    complete_module, node.target, Conv2D(swapped))
     return complete_module
+
 
 def swap_layer(module: nn.Module, dtype, algo: str) -> Optional[layers.Layer]:
     if isinstance(module, nn.Conv2d):
