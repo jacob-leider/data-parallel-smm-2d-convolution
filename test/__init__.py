@@ -7,6 +7,8 @@ import inspect
 
 FAILED_TESTS = []
 
+TEST_GROUPED_CONVOLUTION = False
+
 
 def show_failed():
     if FAILED_TESTS:

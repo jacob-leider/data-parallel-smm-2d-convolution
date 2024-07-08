@@ -1,7 +1,6 @@
 import torch
 import torchvision
 import ai3
-from bench.swap_conv2d import swap_conv2d_and_time
 
 
 def conv2d_selector(orig: torch.nn.Conv2d) -> str:

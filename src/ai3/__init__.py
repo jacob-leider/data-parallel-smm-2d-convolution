@@ -1,10 +1,21 @@
-# TODO in benchmarks include Intel Extension for PyTorch
+# * Paper *
+# TODO before paper gets published put the code on pypi
+
+# * SYCL *
 # TODO When with SYCL support try making queue an instance of the model or layer
 # which is used everywhere and make each layer have a device alloc for weights and biases
 # TODO When with SYCL support don't need to copy the output back to host if the
 # next operation will solely access it on device
-# TODO before paper gets published put the code on pypi
 
+# * TESTING *
+# TODO examples ran in integration tests and benchmarks are pretty similar
+# only the function call at end changing the setup is the same so
+# make some way to change that function via global and .run() on all
+# the same files
+# TODO also the embedded_sequentials is a test which users can't change
+# the result of. We should have a seperate testing for internal
+
+# * FUTURE *
 # TODO onnx support, should be pretty easy to also iterate
 # through the onnx layers and hyperparametrs, could also use the pytorch way
 # of loading .onnx, .onnx -> nn.Module -> ai3.optimize -> ai3.Model

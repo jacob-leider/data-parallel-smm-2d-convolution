@@ -3,7 +3,6 @@ import torch
 from bench import predict_show_time
 from torch import nn
 from test import compare_tensors
-import torchvision.models as tvm
 import ai3
 try:
     import intel_extension_for_pytorch as ipex
