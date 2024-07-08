@@ -53,21 +53,6 @@ class Conv2D(nn.Module):
         out = ai3.Tensor(self.internal.forward(x))
         return out.to(torch.Tensor)
 
-
-def swap_conv2d(module: nn.Module, dtype, algo: Union[str, Sequence[str], Callable]) -> nn.Module:
-    gm: fx.GraphModule = fx.symbolic_trace(module)
-    layer_counters = defaultdict(int)
-    for node in gm.graph.nodes:
-        if node.op == 'call_module':
-            mod = getmodule(module, node.target)
-            if isinstance(mod, nn.Conv2d):
-                swapped = swap_layer(
-                    mod, dtype, {'conv2d': algo}, layer_counters)
-                assert (isinstance(swapped, layers.Conv2D))
-                module = setmodule(module, node.target, Conv2D(swapped))
-    return module
-
-
 def get_algo_inc_counter(orig: nn.Module,  algos: Mapping[str, Union[str, Sequence[str], Callable]], layer_counters: defaultdict[str, int]) -> str:
     op = mod_to_op(orig)
     if callable(algos[op]):
@@ -77,12 +62,11 @@ def get_algo_inc_counter(orig: nn.Module,  algos: Mapping[str, Union[str, Sequen
         layer_counters[op] += 1
     else:
         algo = algos[op]
-    assert isinstance(algo, str)
     return algo
 
 
-def get_layers(module: nn.Module, dtype, algos: Mapping[str, Union[str, Sequence[str], Callable]]) -> List[layers.Layer]:
-    gm: fx.GraphModule = fx.symbolic_trace(module)
+def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping[str, Union[str, Sequence[str], Callable]]) -> List[layers.Layer]:
+    gm: fx.GraphModule = fx.symbolic_trace(complete_module)
     forwards = []
 
     layer_counters = defaultdict(int)
@@ -102,18 +86,22 @@ def get_layers(module: nn.Module, dtype, algos: Mapping[str, Union[str, Sequence
                     start_dim = node.kwargs['start_dim']
                 if 'end_dim' in node.kwargs:
                     end_dim = node.kwargs['end_dim']
+                algo = get_algo_inc_counter(torch.nn.Flatten(), algos, layer_counters)
+                utils.bail_if(algo == "torch", "can't use torch backend when in swap_backend")
                 forwards.append(layers.Flatten(
-                    dtype, start_dim, end_dim,
-                    get_algo_inc_counter(torch.nn.Flatten(start_dim, end_dim), algos, layer_counters)))
+                    dtype, start_dim, end_dim, algo))
             elif node.target == torch.relu:
-                forwards.append(layers.ReLU(
-                    dtype, get_algo_inc_counter(torch.nn.ReLU(), algos, layer_counters)))
+                algo = get_algo_inc_counter(torch.nn.ReLU(), algos, layer_counters)
+                utils.bail_if(algo == "torch", "can't use torch backend when in swap_backend")
+                forwards.append(layers.ReLU(dtype, algo))
             else:
                 utils.bail(f"unsupported function: {node.target}")
         elif node.op == 'call_module':
-            mod = getmodule(module, node.target)
+            mod = getmodule(complete_module, node.target)
             if not isinstance(mod, nn.Dropout):
-                swapped = swap_layer(mod, dtype, algos, layer_counters)
+                algo = get_algo_inc_counter(mod, algos, layer_counters)
+                utils.bail_if(algo == "torch", "can't use torch backend when in swap_backend")
+                swapped = swap_layer(mod, dtype, algo)
                 if not swapped:
                     utils.bail(f"unsupported module: {mod}")
                 forwards.append(swapped)
@@ -122,27 +110,40 @@ def get_layers(module: nn.Module, dtype, algos: Mapping[str, Union[str, Sequence
 
     return forwards
 
+def swap_conv2d(complete_module: nn.Module, dtype, algo: Union[str, Sequence[str], Callable]) -> nn.Module:
+    gm: fx.GraphModule = fx.symbolic_trace(complete_module)
+    layer_counters = defaultdict(int)
+    for node in gm.graph.nodes:
+        if node.op == 'call_module':
+            mod = getmodule(complete_module, node.target)
+            if isinstance(mod, nn.Conv2d):
+                algo = get_algo_inc_counter(mod, {'conv2d': algo}, layer_counters)
+                if algo == "torch":
+                    continue
+                swapped = swap_layer(mod, dtype, algo)
+                assert (isinstance(swapped, layers.Conv2D))
+                complete_module = setmodule(complete_module, node.target, Conv2D(swapped))
+    return complete_module
 
-def swap_layer(module: nn.Module, dtype, algos: Mapping[str, Union[str, Sequence[str], Callable]],
-               layer_counters: defaultdict[str, int]) -> Optional[layers.Layer]:
+def swap_layer(module: nn.Module, dtype, algo: str) -> Optional[layers.Layer]:
     if isinstance(module, nn.Conv2d):
         return layers.Conv2D(dtype, module.weight, module.bias, module.stride,
                              module.padding, module.dilation, module.padding_mode,
-                             module.groups, get_algo_inc_counter(module, algos, layer_counters))
+                             module.groups, algo)
     elif isinstance(module, nn.Linear):
-        return layers.Linear(dtype, module.weight, module.bias, get_algo_inc_counter(module, algos, layer_counters))
+        return layers.Linear(dtype, module.weight, module.bias, algo)
     elif isinstance(module, nn.MaxPool2d):
         return layers.MaxPool2D(dtype, module.kernel_size, module.stride,
-                                module.padding, module.dilation, module.ceil_mode, get_algo_inc_counter(module, algos, layer_counters))
+                                module.padding, module.dilation, module.ceil_mode, algo)
     elif isinstance(module, nn.AvgPool2d):
         return layers.AvgPool2D(dtype, module.kernel_size, module.stride,
                                 module.padding, module.ceil_mode,
                                 module.count_include_pad,
-                                module.divisor_override, get_algo_inc_counter(module, algos, layer_counters))
+                                module.divisor_override, algo)
     elif isinstance(module, nn.AdaptiveAvgPool2d):
-        return layers.AdaptiveAvgPool2D(dtype, module.output_size, get_algo_inc_counter(module, algos, layer_counters))
+        return layers.AdaptiveAvgPool2D(dtype, module.output_size, algo)
     elif isinstance(module, nn.ReLU):
-        return layers.ReLU(dtype, get_algo_inc_counter(module, algos, layer_counters))
+        return layers.ReLU(dtype, algo)
     elif isinstance(module, nn.Flatten):
-        return layers.Flatten(dtype, module.start_dim, module.end_dim, get_algo_inc_counter(module, algos, layer_counters))
+        return layers.Flatten(dtype, module.start_dim, module.end_dim, algo)
     return None

@@ -73,7 +73,7 @@ def swap_backend(module: torch.nn.Module, algos: Optional[Mapping[str, Union[str
         algos = DEFAULT_ALGOS
     if not dtype:
         dtype = torch.get_default_dtype()
-    return Model(dtype, swap_torch.get_layers(module, dtype, algos))
+    return Model(dtype, swap_torch.get_swapped_backend_layers(module, dtype, algos))
 
 
 def swap_conv2d(module: torch.nn.Module, algos: Optional[Union[str, Sequence[str], Callable]] = None):
