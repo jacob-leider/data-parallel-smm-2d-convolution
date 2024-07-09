@@ -22,7 +22,7 @@ def add_fail(mes):
     FAILED_TESTS.append(f"{mes}")
 
 
-def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: Optional[str] = None, atol=1e-4) -> None:
+def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: Optional[str] = None, atol=1e-4, print_pass=True) -> None:
     if isinstance(out_tensor, np.ndarray):
         out = out_tensor
     else:
@@ -48,7 +48,7 @@ def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: Optional[str] = N
     different_elements = np.where(np.abs(out - tar) > atol)
 
     if len(different_elements[0]) == 0:
-        if mes:
+        if mes and print_pass:
             print(f'  Passed Test {mes}')
     else:
         add_fail(mes)

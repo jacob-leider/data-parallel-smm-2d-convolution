@@ -1,4 +1,3 @@
-import ai3
 from ai3 import layers, errors
 from typing import Mapping, Optional, List, Sequence, Union, Callable
 from collections import defaultdict
@@ -53,7 +52,7 @@ class Conv2D(nn.Module):
 
     def forward(self, x):
         if isinstance(x, torch.Tensor):
-            return ai3.Tensor(self.internal.forward(x)).to(torch.Tensor)
+            return self.internal.forward(x).to(torch.Tensor)
         elif isinstance(x, fx.proxy.Proxy):
             tracer = x.tracer
             node = tracer.create_node('call_module', self.target, ('', ), {})

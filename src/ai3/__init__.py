@@ -17,7 +17,8 @@
 
 import torch
 from typing import Mapping, Optional, Sequence, Union, Callable
-from ai3 import layers, swap_torch, utils, core, errors
+from ai3 import core, utils, layers, swap_torch
+from ai3.tensor import Tensor
 
 DEFAULT_ALGOS: Mapping[str, str] = {key: "default" for key in [
     "conv2d", "linear", "relu", "maxpool2d", "avgpool2d", "adaptiveavgpool2d", "flatten"]}
@@ -38,37 +39,6 @@ class Model():
             input), utils.get_shape(input))
         out = Tensor(out)
         return out.to(out_type)
-
-
-class Tensor():
-    def __init__(self, tens: Union[core.Tensor_float, core.Tensor_double]):
-        self.core = tens
-        if isinstance(tens, core.Tensor_float):
-            self.typestr = utils.FLOAT32_STR
-        else:
-            self.typestr = utils.FLOAT64_STR
-
-    def to(self, out_type):
-        if out_type is torch.Tensor:
-            return self.torch()
-        elif out_type is None:
-            return self
-        errors.bail(f"unsupported type to transfer tensor to {out_type}")
-
-    def numpy(self):
-        import numpy
-        dtype = {
-            utils.FLOAT32_STR: numpy.float32,
-            utils.FLOAT64_STR: numpy.float64
-        }[self.typestr]
-        errors.bail_if(dtype is None,
-                       f"type, {self.typestr} is neither float32 or float64")
-        data = numpy.frombuffer(self.core, dtype=dtype)
-        return data.reshape(self.core.shape)
-
-    def torch(self):
-        return torch.frombuffer(self.core,
-                                dtype=torch.__dict__[self.typestr]).view(self.core.shape)
 
 
 def swap_backend(module: torch.nn.Module, algos: Optional[Mapping[str, Union[str, Sequence[str], Callable]]] = None, dtype=None) -> Model:

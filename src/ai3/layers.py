@@ -4,7 +4,8 @@ from typing import (
     Optional,
 )
 from abc import ABC
-from ai3 import core, utils
+from ai3 import core, errors, utils
+from ai3.tensor import Tensor
 
 
 class Layer(ABC):
@@ -14,7 +15,6 @@ class Layer(ABC):
         ...
 
 
-# TODO these guys should just return the ai3.Tensor instead of the wrappers doing it
 class Conv2D(Layer):
     def __init__(self, dtype, weight, bias, stride: Union[int, Sequence[int]],
                  padding: Union[str, Union[int, Sequence[int]]], dilation:
@@ -24,7 +24,7 @@ class Conv2D(Layer):
         dilation = utils.make_2d(dilation)
         padding = utils.make_padding_2d(
             padding, stride, dilation, weight.size())
-        assert (padding_mode in ['zeros', 'reflect', 'replicate', 'circular'])
+        errors.bail_if(padding_mode not in ['zeros', 'reflect', 'replicate', 'circular'], f"invalid padding mode: {padding_mode}")
         pad_mode = {
             'zeros': core.PaddingMode.zeros,
             'reflect': core.PaddingMode.reflect,
@@ -53,8 +53,8 @@ class Conv2D(Layer):
     def set_algo(self, algo: str):
         self.core.algorithm  = algo
 
-    def forward(self, input) -> Union[core.Tensor_float, core.Tensor_double]:
-        return self.core.forward(utils.get_address(input), utils.get_shape(input))
+    def forward(self, input) -> Tensor:
+        return Tensor(self.core.forward(utils.get_address(input), utils.get_shape(input)))
 
 
 class Linear(Layer):
