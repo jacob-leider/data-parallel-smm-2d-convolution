@@ -7,14 +7,6 @@
 # TODO When with SYCL support don't need to copy the output back to host if the
 # next operation will solely access it on device
 
-# * TESTING *
-# TODO examples ran in integration tests and benchmarks are pretty similar
-# only the function call at end changing the setup is the same so
-# make some way to change that function via global and .run() on all
-# the same files
-# TODO also the embedded_sequentials is a test which users can't change
-# the result of. We should have a seperate testing for internal
-
 # * FUTURE *
 # TODO onnx support, should be pretty easy to also iterate
 # through the onnx layers and hyperparametrs, could also use the pytorch way
@@ -23,7 +15,7 @@
 
 import torch
 from typing import Mapping, Optional, Sequence, Union, Callable
-from ai3 import layers, swap_torch, utils, core
+from ai3 import layers, swap_torch, utils, core, errors
 
 DEFAULT_ALGOS: Mapping[str, str] = {key: "default" for key in [
     "conv2d", "linear", "relu", "maxpool2d", "avgpool2d", "adaptiveavgpool2d", "flatten"]}
@@ -59,7 +51,7 @@ class Tensor():
             return self.torch()
         elif out_type is None:
             return self
-        utils.bail(f"unsupported type to transfer tensor to {out_type}")
+        errors.bail(f"unsupported type to transfer tensor to {out_type}")
 
     def numpy(self):
         import numpy
@@ -67,8 +59,8 @@ class Tensor():
             utils.FLOAT32_STR: numpy.float32,
             utils.FLOAT64_STR: numpy.float64
         }[self.typestr]
-        utils.bail_if(dtype is None,
-                      f"type, {self.typestr} is neither float32 or float64")
+        errors.bail_if(dtype is None,
+                       f"type, {self.typestr} is neither float32 or float64")
         data = numpy.frombuffer(self.core, dtype=dtype)
         return data.reshape(self.core.shape)
 

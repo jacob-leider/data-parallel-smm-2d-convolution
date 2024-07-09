@@ -1,5 +1,5 @@
 import ai3
-from ai3 import layers, utils
+from ai3 import layers, utils, errors
 from typing import Mapping, Optional, List, Sequence, Union, Callable
 from collections import defaultdict
 import torch
@@ -21,7 +21,7 @@ def mod_to_op(mod: nn.Module) -> str:
         return 'relu'
     elif isinstance(mod, nn.Flatten):
         return 'flatten'
-    utils.bail(f"unsupported module {mod}")
+    errors.unsupported(mod)
 
 
 def iscontainer(name: str) -> bool:
@@ -90,30 +90,30 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
                     end_dim = node.kwargs['end_dim']
                 algo = get_algo_inc_counter(
                     torch.nn.Flatten(), algos, layer_counters)
-                utils.bail_if(algo == "torch",
-                              "can't use torch backend when in swap_backend")
+                errors.bail_if(algo == "torch",
+                               "can't use torch backend when in swap_backend")
                 forwards.append(layers.Flatten(
                     dtype, start_dim, end_dim, algo))
             elif node.target == torch.relu:
                 algo = get_algo_inc_counter(
                     torch.nn.ReLU(), algos, layer_counters)
-                utils.bail_if(algo == "torch",
-                              "can't use torch backend when in swap_backend")
+                errors.bail_if(algo == "torch",
+                               "can't use torch backend when in swap_backend")
                 forwards.append(layers.ReLU(dtype, algo))
             else:
-                utils.bail(f"unsupported function: {node.target}")
+                errors.unsupported(node.target)
         elif node.op == 'call_module':
             mod = getmodule(complete_module, node.target)
             if not isinstance(mod, nn.Dropout):
                 algo = get_algo_inc_counter(mod, algos, layer_counters)
-                utils.bail_if(algo == "torch",
-                              "can't use torch backend when in swap_backend")
+                errors.bail_if(algo == "torch",
+                               "can't use torch backend when in swap_backend")
                 swapped = swap_layer(mod, dtype, algo)
                 if not swapped:
-                    utils.bail(f"unsupported module: {mod}")
+                    errors.bail(f"unsupported module: {mod}")
                 forwards.append(swapped)
         else:
-            utils.bail(f"unsupported call: {node.op}")
+            erros.bail(f"unsupported call: {node.op}")
 
     return forwards
 
