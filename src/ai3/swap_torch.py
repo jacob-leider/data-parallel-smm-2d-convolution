@@ -1,5 +1,5 @@
 import ai3
-from ai3 import layers, utils, errors
+from ai3 import layers, errors
 from typing import Mapping, Optional, List, Sequence, Union, Callable
 from collections import defaultdict
 import torch
@@ -7,7 +7,7 @@ from torch import nn, fx
 
 
 def mod_to_op(mod: nn.Module) -> str:
-    if isinstance(mod, nn.Conv2d):
+    if isinstance(mod, (nn.Conv2d, Conv2D)):
         return "conv2d"
     elif isinstance(mod, nn.Linear):
         return "linear"
@@ -46,13 +46,18 @@ def setmodule(module: nn.Module, name, new: nn. Module) -> nn.Module:
 
 
 class Conv2D(nn.Module):
-    def __init__(self, internal: layers.Conv2D):
+    def __init__(self, internal: layers.Conv2D, target: str):
         super(Conv2D, self).__init__()
         self.internal = internal
+        self.target = target
 
-    def forward(self, x: torch.Tensor):
-        out = ai3.Tensor(self.internal.forward(x))
-        return out.to(torch.Tensor)
+    def forward(self, x):
+        if isinstance(x, torch.Tensor):
+            return ai3.Tensor(self.internal.forward(x)).to(torch.Tensor)
+        elif isinstance(x, fx.proxy.Proxy):
+            tracer = x.tracer
+            node = tracer.create_node('call_module', self.target, ('', ), {})
+            return fx.proxy.Proxy(node, tracer)
 
 
 def get_algo_inc_counter(orig: nn.Module,  algos: Mapping[str, Union[str, Sequence[str], Callable]], layer_counters: defaultdict[str, int]) -> str:
@@ -113,27 +118,29 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
                     errors.bail(f"unsupported module: {mod}")
                 forwards.append(swapped)
         else:
-            erros.bail(f"unsupported call: {node.op}")
+            errors.bail(f"unsupported call: {node.op}")
 
     return forwards
 
 
-def swap_conv2d(complete_module: nn.Module, dtype, algo: Union[str, Sequence[str], Callable]) -> nn.Module:
+def swap_conv2d(complete_module: nn.Module, dtype, algo: Union[str, Sequence[str], Callable], do=True):
     gm: fx.GraphModule = fx.symbolic_trace(complete_module)
     layer_counters = defaultdict(int)
-    for node in gm.graph.nodes:
-        if node.op == 'call_module':
-            mod = getmodule(complete_module, node.target)
-            if isinstance(mod, nn.Conv2d):
-                algo = get_algo_inc_counter(
-                    mod, {'conv2d': algo}, layer_counters)
-                if algo == "torch":
-                    continue
-                swapped = swap_layer(mod, dtype, algo)
-                assert (isinstance(swapped, layers.Conv2D))
-                complete_module = setmodule(
-                    complete_module, node.target, Conv2D(swapped))
-    return complete_module
+    if do:
+        print('swapping')
+        for node in gm.graph.nodes:
+            if node.op == 'call_module':
+                mod = getmodule(complete_module, node.target)
+                if isinstance(mod, (nn.Conv2d, Conv2D)):
+                    algo = get_algo_inc_counter(mod, {'conv2d': algo}, layer_counters)
+                    if algo == "torch":
+                        continue
+                    if isinstance(mod, nn.Conv2d):
+                        swapped = swap_layer(mod, dtype, algo)
+                        assert isinstance(swapped, layers.Conv2D)
+                        complete_module = setmodule(complete_module, node.target, Conv2D(swapped, str(node.target)))
+                    else:
+                        mod.internal.set_algo(algo)
 
 
 def swap_layer(module: nn.Module, dtype, algo: str) -> Optional[layers.Layer]:

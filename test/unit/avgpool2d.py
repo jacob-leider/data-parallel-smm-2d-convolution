@@ -7,9 +7,6 @@ from ai3 import utils
 from test import compare_tensors
 from typing import Union, Sequence, Optional
 
-# torch.nn.AvgPool2d(kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True, divisor_override=None)
-
-
 def test(*, input_channels: int, in_height: int, in_width: int,
          kernel_height: int, kernel_width: int,
          padding: Union[int, Sequence[int]] = 0,

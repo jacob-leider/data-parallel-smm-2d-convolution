@@ -19,13 +19,13 @@ def get_item_and_type(dtype, float_item, double_item):
 def get_address(frontend_data) -> int:
     if isinstance(frontend_data, torch.Tensor):
         return frontend_data.data_ptr()
-    assert False and 'bad input type'
+    assert False and 'bad input type when getting data address'
 
 
 def get_shape(frontend_data) -> Sequence[int]:
     if isinstance(frontend_data, torch.Tensor):
         return frontend_data.size()
-    assert False and 'bad input type'
+    assert False and 'bad input type when getting shape'
 
 
 def make_padding_2d(padding: Union[str, Union[int, Sequence[int]]],

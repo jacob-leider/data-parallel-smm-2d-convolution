@@ -255,6 +255,8 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
 
     ~Conv2D() = default;
 
+    std::string algorithm;
+
   private:
     const Tensor<dtype> weight;
     const std::optional<const Tensor<dtype>> bias;
@@ -263,7 +265,6 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
     const std::vector<uint> dilation;
     const PaddingMode padding_mode;
     const uint groups;
-    const std::string algorithm;
 };
 
 template <typename dtype> class Model {
@@ -313,7 +314,12 @@ void define_layer_classes(py::module &m, std::string type_str) {
                       const std::optional<intptr_t>, const std::vector<uint>,
                       const std::vector<uint>, const std::vector<uint>,
                       const PaddingMode, const uint, const std::string>())
-        .def("forward", &Conv2D<dtype>::forward);
+        .def("forward", &Conv2D<dtype>::forward)
+        .def_property(
+            "algorithm", [](Conv2D<dtype> &self) { return self.algorithm; },
+            [](Conv2D<dtype> &self, const std::string &alg) {
+                self.algorithm = alg;
+            });
 
     py::class_<Linear<dtype>, Layer<dtype>, std::shared_ptr<Linear<dtype>>>(
         m, ("Linear_" + type_str).c_str())

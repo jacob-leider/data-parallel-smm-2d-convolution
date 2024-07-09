@@ -7,6 +7,8 @@
 # TODO When with SYCL support don't need to copy the output back to host if the
 # next operation will solely access it on device
 
+# TODO for easier swap_module https://github.com/pytorch/examples/blob/main/fx/replace_op.py
+
 # * FUTURE *
 # TODO onnx support, should be pretty easy to also iterate
 # through the onnx layers and hyperparametrs, could also use the pytorch way
@@ -79,7 +81,7 @@ def swap_backend(module: torch.nn.Module, algos: Optional[Mapping[str, Union[str
     return Model(dtype, swap_torch.get_swapped_backend_layers(module, dtype, algos))
 
 
-def swap_conv2d(module: torch.nn.Module, algos: Optional[Union[str, Sequence[str], Callable]] = None):
+def swap_conv2d(module: torch.nn.Module, algos: Optional[Union[str, Sequence[str], Callable]] = None, do=True):
     if not algos:
         algos = DEFAULT_ALGOS["conv2d"]
-    swap_torch.swap_conv2d(module, torch.get_default_dtype(), algos)
+    swap_torch.swap_conv2d(module, torch.get_default_dtype(), algos, do)

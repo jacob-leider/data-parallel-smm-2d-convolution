@@ -14,6 +14,7 @@ class Layer(ABC):
         ...
 
 
+# TODO these guys should just return the ai3.Tensor instead of the wrappers doing it
 class Conv2D(Layer):
     def __init__(self, dtype, weight, bias, stride: Union[int, Sequence[int]],
                  padding: Union[str, Union[int, Sequence[int]]], dilation:
@@ -48,6 +49,9 @@ class Conv2D(Layer):
                           pad_mode,
                           groups,
                           algorithm)
+
+    def set_algo(self, algo: str):
+        self.core.algorithm  = algo
 
     def forward(self, input) -> Union[core.Tensor_float, core.Tensor_double]:
         return self.core.forward(utils.get_address(input), utils.get_shape(input))

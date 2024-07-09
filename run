@@ -16,9 +16,8 @@ UNIT_TEST_MOD = TEST_MOD + ".unit"
 SWAP_CONV2D_TEST_MOD = TEST_MOD + '.swap_conv2d'
 SWAP_BACKEND_TEST_MOD = TEST_MOD + '.swap_backend'
 BENCH_MOD = "bench"
-LAYER_BENCH_MOD = BENCH_MOD + ".layers"
-MODEL_BENCH_MOD = BENCH_MOD + ".models"
-SWAP_CONV2D_MOD = BENCH_MOD + ".swap_conv2d"
+SWAP_CONV2D_BENCH_MOD = BENCH_MOD + ".swap_conv2d"
+SWAP_BACKEND_BENCH_MOD = BENCH_MOD + ".swap_backend"
 
 CSRC_FILES = [str(f) for f in Path('.').rglob('*') if f.suffix in ['.cpp', '.hpp'] and 'venv' not in f.parts]
 PY_FILES = [str(f) for f in Path('.').rglob('*.py') if 'venv' not in f.parts]
@@ -84,14 +83,12 @@ if __name__ == "__main__":
             run_command(f"{PY} {cmd}")
         elif cmd.startswith(EXAMPLE_MOD):
             run_command(f"{PY} {cmd}")
-        elif cmd.startswith("lbench"):
-            updated_command = cmd.replace("lbench", LAYER_BENCH_MOD, 1)
+        elif cmd.startswith("scbench"):
+            updated_command = cmd.replace("scbench", SWAP_CONV2D_BENCH_MOD, 1)
             run_command(f"{PY} {updated_command}")
-        elif cmd.startswith("mbench"):
-            updated_command = cmd.replace("mbench", MODEL_BENCH_MOD, 1)
             run_command(f"{PY} {updated_command}")
-        elif cmd.startswith("sbench"):
-            updated_command = cmd.replace("sbench", SWAP_CONV2D_MOD, 1)
+        elif cmd.startswith("sbbench"):
+            updated_command = cmd.replace("sbbench", SWAP_BACKEND_BENCH_MOD, 1)
             run_command(f"{PY} {updated_command}")
         elif cmd.startswith(TEST_MOD):
             run_command(f"{PY} {cmd}")

@@ -29,6 +29,7 @@ class Model_double(Model):
     ...
 
 class Conv2D():
+    algorithm: str
     def __init__(self,
                  weight_address: int,
                  weight_shape: Sequence[int],
