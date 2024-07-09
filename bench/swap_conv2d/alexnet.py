@@ -1,15 +1,5 @@
-import torch
-import torchvision
-from bench.swap_conv2d import swap_conv2d_and_time
+from bench.swap_conv2d import runner
+from runners import alexnet
 
 
-def run():
-    print(' ALEXNET')
-    input_data = torch.randn(1, 3, 224, 224)
-    orig = torchvision.models.alexnet()
-    orig.eval()
-    swap_conv2d_and_time(orig, input_data)
-
-
-if __name__ == "__main__":
-    run()
+alexnet.run_on(runner)

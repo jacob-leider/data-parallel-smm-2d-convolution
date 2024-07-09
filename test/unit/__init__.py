@@ -22,12 +22,5 @@ def pooling_poss_output_size(input_height, input_width, padding, stride, kernel_
 
 
 def run():
-    from . import conv2d, maxpool2d, linear, relu, avgpool2d, adaptiveavgpool2d, flatten
     print('UNIT')
-    conv2d.run()
-    maxpool2d.run()
-    linear.run()
-    relu.run()
-    avgpool2d.run()
-    adaptiveavgpool2d.run()
-    flatten.run()
+    from . import conv2d, maxpool2d, linear, relu, avgpool2d, adaptiveavgpool2d, flatten

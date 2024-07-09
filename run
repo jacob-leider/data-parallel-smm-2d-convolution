@@ -13,7 +13,8 @@ PY_FORMAT = "autopep8"
 TEST_MOD = "test"
 EXAMPLE_MOD = "example"
 UNIT_TEST_MOD = TEST_MOD + ".unit"
-INTEGRATION_TEST_MOD = TEST_MOD + '.integration'
+SWAP_CONV2D_TEST_MOD = TEST_MOD + '.swap_conv2d'
+SWAP_BACKEND_TEST_MOD = TEST_MOD + '.swap_backend'
 BENCH_MOD = "bench"
 LAYER_BENCH_MOD = BENCH_MOD + ".layers"
 MODEL_BENCH_MOD = BENCH_MOD + ".models"
@@ -97,8 +98,11 @@ if __name__ == "__main__":
         elif cmd.startswith("utest"):
             updated_command = cmd.replace("utest", UNIT_TEST_MOD, 1)
             run_command(f"{PY} {updated_command}")
-        elif cmd.startswith("itest"):
-            updated_command = cmd.replace("itest", INTEGRATION_TEST_MOD, 1)
+        elif cmd.startswith("sbtest"):
+            updated_command = cmd.replace("sbtest", SWAP_BACKEND_TEST_MOD, 1)
+            run_command(f"{PY} {updated_command}")
+        elif cmd.startswith("sctest"):
+            updated_command = cmd.replace("sctest", SWAP_CONV2D_TEST_MOD, 1)
             run_command(f"{PY} {updated_command}")
         elif cmd == "format":
             run_command(f"{C_FORMAT} -i {' '.join(CSRC_FILES)}")

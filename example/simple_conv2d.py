@@ -25,9 +25,10 @@ class ConvNet(nn.Module):
 input_data = torch.randn(10, 3, 224, 224)
 torch_model = ConvNet()
 torch_out = torch_model(input_data)
-model: ai3.Model = ai3.swap_backend(torch_model, {"conv2d": ["direct", "smm"]})
+model: ai3.Model = ai3.swap_backend(torch_model, {"conv2d": "direct"})
 ai3_out = model(input_data)
 ai3.swap_conv2d(torch_model, ["direct", "smm"])
+# now torch_model uses the framework's implementations of convolution
 using_swapped_layers_out = torch_model(input_data)
 assert torch.allclose(torch_out, ai3_out, atol=1e-6)
 assert torch.allclose(torch_out, using_swapped_layers_out, atol=1e-6)

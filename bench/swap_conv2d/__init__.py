@@ -1,38 +1,26 @@
 import torch
 import ai3
 from bench import predict_show_time
-from typing import Optional, Callable
-from test import compare_tensors
+from test import compare_tensors, BATCH
+from typing import Sequence
 
 
 def run():
-    print('MODELS SWAPPING CONV2D')
+    print('SWAPPING CONV2D')
     from . import (vgg16, alexnet, convnext, densenet, efficientnet, googlenet,
                    inception, shufflenetv2, mobilenet, mnasnet, squeezenet, vision_transformer,
                    swin_transformer, maxvit, regnet, resnet)
-    vgg16.run()
-    alexnet.run()
-    convnext.run()
-    densenet.run()
-    efficientnet.run()
-    googlenet.run()
-    inception.run()
-    regnet.run()
-    resnet.run()
-    mobilenet.run()
-    mnasnet.run()
-    shufflenetv2.run()
-    squeezenet.run()
-    vision_transformer.run()
-    swin_transformer.run()
-    maxvit.run()
 
 
-def swap_conv2d_and_time(orig: torch.nn.Module, input: torch.Tensor, selector_func: Optional[Callable] = None):
-    torch_out = predict_show_time(orig, input, "pytorch")
+def runner(module: torch.nn.Module, input_sample_shape: Sequence[int], name: str):
+    input_data = torch.randn(BATCH, *input_sample_shape)
+    torch_out = predict_show_time(module, input_data, name + " torch")
 
-    ai3.swap_conv2d(orig, selector_func)
-    ai3_out = predict_show_time(orig, input, "ai3")
+    ai3.swap_conv2d(module, "default")
+    ai3_out = predict_show_time(module, input_data, name + " ai3 default")
+
+    ai3.swap_conv2d(module, "smm")
+    ai3_out = predict_show_time(module, input_data, name + " ai3 smm")
 
     assert (isinstance(torch_out, torch.Tensor))
     compare_tensors(ai3_out, torch_out, "")

@@ -1,5 +1,5 @@
-from test import unit, integration
+from test import unit, swap_backend, swap_conv2d
 
-if __name__ == "__main__":
-    unit.run()
-    integration.run()
+unit.run()
+swap_conv2d.run()
+swap_backend.run()

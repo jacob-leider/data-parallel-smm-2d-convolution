@@ -33,13 +33,8 @@ def run_on(input):
     compare_tensors(smm_out, orig_out.detach().numpy(), "smm")
 
 
-def run():
-    print("Conv2D")
-    # input = torch.randn(N, 3, 224, 224)
-    # run_on(input)
-    input = torch.randn(N, 512, 14, 14)
-    run_on(input)
-
-
-if __name__ == "__main__":
-    run()
+print("Conv2D")
+input = torch.randn(N, 3, 224, 224)
+run_on(input)
+input = torch.randn(N, 512, 14, 14)
+run_on(input)

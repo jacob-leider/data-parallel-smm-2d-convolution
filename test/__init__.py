@@ -3,11 +3,9 @@ import torch
 import numpy as np
 import atexit
 import torch
-import inspect
 
 FAILED_TESTS = []
-
-TEST_GROUPED_CONVOLUTION = False
+BATCH = 2
 
 
 def show_failed():
@@ -21,7 +19,7 @@ atexit.register(show_failed)
 
 
 def add_fail(mes):
-    FAILED_TESTS.append(f"{mes} from: {calling_file()}")
+    FAILED_TESTS.append(f"{mes}")
 
 
 def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: Optional[str] = None, atol=1e-4) -> None:
@@ -60,21 +58,3 @@ def compare_tensors(out_tensor, tar_tensor: torch.Tensor, mes: Optional[str] = N
         for index in zip(*different_elements):
             index = tuple(map(int, index))
             print('  at:', index, 'target:', tar[index], 'output:', out[index])
-
-
-def calling_file():
-    current_frame = inspect.currentframe()
-    if current_frame is None:
-        return
-    caller_frame = current_frame.f_back
-    if caller_frame is None:
-        return None
-    caller_frame = caller_frame.f_back
-    if caller_frame is None:
-        return None
-    caller_frame = caller_frame.f_back
-    if caller_frame is None:
-        return None
-    caller_file = caller_frame.f_globals["__file__"]
-
-    return caller_file

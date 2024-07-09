@@ -1,15 +1,5 @@
-import torch
-import torchvision
-from bench.swap_conv2d import swap_conv2d_and_time
+from bench.swap_conv2d import runner
+from runners import swin_transformer
 
 
-def run():
-    print(' SWIN TRANSFORMER')
-    input_data = torch.randn(1, 3, 224, 224)
-    mod = torchvision.models.swin_b()
-    mod.eval()
-    swap_conv2d_and_time(mod, input_data)
-
-
-if __name__ == "__main__":
-    run()
+swin_transformer.run_on(runner)

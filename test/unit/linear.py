@@ -24,41 +24,36 @@ def test(*, num_samples, in_features: int, out_features: int,
     compare_tensors(ai3_output, torch_output, test_name)
 
 
-def run():
-    print('LINEAR')
-    test(num_samples=None,
-         in_features=2,
-         out_features=2,
-         test_name='square')
-    test(num_samples=None,
-         in_features=4,
-         out_features=4,
-         with_bias=True,
-         test_name='square bias')
-    test(num_samples=None,
-         in_features=100,
-         out_features=5,
-         test_name='in > out')
-    test(num_samples=None,
-         in_features=5,
-         out_features=100,
-         test_name='out > in')
-    test(num_samples=None,
-         in_features=40,
-         out_features=30,
-         with_bias=True,
-         test_name='10s with bias')
-    test(num_samples=None,
-         in_features=348,
-         out_features=498,
-         with_bias=True,
-         test_name='100s with bias')
-    test(num_samples=5,
-         in_features=348,
-         out_features=498,
-         with_bias=True,
-         test_name='100s with bias multiple samples')
-
-
-if __name__ == "__main__":
-    run()
+print('LINEAR')
+test(num_samples=None,
+     in_features=2,
+     out_features=2,
+     test_name='square')
+test(num_samples=None,
+     in_features=4,
+     out_features=4,
+     with_bias=True,
+     test_name='square bias')
+test(num_samples=None,
+     in_features=100,
+     out_features=5,
+     test_name='in > out')
+test(num_samples=None,
+     in_features=5,
+     out_features=100,
+     test_name='out > in')
+test(num_samples=None,
+     in_features=40,
+     out_features=30,
+     with_bias=True,
+     test_name='10s with bias')
+test(num_samples=None,
+     in_features=348,
+     out_features=498,
+     with_bias=True,
+     test_name='100s with bias')
+test(num_samples=5,
+     in_features=348,
+     out_features=498,
+     with_bias=True,
+     test_name='100s with bias multiple samples')
