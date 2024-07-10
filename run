@@ -16,6 +16,7 @@ UNIT_TEST_MOD = TEST_MOD + ".unit"
 SWAP_CONV2D_TEST_MOD = TEST_MOD + '.swap_conv2d'
 SWAP_BACKEND_TEST_MOD = TEST_MOD + '.swap_backend'
 BENCH_MOD = "bench"
+LAYER_BENCH_MOD = BENCH_MOD + ".layers"
 SWAP_CONV2D_BENCH_MOD = BENCH_MOD + ".swap_conv2d"
 SWAP_BACKEND_BENCH_MOD = BENCH_MOD + ".swap_backend"
 
@@ -83,9 +84,11 @@ if __name__ == "__main__":
             run_command(f"{PY} {cmd}")
         elif cmd.startswith(EXAMPLE_MOD):
             run_command(f"{PY} {cmd}")
+        elif cmd.startswith("lbench"):
+            updated_command = cmd.replace("lbench", LAYER_BENCH_MOD, 1)
+            run_command(f"{PY} {updated_command}")
         elif cmd.startswith("scbench"):
             updated_command = cmd.replace("scbench", SWAP_CONV2D_BENCH_MOD, 1)
-            run_command(f"{PY} {updated_command}")
             run_command(f"{PY} {updated_command}")
         elif cmd.startswith("sbbench"):
             updated_command = cmd.replace("sbbench", SWAP_BACKEND_BENCH_MOD, 1)
