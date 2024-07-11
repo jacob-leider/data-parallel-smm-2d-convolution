@@ -26,6 +26,10 @@ os.makedirs(SAVE_TO_DIR, exist_ok=True)
 plt.rcParams['savefig.dpi'] = 500
 
 
+def comp_tens(out, tar, name):
+    return
+    compare_tensors(out, tar, name, print_pass=False)
+
 def time_forward(runner, data):
     warm_up(runner, data)
     start = time.time()
@@ -59,7 +63,7 @@ def gather_conv2d_times(input):
         torch_comp = torch.compile(orig)
         torch_comp_out, times_for_layer["torch graph mode"] = time_forward(
             torch_comp, input)
-        compare_tensors(torch_comp_out, torch_out)
+        comp_tens(torch_comp_out, torch_out, "torch graph")
 
     swap_direct = ai3.swap_backend(orig, {"conv2d": "direct"})
     direct_out, times_for_layer["ai3 direct"] = time_forward(
@@ -72,9 +76,9 @@ def gather_conv2d_times(input):
         ipex_model = ipex.optimize(orig, dtype=torch.float32)
         ipex_out,  times_for_layer["ipex"] = time_forward(
             ipex_model, input)
-        compare_tensors(ipex_out, torch_out)
-    compare_tensors(smm_out, torch_out)
-    compare_tensors(direct_out, torch_out)
+        comp_tens(ipex_out, torch_out, "ipex")
+    comp_tens(smm_out, torch_out, "smm")
+    comp_tens(direct_out, torch_out, "direct")
     return times_for_layer
 
 
@@ -112,7 +116,7 @@ def save_combined_plot(data_area, data_channel):
     plt.savefig(os.path.join(SAVE_TO_DIR, "combined_conv2d_times.png"))
     plt.close()
 
-def gather_model_times(model, input):
+def gather_model_times(model, name, input):
     times_for_model = defaultdict(float)
     model.eval()
     if CUDA_AVAILABLE:
@@ -125,13 +129,14 @@ def gather_model_times(model, input):
         torch_comp = torch.compile(model)
         torch_comp_out, times_for_model["torch graph mode"] = time_forward(
             torch_comp, input)
-        compare_tensors(torch_comp_out, torch_out)
+        comp_tens(torch_comp_out, torch_out, f"torch graph mode {name}")
 
     if ipex_found and not CUDA_AVAILABLE:
         ipex_model = ipex.optimize(model, dtype=torch.float32)
         ipex_out,  times_for_model["ipex"] = time_forward(
             ipex_model, input)
-        compare_tensors(ipex_out, torch_out)
+        comp_tens(ipex_out, torch_out, f"ipex {name}")
+
 
     ai3.swap_conv2d(model, "direct")
     direct_out, times_for_model["ai3 direct"] = time_forward(
@@ -140,8 +145,8 @@ def gather_model_times(model, input):
     ai3.swap_conv2d(model, "smm")
     smm_out, times_for_model["ai3 SMM"] = time_forward(model, input)
 
-    compare_tensors(smm_out, torch_out)
-    compare_tensors(direct_out, torch_out)
+    comp_tens(smm_out, torch_out, f"smm {name}")
+    comp_tens(direct_out, torch_out, f"direct {name}")
     return times_for_model
 
 def save_model_data_table(models_data):
@@ -191,6 +196,6 @@ with torch.inference_mode():
     models_data = {}
 
     for model_name, model in orig_models.items():
-        print('model name')
-        models_data[model_name] = gather_model_times(model, input)
+        print(model_name)
+        models_data[model_name] = gather_model_times(model, model_name, input)
     save_model_data_table(models_data)

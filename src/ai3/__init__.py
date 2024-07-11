@@ -1,5 +1,6 @@
 # * Paper *
-# TODO before paper gets published put the code on pypi
+# TODO before paper gets published put the code on pypi and put license
+
 
 # * SYCL *
 # TODO When with SYCL support try making queue an instance of the model or layer

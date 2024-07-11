@@ -11,10 +11,13 @@ def wrapped_run(module: torch.nn.Module, input_sample_shape: Sequence[int], runn
     name = name.upper()
     print(f"{name}")
     module.eval()
-    if no_grouped_convolution(module):
+    (needs_groups, has_conv) = check_mod(module)
+    if needs_groups and not GROUPED_CONVOLUTION:
+        print(f"  skipping {name} as it requires groups > 1")
+    elif has_conv:
         runner(module, input_sample_shape, name)
     else:
-        print(f"  skipping {name} as it requires groups > 1")
+        print(f"{name} doesn't use convolution")
 
 
 def caller_name():
@@ -23,12 +26,13 @@ def caller_name():
     return name
 
 
-def no_grouped_convolution(module: torch.nn.Module):
+def check_mod(module: torch.nn.Module):
+    found_conv2d = False
     grouped_conv = False
     for submodule in module.modules():
         if isinstance(submodule, torch.nn.Conv2d):
+            found_conv2d = True
             if submodule.groups > 1:
                 grouped_conv = True
-    if grouped_conv and not GROUPED_CONVOLUTION:
-        return False
-    return True
+
+    return grouped_conv, found_conv2d

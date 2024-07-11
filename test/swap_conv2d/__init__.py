@@ -11,7 +11,8 @@ def runner(module: torch.nn.Module, input_sample_shape: Sequence[int], name: str
         for algo in ['default', 'direct', 'smm']:
             ai3.swap_conv2d(module, algo)
             output = module(input_data)
-            compare_tensors(output, target, f"{name} swap conv2d with {algo}, {BATCH} samples")
+            compare_tensors(
+                output, target, f"{name} swap conv2d with {algo}, {BATCH} samples")
 
 
 def run():

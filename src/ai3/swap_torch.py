@@ -122,24 +122,24 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
     return forwards
 
 
-def swap_conv2d(complete_module: nn.Module, dtype, algo: Union[str, Sequence[str], Callable], do=True):
+def swap_conv2d(complete_module: nn.Module, dtype, algo: Union[str, Sequence[str], Callable]):
     gm: fx.GraphModule = fx.symbolic_trace(complete_module)
     layer_counters = defaultdict(int)
-    if do:
-        print('swapping')
-        for node in gm.graph.nodes:
-            if node.op == 'call_module':
-                mod = getmodule(complete_module, node.target)
-                if isinstance(mod, (nn.Conv2d, Conv2D)):
-                    algo = get_algo_inc_counter(mod, {'conv2d': algo}, layer_counters)
-                    if algo == "torch":
-                        continue
-                    if isinstance(mod, nn.Conv2d):
-                        swapped = swap_layer(mod, dtype, algo)
-                        assert isinstance(swapped, layers.Conv2D)
-                        complete_module = setmodule(complete_module, node.target, Conv2D(swapped, str(node.target)))
-                    else:
-                        mod.internal.set_algo(algo)
+    for node in gm.graph.nodes:
+        if node.op == 'call_module':
+            mod = getmodule(complete_module, node.target)
+            if isinstance(mod, (nn.Conv2d, Conv2D)):
+                algo = get_algo_inc_counter(
+                    mod, {'conv2d': algo}, layer_counters)
+                if algo == "torch":
+                    continue
+                if isinstance(mod, nn.Conv2d):
+                    swapped = swap_layer(mod, dtype, algo)
+                    assert isinstance(swapped, layers.Conv2D)
+                    complete_module = setmodule(
+                        complete_module, node.target, Conv2D(swapped, str(node.target)))
+                else:
+                    mod.internal.set_algo(algo)
 
 
 def swap_layer(module: nn.Module, dtype, algo: str) -> Optional[layers.Layer]:

@@ -2,6 +2,7 @@ import torch
 from ai3 import core, utils, errors
 from typing import Union
 
+
 class Tensor():
     def __init__(self, tens: Union[core.Tensor_float, core.Tensor_double]):
         self.core = tens
@@ -31,5 +32,3 @@ class Tensor():
     def torch(self):
         return torch.frombuffer(self.core,
                                 dtype=torch.__dict__[self.typestr]).view(self.core.shape)
-
-

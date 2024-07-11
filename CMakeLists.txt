@@ -6,16 +6,16 @@ project(
     VERSION ${SKBUILD_PROJECT_VERSION}
     LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED YES)
-set(CMAKE_CXX_EXTENSIONS NO)
-
 find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG REQUIRED)
 
 set(CSRC_DIR src/ai3/csrc)
 
 python_add_library(core MODULE ${CSRC_DIR}/ai3.cpp WITH_SOABI)
+
+set_property(TARGET core PROPERTY CXX_STANDARD 17)
+set_property(TARGET core PROPERTY CXX_STANDARD_REQUIRED YES)
+set_property(TARGET core PROPERTY CXX_EXTENSIONS NO)
 target_link_libraries(core PRIVATE pybind11::headers)
 target_include_directories(core PRIVATE ${CSRC_DIR})
 

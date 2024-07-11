@@ -24,7 +24,8 @@ class Conv2D(Layer):
         dilation = utils.make_2d(dilation)
         padding = utils.make_padding_2d(
             padding, stride, dilation, weight.size())
-        errors.bail_if(padding_mode not in ['zeros', 'reflect', 'replicate', 'circular'], f"invalid padding mode: {padding_mode}")
+        errors.bail_if(padding_mode not in [
+                       'zeros', 'reflect', 'replicate', 'circular'], f"invalid padding mode: {padding_mode}")
         pad_mode = {
             'zeros': core.PaddingMode.zeros,
             'reflect': core.PaddingMode.reflect,
@@ -51,7 +52,7 @@ class Conv2D(Layer):
                           algorithm)
 
     def set_algo(self, algo: str):
-        self.core.algorithm  = algo
+        self.core.algorithm = algo
 
     def forward(self, input) -> Tensor:
         return Tensor(self.core.forward(utils.get_address(input), utils.get_shape(input)))
