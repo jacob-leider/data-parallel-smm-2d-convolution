@@ -16,12 +16,12 @@ Tensor<dtype> _linear(Tensor<dtype> input, const Tensor<dtype> &weight,
 
     Tensor<dtype> output;
     uint num_samples;
-    if (input.has_dim_for_batch_size(input_dims::LINEAR)) {
-        num_samples = 1;
-        output = Tensor<dtype>({out_features});
-    } else {
+    if (input.batched(input_dims::LINEAR)) {
         num_samples = input.batch_size(input_dims::LINEAR);
         output = Tensor<dtype>({num_samples, out_features});
+    } else {
+        num_samples = 1;
+        output = Tensor<dtype>({out_features});
     }
 
     const bool has_bias = bias.has_value();

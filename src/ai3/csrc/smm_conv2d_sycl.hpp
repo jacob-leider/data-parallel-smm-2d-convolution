@@ -34,13 +34,13 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
 
     uint num_samples;
     Tensor<dtype> output;
-    if (input.has_dim_for_batch_size(input_dims::CONV2D)) {
-        num_samples = 1;
-        output = Tensor<dtype>({output_channels, output_height, output_width});
-    } else {
-        num_samples = input.batch_size(input_dims::POOL2D);
+    if (input.batched(input_dims::CONV2D)) {
+        num_samples = input.batch_size(input_dims::CONV2D);
         output = Tensor<dtype>(
             {num_samples, output_channels, output_height, output_width});
+    } else {
+        num_samples = 1;
+        output = Tensor<dtype>({output_channels, output_height, output_width});
     }
 
     uint padding_h = padding[0];
@@ -134,12 +134,13 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     proportionate_2d_work_split<dtype>(
         output_channels, output_area, output_work_group_size, &each_channel,
         &each_output_area, &total_output_channels, &total_output_area);
-    std::cout << output_channels << "\n";
-    std::cout << output_area << "\n";
-    std::cout << output_work_group_size << "\n";
-    std::cout << each_channel << "\n";
-    std::cout << each_output_area << "\n";
-    std::cout << "total on item: " << each_output_area * each_channel << "\n";
+    // std::cout << output_channels << "\n";
+    // std::cout << output_area << "\n";
+    // std::cout << output_work_group_size << "\n";
+    // std::cout << each_channel << "\n";
+    // std::cout << each_output_area << "\n";
+    // std::cout << "total on item: " << each_output_area * each_channel <<
+    // "\n";
 
     // const uint each_channel = 1;
     // uint each_output_area = output_work_group_size;

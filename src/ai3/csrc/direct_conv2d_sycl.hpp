@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ai3.hpp"
-#include "utils.hpp"
 #include <CL/sycl.hpp>
 #include <chrono>
 #include <optional>
@@ -36,13 +35,13 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
 
     uint num_samples;
     Tensor<dtype> output;
-    if (input.has_dim_for_batch_size(input_dims::CONV2D)) {
-        num_samples = 1;
-        output = Tensor<dtype>({output_channels, output_height, output_width});
-    } else {
-        num_samples = input.batch_size(input_dims::POOL2D);
+    if (input.batched(input_dims::CONV2D)) {
+        num_samples = input.batch_size(input_dims::CONV2D);
         output = Tensor<dtype>(
             {num_samples, output_channels, output_height, output_width});
+    } else {
+        num_samples = 1;
+        output = Tensor<dtype>({output_channels, output_height, output_width});
     }
 
     uint padding_h = padding[0];
@@ -62,12 +61,13 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
         has_bias ? sycl::buffer<dtype>(bias->data, bias->count())
                  : sycl::buffer<dtype>(sycl::range<1>(0));
 
-    std::cout << "ic: " << input_channels << " oc: " << output_channels << "\n";
-    std::cout << "ih: " << input_height << " oh: " << output_height << "\n";
-    std::cout << "iw: " << input_width << " ow: " << output_width << "\n";
-    std::cout << "ti: " << (input_channels * input_height * input_width)
-              << " to: " << (output_channels * output_height * output_width)
-              << "\n";
+    // std::cout << "ic: " << input_channels << " oc: " << output_channels <<
+    // "\n"; std::cout << "ih: " << input_height << " oh: " << output_height <<
+    // "\n"; std::cout << "iw: " << input_width << " ow: " << output_width <<
+    // "\n"; std::cout << "ti: " << (input_channels * input_height *
+    // input_width)
+    //           << " to: " << (output_channels * output_height * output_width)
+    //           << "\n";
 
     const uint output_area = output_height * output_width;
     const uint max_work_group_size =
@@ -174,6 +174,6 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
 
     auto end = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration<double>(end - start);
-    std::cout << "time in func: " << elapsed.count() << " seconds\n";
+    // std::cout << "time in func: " << elapsed.count() << " seconds\n";
     return output;
 }

@@ -35,13 +35,13 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
 
     uint num_samples;
     Tensor<dtype> output;
-    if (input.has_dim_for_batch_size(input_dims::CONV2D)) {
-        num_samples = 1;
-        output = Tensor<dtype>({output_channels, output_height, output_width});
-    } else {
-        num_samples = input.batch_size(input_dims::POOL2D);
+    if (input.batched(input_dims::CONV2D)) {
+        num_samples = input.batch_size(input_dims::CONV2D);
         output = Tensor<dtype>(
             {num_samples, output_channels, output_height, output_width});
+    } else {
+        num_samples = 1;
+        output = Tensor<dtype>({output_channels, output_height, output_width});
     }
 
     const bool has_bias = bias.has_value();

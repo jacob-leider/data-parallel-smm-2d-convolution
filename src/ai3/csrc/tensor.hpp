@@ -79,11 +79,11 @@ template <typename dtype> class Tensor {
                                shape.size(), shape, stride);
     }
 
-    inline bool has_dim_for_batch_size(const int data_dim = -1) const {
+    inline bool batched(const int data_dim = -1) const {
         if (data_dim == -1) {
             return false;
         }
-        return shape.size() != unsigned(data_dim + 1);
+        return shape.size() == unsigned(data_dim + 1);
     }
     inline uint batch_size(const uint input_dims) const {
         return shape[shape.size() - 1 - input_dims];
