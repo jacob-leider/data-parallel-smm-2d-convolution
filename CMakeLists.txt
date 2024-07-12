@@ -19,6 +19,22 @@ set_property(TARGET core PROPERTY CXX_EXTENSIONS NO)
 target_link_libraries(core PRIVATE pybind11::headers)
 target_include_directories(core PRIVATE ${CSRC_DIR})
 
+find_package(CUDAToolkit)
+
+if(CUDAToolkit_FOUND)
+    message(STATUS "Using CUDAToolkit")
+    set_target_properties(core PROPERTIES
+        CUDA_STANDARD 17
+        CUDA_STANDARD_REQUIRED TRUE
+        CUDA_EXTENSIONS OFF
+        CUDA_SEPARABLE_COMPILATION ON
+        CUDA_ARCHITECTURES "86"
+    )
+
+    target_link_libraries(core PRIVATE CUDA::cudart CUDA::cublas cudnn)
+    target_compile_definitions(core PRIVATE USE_CUDNN)
+endif()
+
 find_package(SYCL)
 if(SYCL_FOUND)
     message(STATUS "Using SYCL")

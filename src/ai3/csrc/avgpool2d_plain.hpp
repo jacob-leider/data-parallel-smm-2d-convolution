@@ -29,13 +29,13 @@ _avgpool2d(Tensor<dtype> input, const std::vector<uint> kernel_shape,
 
     Tensor<dtype> output;
     uint num_samples;
-    if (input.has_dim_for_batch_size(input_dims::CONV2D)) {
-        num_samples = 1;
-        output = Tensor<dtype>({output_channels, output_height, output_width});
-    } else {
+    if (input.batched(input_dims::CONV2D)) {
         num_samples = input.batch_size(input_dims::POOL2D);
         output = Tensor<dtype>(
             {num_samples, output_channels, output_height, output_width});
+    } else {
+        num_samples = 1;
+        output = Tensor<dtype>({output_channels, output_height, output_width});
     }
 
     const bool has_divisor_override = divisor_override.has_value();

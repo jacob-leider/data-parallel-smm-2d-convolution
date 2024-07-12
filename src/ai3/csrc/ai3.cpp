@@ -1,4 +1,3 @@
-#include "utils.hpp"
 #define CONV2D_SYCL
 #include "ai3.hpp"
 #include "algo_paths.hpp"
@@ -9,7 +8,6 @@
 #include <vector>
 
 #define DEFAULT(algo) algo == "default"
-#define BUILTIN(algo) algo == "builtin"
 #define CUSTOM(algo) algo == "custom"
 
 template <typename dtype> class Layer {
@@ -39,9 +37,6 @@ template <typename dtype> class MaxPool2D : virtual public Layer<dtype> {
         } else if (CUSTOM(algorithm)) {
             return maxpool2d<dtype>(std::move(input), kernel_shape, padding,
                                     stride, dilation, ceil_mode);
-        } else if (BUILTIN(algorithm)) {
-            return _maxpool2d<dtype>(std::move(input), kernel_shape, padding,
-                                     stride, dilation, ceil_mode);
         }
         errs::invalid_algo("maxpool2d", algorithm);
     }
@@ -82,10 +77,6 @@ template <typename dtype> class AvgPool2D : virtual public Layer<dtype> {
             return avgpool2d<dtype>(std::move(input), kernel_shape, padding,
                                     stride, ceil_mode, count_include_pad,
                                     divisor_override);
-        } else if (BUILTIN(algorithm)) {
-            return _avgpool2d<dtype>(std::move(input), kernel_shape, padding,
-                                     stride, ceil_mode, count_include_pad,
-                                     divisor_override);
         }
         errs::invalid_algo("avgpool2d", algorithm);
     }
@@ -118,8 +109,6 @@ class AdaptiveAvgPool2D : virtual public Layer<dtype> {
             }
         } else if (CUSTOM(algorithm)) {
             return adaptiveavgpool2d(std::move(input), output_shape);
-        } else if (BUILTIN(algorithm)) {
-            return _adaptiveavgpool2d(std::move(input), output_shape);
         }
         errs::invalid_algo("adaptiveavgpool2d", algorithm);
     }
@@ -143,8 +132,6 @@ template <typename dtype> class ReLU : virtual public Layer<dtype> {
             }
         } else if (CUSTOM(algorithm)) {
             return relu<dtype>(std::move(input));
-        } else if (BUILTIN(algorithm)) {
-            return _relu<dtype>(std::move(input));
         }
         errs::invalid_algo("relu", algorithm);
     }
@@ -171,8 +158,6 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
             }
         } else if (CUSTOM(algorithm)) {
             return linear<dtype>(std::move(input), weight, bias);
-        } else if (BUILTIN(algorithm)) {
-            return _linear<dtype>(std::move(input), weight, bias);
         }
         errs::invalid_algo("linear", algorithm);
     }
@@ -200,8 +185,6 @@ template <typename dtype> class Flatten : virtual public Layer<dtype> {
             }
         } else if (CUSTOM(algorithm)) {
             return flatten<dtype>(std::move(input), start_dim, end_dim);
-        } else if (BUILTIN(algorithm)) {
-            return _flatten<dtype>(std::move(input), start_dim, end_dim);
         }
         errs::invalid_algo("flatten", algorithm);
     }
@@ -223,7 +206,8 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
         : weight(weight_address, weight_shape),
           bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]})),
           padding(padding), stride(stride), dilation(dilation),
-          padding_mode(padding_mode), groups(groups), algorithm(algorithm) {}
+          padding_mode(padding_mode), groups(groups), algorithm(algorithm),
+          ctx(Context()) {}
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
         if (DEFAULT(algorithm)) {
@@ -231,19 +215,45 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
                 return conv2d<dtype>(std::move(input), weight, bias, padding,
                                      stride, dilation, padding_mode, groups);
             } else {
+#if USE_CUDNN
+                return implicit_precomp_gemm_conv2d<dtype>(
+                    std::move(input), weight, bias, padding, stride, dilation,
+                    padding_mode, groups, ctx);
+#else
                 return direct_conv2d<dtype>(std::move(input), weight, bias,
                                             padding, stride, dilation,
                                             padding_mode, groups);
+#endif
             }
         } else if (CUSTOM(algorithm)) {
             return conv2d<dtype>(std::move(input), weight, bias, padding,
                                  stride, dilation, padding_mode, groups);
-        } else if (algorithm == "direct" || BUILTIN(algorithm)) {
+        } else if (algorithm == "direct") {
             return direct_conv2d<dtype>(std::move(input), weight, bias, padding,
                                         stride, dilation, padding_mode, groups);
         } else if (algorithm == "smm") {
             return smm_conv2d<dtype>(std::move(input), weight, bias, padding,
                                      stride, dilation, padding_mode, groups);
+        } else if (algorithm == "implicit precomp gemm") {
+            return implicit_precomp_gemm_conv2d<dtype>(
+                std::move(input), weight, bias, padding, stride, dilation,
+                padding_mode, groups, ctx);
+        } else if (algorithm == "implicit gemm") {
+            return implicit_gemm_conv2d<dtype>(std::move(input), weight, bias,
+                                               padding, stride, dilation,
+                                               padding_mode, groups, ctx);
+        } else if (algorithm == "gemm") {
+            return gemm_conv2d<dtype>(std::move(input), weight, bias, padding,
+                                      stride, dilation, padding_mode, groups,
+                                      ctx);
+        } else if (algorithm == "winograd") {
+            return winograd_conv2d<dtype>(std::move(input), weight, bias,
+                                          padding, stride, dilation,
+                                          padding_mode, groups, ctx);
+        } else if (algorithm == "guess") {
+            return guess_conv2d<dtype>(std::move(input), weight, bias, padding,
+                                       stride, dilation, padding_mode, groups,
+                                       ctx);
         }
         errs::invalid_algo("conv2d", algorithm);
     }
@@ -258,6 +268,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
     std::string algorithm;
 
   private:
+    Context ctx;
     const Tensor<dtype> weight;
     const std::optional<const Tensor<dtype>> bias;
     const std::vector<uint> padding;
@@ -280,6 +291,8 @@ template <typename dtype> class Model {
         }
         return output;
     }
+
+    ~Model() = default;
 
   private:
     const std::vector<std::shared_ptr<Layer<dtype>>> layers;

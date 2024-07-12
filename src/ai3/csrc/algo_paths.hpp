@@ -1,6 +1,19 @@
 #pragma once
 
 #include "../custom/conv2d.hpp"
+#if USE_CUDNN
+#include "gemm_conv2d_cudnn.hpp"
+#include "guess_conv2d_cudnn.hpp"
+#include "implicit_gemm_conv2d_cudnn.hpp"
+#include "implicit_precomp_gemm_conv2d_cudnn.hpp"
+#include "winograd_conv2d_cudnn.hpp"
+#else
+#include "gemm_conv2d_plain.hpp"
+#include "guess_conv2d_plain.hpp"
+#include "implicit_gemm_conv2d_plain.hpp"
+#include "implicit_precomp_gemm_conv2d_plain.hpp"
+#include "winograd_conv2d_plain.hpp"
+#endif
 #if defined(USE_SYCL) && defined(CONV2D_SYCL)
 #include "direct_conv2d_sycl.hpp"
 #include "smm_conv2d_sycl.hpp"
