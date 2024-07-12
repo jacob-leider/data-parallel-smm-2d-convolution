@@ -72,13 +72,13 @@ if __name__ == "__main__":
     for cmd in args.commands:
         if cmd == "gen_clangd":
             gen_clangd('.clangd')
-        elif cmd == "ext":
+        elif cmd == "install":
             build()
-        elif cmd == "ext_e":
+        elif cmd == "install_e":
             build(editable=True)
-        elif cmd == "ext_ev":
+        elif cmd == "install_ev":
             build(editable=True, verbose=True)
-        elif cmd == "ext_d":
+        elif cmd == "install_d":
             build(dev=True)
         elif cmd.startswith(BENCH_MOD):
             run_command(f"{PY} {cmd}")

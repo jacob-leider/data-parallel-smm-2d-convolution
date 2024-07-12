@@ -52,7 +52,7 @@ class Conv2D(nn.Module):
 
     def forward(self, x):
         if isinstance(x, torch.Tensor):
-            return self.internal.forward(x).to(torch.Tensor)
+            return self.internal.forward(x).torch()
         elif isinstance(x, fx.proxy.Proxy):
             tracer = x.tracer
             node = tracer.create_node('call_module', self.target, ('', ), {})
@@ -122,7 +122,7 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
     return forwards
 
 
-def swap_conv2d(complete_module: nn.Module, dtype, algo: Union[str, Sequence[str], Callable]):
+def swap_conv2d(complete_module: nn.Module, dtype, selector: Union[str, Sequence[str], Callable]):
     gm: fx.GraphModule = fx.symbolic_trace(complete_module)
     layer_counters = defaultdict(int)
     for node in gm.graph.nodes:
@@ -130,7 +130,7 @@ def swap_conv2d(complete_module: nn.Module, dtype, algo: Union[str, Sequence[str
             mod = getmodule(complete_module, node.target)
             if isinstance(mod, (nn.Conv2d, Conv2D)):
                 algo = get_algo_inc_counter(
-                    mod, {'conv2d': algo}, layer_counters)
+                    mod, {'conv2d': selector}, layer_counters)
                 if algo == "torch":
                     continue
                 if isinstance(mod, nn.Conv2d):
