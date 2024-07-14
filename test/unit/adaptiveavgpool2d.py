@@ -30,9 +30,3 @@ test(input_channels=3,
      in_width=30,
      output_shape=(4, 3),
      test_name="separate multiples")
-# TODO avgpool2d non-multiples should be implemented at some point
-# test(input_channels=3,
-#      in_height=41,
-#      in_width=32,
-#      output_shape=(4,3),
-#      test_name="not multiples")

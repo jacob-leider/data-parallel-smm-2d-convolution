@@ -7,7 +7,6 @@
 #include <optional>
 #include <vector>
 
-// TODO groups and padding modes
 template <typename dtype>
 Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
                             const std::optional<const Tensor<dtype>> &bias,

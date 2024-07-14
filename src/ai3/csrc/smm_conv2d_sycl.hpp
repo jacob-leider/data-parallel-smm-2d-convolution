@@ -6,7 +6,6 @@
 #include <vector>
 using namespace cl;
 
-// TODO groups and padding modes
 template <typename dtype>
 Tensor<dtype>
 smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
@@ -134,24 +133,7 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     proportionate_2d_work_split<dtype>(
         output_channels, output_area, output_work_group_size, &each_channel,
         &each_output_area, &total_output_channels, &total_output_area);
-    // std::cout << output_channels << "\n";
-    // std::cout << output_area << "\n";
-    // std::cout << output_work_group_size << "\n";
-    // std::cout << each_channel << "\n";
-    // std::cout << each_output_area << "\n";
-    // std::cout << "total on item: " << each_output_area * each_channel <<
-    // "\n";
 
-    // const uint each_channel = 1;
-    // uint each_output_area = output_work_group_size;
-    // if (output_area < each_output_area) {
-    //     each_output_area = output_area;
-    // }
-    // const uint output_area_total =
-    //     ((output_area + each_output_area - 1) / each_output_area) *
-    //     each_output_area;
-
-    // auto start = std::chrono::steady_clock::now();
     queue.submit([&](sycl::handler &h) {
         sycl::accessor acc_kernel =
             buf_kernel.template get_access<sycl::access::mode::read>(h);
@@ -187,10 +169,6 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
             });
     });
     queue.wait_and_throw();
-
-    // auto end = std::chrono::steady_clock::now();
-    // auto elapsed = std::chrono::duration<double>(end - start);
-    // std::cout << "time in second queue: " << elapsed.count() << " seconds\n";
 
     return output;
 }

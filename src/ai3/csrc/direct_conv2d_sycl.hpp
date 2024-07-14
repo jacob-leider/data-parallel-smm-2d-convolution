@@ -6,7 +6,6 @@
 #include <optional>
 using namespace cl;
 
-// TODO groups and padding modes
 template <typename dtype>
 Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
                             const std::optional<const Tensor<dtype>> &bias,
@@ -14,7 +13,6 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
                             const std::vector<uint> &stride,
                             const std::vector<uint> &dilation,
                             const PaddingMode padding_mode, uint groups) {
-    auto start = std::chrono::steady_clock::now();
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
@@ -61,14 +59,6 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
         has_bias ? sycl::buffer<dtype>(bias->data, bias->count())
                  : sycl::buffer<dtype>(sycl::range<1>(0));
 
-    // std::cout << "ic: " << input_channels << " oc: " << output_channels <<
-    // "\n"; std::cout << "ih: " << input_height << " oh: " << output_height <<
-    // "\n"; std::cout << "iw: " << input_width << " ow: " << output_width <<
-    // "\n"; std::cout << "ti: " << (input_channels * input_height *
-    // input_width)
-    //           << " to: " << (output_channels * output_height * output_width)
-    //           << "\n";
-
     const uint output_area = output_height * output_width;
     const uint max_work_group_size =
         queue.get_device().get_info<sycl::info::device::max_work_group_size>();
@@ -105,15 +95,6 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
         each_output_area;
     const uint total_channels =
         ((output_channels + each_channel - 1) / each_channel) * each_channel;
-
-    // const uint each_channel = 1;
-    // uint each_output_area = output_work_group_size;
-    // if (output_area < each_output_area) {
-    //     each_output_area = output_area;
-    // }
-    // const uint total_output_area =
-    //     ((output_area + each_output_area - 1) / each_output_area) *
-    //     each_output_area;
 
     queue.submit([&](sycl::handler &h) {
         auto acc_input =
@@ -172,8 +153,5 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
 
     queue.wait_and_throw();
 
-    auto end = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration<double>(end - start);
-    // std::cout << "time in func: " << elapsed.count() << " seconds\n";
     return output;
 }

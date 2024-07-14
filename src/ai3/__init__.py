@@ -1,17 +1,22 @@
 # * Paper *
-# TODO before paper gets published put the code on pypi and put license
+# TODO When pushing code to remote remove all these todos
+# TODO before paper gets published put the code on pypi
 
+# * Python *
 # TODO for easier swap_module https://github.com/pytorch/examples/blob/main/fx/replace_op.py
 # TODO can actually pass the function to the swap_torch.Conv2D which can then call it with the input size known
+
+# * CPP *
 # TODO organize the CPP files by operation
 # TODO probably better to make the vector for stride and dilation, just be the two ints
-# TODO ext should not be the command should be install or something
+# TODO groups and padding modes for convolution implementations
+# TODO adaptiveavgpool2d where output dim isn't multiple of input dim
+
 
 # * FUTURE *
-# TODO onnx support, should be pretty easy to also iterate
-# through the onnx layers and hyperparameters, could also use the pytorch way
-# of loading .onnx, .onnx -> nn.Module -> ai3.optimize -> ai3.Model
-# once onnx support we can have two files which are the only places torch and onnx are imported
+# TODO onnx format support
+# TODO tensorflow format support
+
 
 import torch
 from typing import Mapping, Optional, Sequence, Union, Callable

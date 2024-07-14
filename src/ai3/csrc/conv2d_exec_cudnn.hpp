@@ -126,7 +126,7 @@ Tensor<dtype> conv_bias_forward_with_algo(
         handle, &alpha, input_desc, d_input, kernel_desc, d_kernel, conv_desc,
         algo, d_workspace, workspace_bytes, &beta, output_desc, d_output));
     if (with_bias) {
-        CUDNN_CHECK(cudnnAddTensor(handle, &alpha, bias_desc, d_bias, &beta,
+        CUDNN_CHECK(cudnnAddTensor(handle, &alpha, bias_desc, d_bias, &alpha,
                                    output_desc, d_output));
     }
 

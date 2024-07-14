@@ -206,8 +206,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
         : weight(weight_address, weight_shape),
           bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]})),
           padding(padding), stride(stride), dilation(dilation),
-          padding_mode(padding_mode), groups(groups), algorithm(algorithm),
-          ctx(Context()) {}
+          padding_mode(padding_mode), groups(groups), algorithm(algorithm) {}
 
     Tensor<dtype> _forward(Tensor<dtype> input) override {
         if (DEFAULT(algorithm)) {
@@ -268,7 +267,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
     std::string algorithm;
 
   private:
-    Context ctx;
+    static Context ctx;
     const Tensor<dtype> weight;
     const std::optional<const Tensor<dtype>> bias;
     const std::vector<uint> padding;
@@ -277,6 +276,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
     const PaddingMode padding_mode;
     const uint groups;
 };
+template <typename dtype> Context Conv2D<dtype>::ctx = Context();
 
 template <typename dtype> class Model {
   public:

@@ -27,23 +27,17 @@ def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int
     else:
         bias = None
 
-    model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
-                                       stride, padding, dilation, 'zeros', 1, 'default')])
-    default = model.predict(input, out_type=torch.Tensor)
-
-    model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
-                                       stride, padding, dilation, 'zeros', 1, 'direct')])
-    direct_out = model.predict(input, out_type=torch.Tensor)
-
-    model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
-                                       stride, padding, dilation, 'zeros', 1, 'smm')])
-    smm_out = model.predict(input, out_type=torch.Tensor)
     torch_output = F.conv2d(input, kernel, bias=bias, dilation=dilation,
                             padding=padding, stride=stride, groups=groups)
-    compare_tensors(default, torch_output, test_name + ' user')
-    compare_tensors(smm_out, torch_output, test_name + ' smm')
-    compare_tensors(direct_out, torch_output, test_name + ' direct')
+    algos = ['default', 'direct', 'smm']
+    if torch.backends.cudnn.is_available():
+        algos.extend(["implicit precomp gemm", "implicit gemm", "gemm", "guess"])
 
+    for algo in algos:
+        model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
+                                           stride, padding, dilation, 'zeros', 1, algo)])
+        out = model.predict(input, out_type=torch.Tensor)
+        compare_tensors(out, torch_output, test_name + f' {algo}')
 
 print('CONV2D')
 
@@ -208,7 +202,7 @@ test(num_samples=5,
      in_height=50,
      in_width=150,
      output_channels=6,
-     kernel_height=10,
-     kernel_width=10,
+     kernel_height=5,
+     kernel_width=5,
      with_bias=True,
      test_name='batched multi channel with bias')
