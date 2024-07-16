@@ -4,6 +4,7 @@ from bench import predict_show_time
 from test import compare_tensors
 from runners import BATCH
 
+
 def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
     torch_out = predict_show_time(module, input_data, name + " torch")
 

@@ -16,4 +16,5 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
             return
         output = predict_show_time(ai3_model, input_data, name + "ai3")
         assert isinstance(target, torch.Tensor)
-        compare_tensors(output, target, f'{name} ai3, {BATCH} samples', print_pass=False)
+        compare_tensors(
+            output, target, f'{name} ai3, {BATCH} samples', print_pass=False)

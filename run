@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import argparse
 import runners
+import bench.layers
 import test.swap_conv2d
 import test.swap_backend
 import test.unit
@@ -72,6 +73,11 @@ def test_all():
     test_swap_backend("")
     test.unit.run()
 
+def bench_all():
+    bench_swap_conv2d("")
+    bench_swap_backend("")
+    bench.layers.run()
+
 def test_swap_conv2d(name):
     runners.run_on(test.swap_conv2d.runner, name)
 
@@ -118,7 +124,7 @@ if __name__ == "__main__":
             updated_command = cmd.replace("utest", UNIT_TEST_MOD, 1)
             run_command(f"{PY} {updated_command}")
         elif cmd == BENCH_MOD:
-            run_command(f"{PY} {cmd}")
+            bench_all()
         elif cmd.startswith("lbench"):
             updated_command = cmd.replace("lbench", LAYER_BENCH_MOD, 1)
             run_command(f"{PY} {updated_command}")

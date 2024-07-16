@@ -4,6 +4,7 @@ import torch
 import inspect
 from . import GROUPED_CONVOLUTION, BATCH
 
+
 def caller_name():
     caller_frame = inspect.stack()[2]
     caller_func_name = caller_frame.function
@@ -34,4 +35,3 @@ def wrapped_run(module: torch.nn.Module, input_sample_shape: Sequence[int], runn
         runner(module, torch.randn(BATCH, *input_sample_shape), name)
     else:
         print(f"{name} doesn't use convolution")
-

@@ -2,6 +2,7 @@ import torch
 from torch import nn
 import ai3  # the framework
 
+
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
@@ -18,6 +19,7 @@ class ConvNet(nn.Module):
         x = torch.flatten(x, 1)
         return x
 
+
 if __name__ == "__main__":
     input_data = torch.randn(10, 3, 224, 224)
     orig = ConvNet()
@@ -28,4 +30,3 @@ if __name__ == "__main__":
     swap_out = orig(input_data)
     assert torch.allclose(torch_out, ai3_out, atol=1e-6)
     assert torch.allclose(torch_out, swap_out, atol=1e-6)
-

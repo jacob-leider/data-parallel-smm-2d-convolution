@@ -31,13 +31,15 @@ def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int
                             padding=padding, stride=stride, groups=groups)
     algos = ['default', 'direct', 'smm']
     if torch.backends.cudnn.is_available():
-        algos.extend(["implicit precomp gemm", "implicit gemm", "gemm", "guess"])
+        algos.extend(["implicit precomp gemm",
+                     "implicit gemm", "gemm", "guess"])
 
     for algo in algos:
         model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
                                            stride, padding, dilation, 'zeros', 1, algo)])
         out = model.predict(input, out_type=torch.Tensor)
         compare_tensors(out, torch_output, test_name + f' {algo}')
+
 
 print('CONV2D')
 

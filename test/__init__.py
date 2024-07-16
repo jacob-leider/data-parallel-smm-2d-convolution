@@ -6,6 +6,7 @@ import torch
 
 FAILED_TESTS = []
 
+
 def show_failed():
     if FAILED_TESTS:
         print(f"Failed {len(FAILED_TESTS)} tests:")

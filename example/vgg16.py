@@ -9,6 +9,7 @@ def conv2d_selector(orig: torch.nn.Conv2d) -> str:
         return "smm"
     return "direct"
 
+
 input_data = torch.randn(1, 3, 224, 224)
 vgg16 = torchvision.models.vgg16(
     weights=torchvision.models.VGG16_Weights.DEFAULT)

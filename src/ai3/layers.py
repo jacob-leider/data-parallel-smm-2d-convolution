@@ -2,6 +2,7 @@ from typing import (
     Union,
     Sequence,
     Optional,
+    Tuple
 )
 from abc import ABC
 from ai3 import core, errors, utils
@@ -16,9 +17,9 @@ class Layer(ABC):
 
 
 class Conv2D(Layer):
-    def __init__(self, dtype, weight, bias, stride: Union[int, tuple[int, int]],
-                 padding: Union[str, Union[int, tuple[int, int]]], dilation:
-                 Union[int, tuple[int, int]], padding_mode: str, groups: int,
+    def __init__(self, dtype, weight, bias, stride: Union[int, Tuple[int, ...]],
+                 padding: Union[str, Union[int, Tuple[int, ...]]], dilation:
+                 Union[int, Tuple[int, ...]], padding_mode: str, groups: int,
                  algorithm: str):
         stride = utils.make_2d(stride)
         dilation = utils.make_2d(dilation)
@@ -82,10 +83,10 @@ class ReLU(Layer):
 
 
 class MaxPool2D(Layer):
-    def __init__(self, dtype, kernel_shape: Union[int, tuple[int,int]],
-                 stride: Union[int, tuple[int, int]],
-                 padding: Union[int, tuple[int, int]],
-                 dilation: Union[int, tuple[int, int]],
+    def __init__(self, dtype, kernel_shape: Union[int, Tuple[int, int]],
+                 stride: Union[int, Tuple[int, int]],
+                 padding: Union[int, Tuple[int, int]],
+                 dilation: Union[int, Tuple[int, int]],
                  ceil_mode: bool,
                  algorithm: str):
         stride = utils.make_2d(stride)
@@ -102,21 +103,21 @@ class MaxPool2D(Layer):
 
 
 class AvgPool2D(Layer):
-    def __init__(self, dtype, kernel_shape: Union[int, tuple[int, int]],
-                 stride: Union[int, tuple[int]],
-                 padding: Union[int, tuple[int]],
+    def __init__(self, dtype, kernel_shape: Union[int, Tuple[int, int]],
+                 stride: Union[int, Tuple[int]],
+                 padding: Union[int, Tuple[int]],
                  ceil_mode: bool,
                  count_include_pad: bool,
                  divisor_override: Optional[int],
                  algorithm: str):
-        stride = utils.make_2d(stride)
+        padding_2d = utils.make_2d(padding)
+        stride_2d = utils.make_2d(stride)
         kernel_shape = utils.make_2d(kernel_shape)
-        padding = utils.make_2d(padding)
 
         (layer, self.typestr) = utils.get_item_and_type(
             dtype, core.AvgPool2D_float, core.AvgPool2D_double)
         self.core = layer(kernel_shape[0], kernel_shape[1],
-                          padding[0], padding[1], stride[0], stride[1], ceil_mode, count_include_pad, divisor_override, algorithm)
+                          padding_2d[0], padding_2d[1], stride_2d[0], stride_2d[1], ceil_mode, count_include_pad, divisor_override, algorithm)
 
 
 class AdaptiveAvgPool2D(Layer):

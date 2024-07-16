@@ -1,8 +1,8 @@
-GROUPED_CONVOLUTION = False
-BATCH = 2
+GROUPED_CONVOLUTION = False  # noqa
+BATCH = 2  # noqa
 
-from .models import *
 from ai3 import errors
+from .models import *
 
 
 def run_on(runner, name):

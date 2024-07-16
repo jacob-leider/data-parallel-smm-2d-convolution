@@ -69,7 +69,6 @@ def gather_conv2d_times(input):
     times_for_layer_backend["guess"] = time_forward(
         swap_guess, input, True)
 
-
     ai3.swap_conv2d(orig, "implicit precomp gemm")
     times_for_layer_module["implicit precomp GEMM"] = time_forward(
         orig, input, True)
@@ -99,6 +98,7 @@ EARLY_MIDDLE_SHAPE = (N, 64, 112, 112)
 LATE_MIDDLE_SHAPE = (N, 256, 28, 28)
 LATE_SHAPE = (N, 512, 14, 14)
 
+
 def save_combined_plot(data_early_full, data_early_middle_full, data_late_middle_full, data_late_full):
     for i, name in enumerate(["Module", "Backend"]):
         plt.figure(figsize=(12, 6))
@@ -110,27 +110,33 @@ def save_combined_plot(data_early_full, data_early_middle_full, data_late_middle
                   'burlywood', 'lightpink', 'lightgray', 'palegoldenrod',
                   'paleturquoise']
         backends = list(data_early.keys())
-        input_shape_labels = [EARLY_SHAPE, EARLY_MIDDLE_SHAPE, LATE_MIDDLE_SHAPE, LATE_SHAPE]
+        input_shape_labels = [EARLY_SHAPE,
+                              EARLY_MIDDLE_SHAPE, LATE_MIDDLE_SHAPE, LATE_SHAPE]
 
         bar_width = 0.1
         x = range(len(input_shape_labels))
 
         for i, backend in enumerate(backends):
             plt.bar([pos + i * bar_width for pos in x],
-                    [data_early[backend], data_early_middle[backend], data_late_middle[backend], data_late[backend]],
+                    [data_early[backend], data_early_middle[backend],
+                        data_late_middle[backend], data_late[backend]],
                     width=bar_width,
                     color=colors[i % len(colors)],
                     label=backend)
 
         plt.xlabel('Input Shapes (N, C, H, W)', fontsize=16)
         plt.ylabel('Time (s)', fontsize=16)
-        plt.title(f'Latency of Conv2D Operation with Swapped {name}', fontsize=18)
+        plt.title(
+            f'Latency of Conv2D Operation with Swapped {name}', fontsize=18)
         plt.yticks(fontsize=16)
-        plt.xticks([pos + (len(backends) - 1) * bar_width / 2 for pos in x], input_shape_labels, fontsize=16)
+        plt.xticks([pos + (len(backends) - 1) * bar_width /
+                   2 for pos in x], input_shape_labels, fontsize=16)
         plt.legend(fontsize=16)
 
-        plt.savefig(os.path.join(SAVE_TO_DIR, f"combined_conv2d_times_{name}.png"), bbox_inches='tight')
+        plt.savefig(os.path.join(
+            SAVE_TO_DIR, f"combined_conv2d_times_{name}.png"), bbox_inches='tight')
         plt.close()
+
 
 def gather_model_times(model, input):
     times_for_model = defaultdict(float)
@@ -151,6 +157,7 @@ def gather_model_times(model, input):
         model, input)
 
     return times_for_model
+
 
 def save_model_data_table(models_data):
     df = pd.DataFrame(models_data).transpose()
@@ -183,7 +190,8 @@ def save_model_data_table(models_data):
 
     table.scale(1.2, 1.5)
 
-    plt.savefig(os.path.join(SAVE_TO_DIR, 'model_times_table.png'), bbox_inches='tight')
+    plt.savefig(os.path.join(SAVE_TO_DIR, 'model_times_table.png'),
+                bbox_inches='tight')
     plt.close()
 
 
@@ -208,18 +216,19 @@ with torch.inference_mode():
     conv2d_times_late = gather_conv2d_times(input)
     print(conv2d_times_late)
 
-    save_combined_plot(conv2d_times_early, conv2d_times_early_middle, conv2d_times_late_middle, conv2d_times_late)
+    save_combined_plot(conv2d_times_early, conv2d_times_early_middle,
+                       conv2d_times_late_middle, conv2d_times_late)
 
     input = torch.randn(EARLY_SHAPE)
-    orig_models = {"AlexNet" :tvm.alexnet(),
-                   "DenseNet" : tvm.DenseNet(),
-                   "GoogleNet" : tvm.googlenet(),
-                   "Incetion V3" : tvm.inception_v3(),
-                   "ResNet152" : tvm.resnet152(),
+    orig_models = {"AlexNet": tvm.alexnet(),
+                   "DenseNet": tvm.DenseNet(),
+                   "GoogleNet": tvm.googlenet(),
+                   "Incetion V3": tvm.inception_v3(),
+                   "ResNet152": tvm.resnet152(),
                    "Squeezenet 1.1": tvm.squeezenet1_1(),
                    "Swin Transformer Base": tvm.swin_b(),
-                   "VGG16" : tvm.vgg16(),
-                   "Vision Transformer Base 16" : tvm.vit_b_16()}
+                   "VGG16": tvm.vgg16(),
+                   "Vision Transformer Base 16": tvm.vit_b_16()}
     models_data = {}
 
     for model_name, model in orig_models.items():
@@ -227,5 +236,3 @@ with torch.inference_mode():
         models_data[model_name] = gather_model_times(model, input)
         print(f"  {models_data[model_name]}")
     save_model_data_table(models_data)
-
-

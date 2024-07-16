@@ -1,7 +1,8 @@
 from typing import (
     Union,
     Sequence,
-    Any
+    Any,
+    Tuple
 )
 import torch
 
@@ -29,8 +30,8 @@ def get_shape(frontend_data) -> tuple:
     assert False and 'bad input type when getting shape'
 
 
-def make_padding_2d(padding: Union[str, Union[int, tuple[int, int]]],
-                    stride: tuple[int, int], dilation: tuple[int, int],
+def make_padding_2d(padding: Union[str, Union[int, Tuple[int, ...]]],
+                    stride: Tuple[int, ...], dilation: Tuple[int, ...],
                     kernel_shape: Sequence[int], dtype=int) -> tuple[int, int]:
     if isinstance(padding, str):
         if padding == 'valid':
@@ -45,7 +46,7 @@ def make_padding_2d(padding: Union[str, Union[int, tuple[int, int]]],
         return make_2d(padding, dtype=dtype)
 
 
-def make_2d(a: Union[Any, tuple[Any, Any]], dtype: type = int) -> tuple[Any, Any]:
+def make_2d(a: Union[Any, Tuple[Any, Any]], dtype: type = int) -> Tuple[Any, Any]:
     if isinstance(a, dtype):
         return (a, a)
     assert len(a) == 2 and all(isinstance(val, dtype) for val in a)

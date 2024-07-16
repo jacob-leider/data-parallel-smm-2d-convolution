@@ -1,5 +1,5 @@
 from ai3 import layers, errors
-from typing import Mapping, Optional, List, Sequence, Union, Callable
+from typing import Mapping, Optional, List, Sequence, Union, Callable, DefaultDict
 from collections import defaultdict
 import torch
 from torch import nn, fx
@@ -59,7 +59,9 @@ class Conv2D(nn.Module):
             return fx.proxy.Proxy(node, tracer)
 
 
-def get_algo_inc_counter(orig: nn.Module,  algos: Mapping[str, Union[str, Sequence[str], Callable]], layer_counters: defaultdict[str, int]) -> str:
+def get_algo_inc_counter(orig: nn.Module,
+                         algos: Mapping,
+                         layer_counters: DefaultDict[str, int]) -> str:
     op = mod_to_op(orig)
     if callable(algos[op]):
         algo = algos[op](orig)
@@ -68,6 +70,8 @@ def get_algo_inc_counter(orig: nn.Module,  algos: Mapping[str, Union[str, Sequen
         layer_counters[op] += 1
     else:
         algo = algos[op]
+    errors.bail_if(not isinstance(algo, str),
+                   "Invalid algorithm, {algo}, associated with {op}")
     return algo
 
 
@@ -96,6 +100,8 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
                     torch.nn.Flatten(), algos, layer_counters)
                 errors.bail_if(algo == "torch",
                                "can't use torch backend when in swap_backend")
+                assert(isinstance(start_dim, int))
+                assert(isinstance(end_dim, int))
                 forwards.append(layers.Flatten(
                     dtype, start_dim, end_dim, algo))
             elif node.target == torch.relu:
