@@ -8,12 +8,12 @@
 #include <vector>
 
 template <typename dtype>
-Tensor<dtype> smm_conv2d(const Tensor<dtype> input, const Tensor<dtype> &kernel,
+Tensor<dtype> smm_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
                          const std::optional<const Tensor<dtype>> &bias,
-                         const std::vector<uint> &padding,
-                         const std::vector<uint> &stride,
-                         const std::vector<uint> &dilation,
-                         const PaddingMode padding_mode, int groups) {
+                         const uint padding_h, const uint padding_w,
+                         const uint stride_h, const uint stride_w,
+                         const uint dilation_h, const uint dilation_w,
+                         const PaddingMode padding_mode, uint groups) {
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
@@ -28,9 +28,9 @@ Tensor<dtype> smm_conv2d(const Tensor<dtype> input, const Tensor<dtype> &kernel,
     const uint output_channels = kernel.out_channels();
 
     const uint output_height = output_size_for_2d<dtype>(
-        input_height, kernel_height, padding[0], dilation[0], stride[0], false);
+        input_height, kernel_height, padding_h, dilation_h, stride_h, false);
     const uint output_width = output_size_for_2d<dtype>(
-        input_width, kernel_width, padding[1], dilation[1], stride[1], false);
+        input_width, kernel_width, padding_w, dilation_w, stride_w, false);
 
     uint num_samples;
     Tensor<dtype> output;
@@ -55,10 +55,10 @@ Tensor<dtype> smm_conv2d(const Tensor<dtype> input, const Tensor<dtype> &kernel,
                 for (uint ker_w = 0; ker_w < kernel_width; ker_w++) {
                     for (uint out_h = 0; out_h < output_height; ++out_h) {
                         for (uint out_w = 0; out_w < output_width; ++out_w) {
-                            uint h_offset = out_h * stride[0] - padding[0] +
-                                            ker_h * dilation[0];
-                            uint w_offset = out_w * stride[1] - padding[1] +
-                                            ker_w * dilation[1];
+                            uint h_offset = out_h * stride_h - padding_h +
+                                            ker_h * dilation_h;
+                            uint w_offset = out_w * stride_w - padding_w +
+                                            ker_w * dilation_w;
                             uint col_index = to_linear(
                                 in_c, ker_h, ker_w, out_h, out_w, kernel_height,
                                 kernel_width, output_height, output_width);

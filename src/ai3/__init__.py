@@ -1,7 +1,3 @@
-# * Paper *
-# TODO When pushing code to remote remove all these todos
-# TODO before paper gets published put the code on pypi
-
 # * Python *
 # TODO for easier swap_module https://github.com/pytorch/examples/blob/main/fx/replace_op.py
 # TODO can actually pass the function to the swap_torch.Conv2D which can then call it with the input size known

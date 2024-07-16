@@ -6,26 +6,22 @@
 #include <vector>
 
 template <typename dtype>
-Tensor<dtype>
-_avgpool2d(Tensor<dtype> input, const std::vector<uint> kernel_shape,
-           const std::vector<uint> &padding, const std::vector<uint> &stride,
-           const bool ceil_mode, const bool count_include_pad,
-           const std::optional<int> divisor_override) {
+Tensor<dtype> _avgpool2d(Tensor<dtype> input, const uint kernel_h,
+                         const uint kernel_w, const uint padding_h,
+                         const uint padding_w, const uint stride_h,
+                         const uint stride_w, const bool ceil_mode,
+                         const bool count_include_pad,
+                         const std::optional<int> divisor_override) {
     const uint input_channels = input.input_channels();
     const uint input_height = input.height();
     const uint input_width = input.width();
 
-    const uint kernel_height = kernel_shape[0];
-    const uint kernel_width = kernel_shape[1];
-
     const uint output_channels = input_channels;
 
-    const uint output_height =
-        output_size_for_2d<dtype>(input_height, kernel_height, padding[0],
-                                  std::nullopt, stride[0], ceil_mode);
-    const uint output_width =
-        output_size_for_2d<dtype>(input_width, kernel_width, padding[1],
-                                  std::nullopt, stride[1], ceil_mode);
+    const uint output_height = output_size_for_2d<dtype>(
+        input_height, kernel_h, padding_h, std::nullopt, stride_h, ceil_mode);
+    const uint output_width = output_size_for_2d<dtype>(
+        input_width, kernel_w, padding_w, std::nullopt, stride_w, ceil_mode);
 
     Tensor<dtype> output;
     uint num_samples;
@@ -45,12 +41,12 @@ _avgpool2d(Tensor<dtype> input, const std::vector<uint> kernel_shape,
                 for (uint out_w = 0; out_w < output_width; out_w++) {
                     dtype total = 0;
                     uint pooled_count = 0;
-                    for (uint kern_r = 0; kern_r < kernel_height; ++kern_r) {
-                        for (uint kern_c = 0; kern_c < kernel_width; ++kern_c) {
+                    for (uint kern_r = 0; kern_r < kernel_h; ++kern_r) {
+                        for (uint kern_c = 0; kern_c < kernel_w; ++kern_c) {
                             int h_offset =
-                                out_h * stride[0] - padding[0] + kern_r;
+                                out_h * stride_h - padding_h + kern_r;
                             int w_offset =
-                                out_w * stride[1] - padding[1] + kern_c;
+                                out_w * stride_w - padding_w + kern_c;
 
                             if (h_offset >= 0 && h_offset < input_height &&
                                 w_offset >= 0 && w_offset < input_width) {
@@ -68,15 +64,15 @@ _avgpool2d(Tensor<dtype> input, const std::vector<uint> kernel_shape,
                         val = total / (*divisor_override);
                     } else {
                         if (count_include_pad) {
-                            uint hstart = out_h * stride[0] - padding[0];
-                            uint wstart = out_w * stride[1] - padding[1];
-                            uint hend = hstart + kernel_height;
-                            if (hend > input_height + padding[0]) {
-                                hend = input_height + padding[0];
+                            uint hstart = out_h * stride_h - padding_h;
+                            uint wstart = out_w * stride_w - padding_w;
+                            uint hend = hstart + kernel_h;
+                            if (hend > input_height + padding_h) {
+                                hend = input_height + padding_h;
                             }
-                            uint wend = wstart + kernel_width;
-                            if (wend > input_width + padding[1]) {
-                                wend = input_width + padding[1];
+                            uint wend = wstart + kernel_w;
+                            if (wend > input_width + padding_w) {
+                                wend = input_width + padding_w;
                             }
                             const int pool_size =
                                 (hend - hstart) * (wend - wstart);

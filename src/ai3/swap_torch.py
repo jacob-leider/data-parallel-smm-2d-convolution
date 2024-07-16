@@ -131,7 +131,7 @@ def swap_conv2d(complete_module: nn.Module, dtype, selector: Union[str, Sequence
             if isinstance(mod, (nn.Conv2d, Conv2D)):
                 algo = get_algo_inc_counter(
                     mod, {'conv2d': selector}, layer_counters)
-                if algo == "torch":
+                if algo == 'torch':
                     continue
                 if isinstance(mod, nn.Conv2d):
                     swapped = swap_layer(mod, dtype, algo)

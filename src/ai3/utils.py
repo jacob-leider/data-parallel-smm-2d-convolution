@@ -1,6 +1,7 @@
 from typing import (
     Union,
-    Sequence
+    Sequence,
+    Any
 )
 import torch
 
@@ -22,30 +23,30 @@ def get_address(frontend_data) -> int:
     assert False and 'bad input type when getting data address'
 
 
-def get_shape(frontend_data) -> Sequence[int]:
+def get_shape(frontend_data) -> tuple:
     if isinstance(frontend_data, torch.Tensor):
         return frontend_data.size()
     assert False and 'bad input type when getting shape'
 
 
-def make_padding_2d(padding: Union[str, Union[int, Sequence[int]]],
-                    stride: Sequence[int], dilation: Sequence[int],
-                    kernel_shape: Sequence[int], dtype=int) -> Sequence[int]:
+def make_padding_2d(padding: Union[str, Union[int, tuple[int, int]]],
+                    stride: tuple[int, int], dilation: tuple[int, int],
+                    kernel_shape: Sequence[int], dtype=int) -> tuple[int, int]:
     if isinstance(padding, str):
         if padding == 'valid':
-            return [0, 0]
+            return (0, 0)
         if padding == 'same':
             assert all(x == 1 for x in stride)
             k_height = kernel_shape[len(kernel_shape) - 2]
             k_width = kernel_shape[len(kernel_shape) - 1]
-            return [dilation[0] * (k_height - 1) // 2, dilation[1] * (k_width - 1) // 2]
+            return (dilation[0] * (k_height - 1) // 2, dilation[1] * (k_width - 1) // 2)
         assert False and f'invalid padding string: {padding}'
     else:
         return make_2d(padding, dtype=dtype)
 
 
-def make_2d(a: Union[int, Sequence[int]], dtype=int) -> Sequence[int]:
+def make_2d(a: Union[Any, tuple[Any, Any]], dtype: type = int) -> tuple[Any, Any]:
     if isinstance(a, dtype):
-        return [a, a]
+        return (a, a)
     assert len(a) == 2 and all(isinstance(val, dtype) for val in a)
     return a

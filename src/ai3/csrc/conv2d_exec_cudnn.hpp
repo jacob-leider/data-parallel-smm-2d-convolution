@@ -2,16 +2,16 @@
 
 #include "ai3.hpp"
 #include "cuda_utils.hpp"
-#include <cudnn.h>
 
 template <typename dtype>
-Tensor<dtype> conv_bias_forward_with_algo(
-    Tensor<dtype> input, const Tensor<dtype> &kernel,
-    const std::optional<const Tensor<dtype>> &bias,
-    const std::vector<uint> &padding, const std::vector<uint> &stride,
-    const std::vector<uint> &dilation, const PaddingMode padding_mode,
-    uint groups, cudnnConvolutionFwdAlgo_t algo, Context &ctx,
-    const bool guess = false) {
+Tensor<dtype>
+conv_bias_forward_with_algo(Tensor<dtype> input, const Tensor<dtype> &kernel,
+                            const std::optional<const Tensor<dtype>> &bias,
+                            const uint padding_h, const uint padding_w,
+                            const uint stride_h, const uint stride_w,
+                            const uint dilation_h, const uint dilation_w,
+                            const PaddingMode padding_mode, uint groups,
+                            Context &ctx, const bool guess = false) {
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
@@ -31,12 +31,6 @@ Tensor<dtype> conv_bias_forward_with_algo(
     const uint kernel_width = kernel.width();
     const uint output_channels = kernel.out_channels();
 
-    const uint padding_h = padding[0];
-    const uint padding_w = padding[1];
-    const uint stride_h = stride[0];
-    const uint stride_w = stride[1];
-    const uint dilation_h = dilation[0];
-    const uint dilation_w = dilation[1];
     const uint output_height = output_size_for_2d<dtype>(
         input_height, kernel_height, padding_h, dilation_h, stride_h, false);
     const uint output_width = output_size_for_2d<dtype>(

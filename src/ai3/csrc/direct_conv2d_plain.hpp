@@ -10,9 +10,9 @@
 template <typename dtype>
 Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
                             const std::optional<const Tensor<dtype>> &bias,
-                            const std::vector<uint> &padding,
-                            const std::vector<uint> &stride,
-                            const std::vector<uint> &dilation,
+                            const uint padding_h, const uint padding_w,
+                            const uint stride_h, const uint stride_w,
+                            const uint dilation_h, const uint dilation_w,
                             const PaddingMode padding_mode, uint groups) {
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
@@ -28,9 +28,9 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
     const uint output_channels = kernel.out_channels();
 
     const uint output_height = output_size_for_2d<dtype>(
-        input_height, kernel_height, padding[0], dilation[0], stride[0], false);
+        input_height, kernel_height, padding_h, dilation_h, stride_h, false);
     const uint output_width = output_size_for_2d<dtype>(
-        input_width, kernel_width, padding[1], dilation[1], stride[1], false);
+        input_width, kernel_width, padding_w, dilation_w, stride_w, false);
 
     uint num_samples;
     Tensor<dtype> output;
@@ -54,10 +54,10 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
                         for (uint ker_h = 0; ker_h < kernel_height; ++ker_h) {
                             for (uint ker_w = 0; ker_w < kernel_width;
                                  ++ker_w) {
-                                uint h_offset = out_h * stride[0] - padding[0] +
-                                                ker_h * dilation[0];
-                                uint w_offset = out_w * stride[1] - padding[1] +
-                                                ker_w * dilation[1];
+                                uint h_offset = out_h * stride_h - padding_h +
+                                                ker_h * dilation_h;
+                                uint w_offset = out_w * stride_w - padding_w +
+                                                ker_w * dilation_w;
 
                                 if (h_offset >= 0 && h_offset < input_height &&
                                     w_offset >= 0 && w_offset < input_width) {

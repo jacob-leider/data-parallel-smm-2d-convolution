@@ -34,9 +34,12 @@ class Conv2D():
                  weight_address: int,
                  weight_shape: Sequence[int],
                  bias_addr: Optional[int],
-                 padding: Sequence[int],
-                 stride: Sequence[int],
-                 dilation: Sequence[int],
+                 padding_h: int,
+                 padding_w: int,
+                 stride_h: int,
+                 stride_w: int,
+                 dilation_h: int,
+                 dilation_w: int,
                  padding_mode: PaddingMode,
                  groups: int,
                  algorithm: str):
@@ -52,10 +55,14 @@ class Conv2D_float(Conv2D):
 
 class MaxPool2D():
     def __init__(self,
-                 kernel_shape: Sequence[int],
-                 padding: Sequence[int],
-                 stride: Sequence[int],
-                 dilation: Sequence[int],
+                 kernel_h: int,
+                 kernel_w: int,
+                 padding_h: int,
+                 padding_w: int,
+                 stride_h: int,
+                 stride_w: int,
+                 dilation_h: int,
+                 dilation_w: int,
                  ceil_mode: bool,
                  algorithm: str):
         ...
@@ -67,9 +74,12 @@ class MaxPool2D_double(MaxPool2D):
 
 class AvgPool2D():
     def __init__(self,
-                 kernel_shape: Sequence[int],
-                 padding: Sequence[int],
-                 stride: Sequence[int],
+                 kernel_h: int,
+                 kernel_w: int,
+                 padding_h: int,
+                 padding_w: int,
+                 stride_h: int,
+                 stride_w: int,
                  ceil_mode: bool,
                  count_include_pad: bool,
                  divisor_override: Optional[int],
@@ -82,7 +92,7 @@ class AvgPool2D_double(AvgPool2D):
     ...
 
 class AdaptiveAvgPool2D():
-    def __init__(self, output_shape: Optional[Union[Sequence[Optional[int]], Sequence[int]]], algorithm:str):
+    def __init__(self, output_h: Optional[int], output_w: Optional[int], algorithm:str):
         ...
 
 class AdaptiveAvgPool2D_float(AdaptiveAvgPool2D):
