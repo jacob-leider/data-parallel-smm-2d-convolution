@@ -4,6 +4,13 @@ import subprocess
 import os
 from pathlib import Path
 import argparse
+import runners
+import test.swap_conv2d
+import test.swap_backend
+import test.unit
+import bench.swap_conv2d
+import bench.swap_backend
+
 
 PY = "python3.11 -m"
 PIP = "pip3.11"
@@ -13,15 +20,12 @@ PY_FORMAT = "autopep8"
 TEST_MOD = "test"
 EXAMPLE_MOD = "example"
 UNIT_TEST_MOD = TEST_MOD + ".unit"
-SWAP_CONV2D_TEST_MOD = TEST_MOD + '.swap_conv2d'
-SWAP_BACKEND_TEST_MOD = TEST_MOD + '.swap_backend'
 BENCH_MOD = "bench"
 LAYER_BENCH_MOD = BENCH_MOD + ".layers"
-SWAP_CONV2D_BENCH_MOD = BENCH_MOD + ".swap_conv2d"
-SWAP_BACKEND_BENCH_MOD = BENCH_MOD + ".swap_backend"
 
 CSRC_FILES = [str(f) for f in Path('.').rglob('*') if f.suffix in ['.cpp', '.hpp'] and 'venv' not in f.parts]
 PY_FILES = [str(f) for f in Path('.').rglob('*.py') if 'venv' not in f.parts]
+
 
 def run_command(command):
     print(f'Running: {command}')
@@ -63,6 +67,32 @@ def build(editable: bool = False, verbose: bool = False, dev: bool = False):
         cmd += f" --config-settings=cmake.define.CMAKE_CXX_FLAGS=\'{cxx_flags}\'"
     run_command(cmd)
 
+def test_all():
+    test_swap_conv2d("")
+    test_swap_backend("")
+    test.unit.run()
+
+def test_swap_conv2d(name):
+    runners.run_on(test.swap_conv2d.runner, name)
+
+def test_swap_backend(name):
+    runners.run_on(test.swap_backend.runner, name)
+
+def bench_swap_conv2d(name):
+    runners.run_on(bench.swap_conv2d.runner, name)
+
+def bench_swap_backend(name):
+    runners.run_on(bench.swap_backend.runner, name)
+
+def starts_with_any(cmd, starts):
+    return any(cmd.startswith(s) for s in starts)
+
+def clean_start(cmd, starts):
+    for s in starts:
+        if cmd.startswith(s):
+            return cmd[len(s) + 1:]
+    assert False and "cleaning with unmatched start"
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run various development commands")
@@ -80,30 +110,26 @@ if __name__ == "__main__":
             build(editable=True, verbose=True)
         elif cmd == "install_d":
             build(dev=True)
-        elif cmd.startswith(BENCH_MOD):
-            run_command(f"{PY} {cmd}")
+        elif cmd == TEST_MOD:
+            test_all()
         elif cmd.startswith(EXAMPLE_MOD):
-            run_command(f"{PY} {cmd}")
-        elif cmd.startswith("lbench"):
-            updated_command = cmd.replace("lbench", LAYER_BENCH_MOD, 1)
-            run_command(f"{PY} {updated_command}")
-        elif cmd.startswith("scbench"):
-            updated_command = cmd.replace("scbench", SWAP_CONV2D_BENCH_MOD, 1)
-            run_command(f"{PY} {updated_command}")
-        elif cmd.startswith("sbbench"):
-            updated_command = cmd.replace("sbbench", SWAP_BACKEND_BENCH_MOD, 1)
-            run_command(f"{PY} {updated_command}")
-        elif cmd.startswith(TEST_MOD):
             run_command(f"{PY} {cmd}")
         elif cmd.startswith("utest"):
             updated_command = cmd.replace("utest", UNIT_TEST_MOD, 1)
             run_command(f"{PY} {updated_command}")
-        elif cmd.startswith("sbtest"):
-            updated_command = cmd.replace("sbtest", SWAP_BACKEND_TEST_MOD, 1)
+        elif cmd == BENCH_MOD:
+            run_command(f"{PY} {cmd}")
+        elif cmd.startswith("lbench"):
+            updated_command = cmd.replace("lbench", LAYER_BENCH_MOD, 1)
             run_command(f"{PY} {updated_command}")
-        elif cmd.startswith("sctest"):
-            updated_command = cmd.replace("sctest", SWAP_CONV2D_TEST_MOD, 1)
-            run_command(f"{PY} {updated_command}")
+        elif starts_with_any(cmd, ["scbench", "bench.swap_conv2d"]):
+            bench_swap_conv2d(clean_start(cmd, ["scbench", "bench.swap_conv2d"]))
+        elif starts_with_any(cmd, ["sbbench", "bench.swap_backend"]):
+            bench_swap_backend(clean_start(cmd, ["sbbench", "bench.swap_backend"]))
+        elif starts_with_any(cmd, ["sctest", "test.swap_conv2d"]):
+            test_swap_conv2d(clean_start(cmd, ["sctest", "test.swap_conv2d"]))
+        elif starts_with_any(cmd, ["sbtest", "test.swap_backend"]):
+            test_swap_backend(clean_start(cmd, ["sbtest", "test.swap_backend"]))
         elif cmd == "format":
             run_command(f"{C_FORMAT} -i {' '.join(CSRC_FILES)}")
             run_command(f"{PY_FORMAT} --in-place {' '.join(PY_FILES)}")

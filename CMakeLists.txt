@@ -16,6 +16,7 @@ python_add_library(core MODULE ${CSRC_DIR}/ai3.cpp WITH_SOABI)
 set_property(TARGET core PROPERTY CXX_STANDARD 17)
 set_property(TARGET core PROPERTY CXX_STANDARD_REQUIRED YES)
 set_property(TARGET core PROPERTY CXX_EXTENSIONS NO)
+target_compile_options(core PRIVATE -Wfatal-errors)
 target_link_libraries(core PRIVATE pybind11::headers)
 target_include_directories(core PRIVATE ${CSRC_DIR})
 

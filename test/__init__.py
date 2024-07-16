@@ -5,8 +5,6 @@ import atexit
 import torch
 
 FAILED_TESTS = []
-BATCH = 2
-
 
 def show_failed():
     if FAILED_TESTS:
