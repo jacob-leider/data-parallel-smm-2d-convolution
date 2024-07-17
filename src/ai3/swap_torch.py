@@ -146,6 +146,7 @@ def swap_conv2d(complete_module: nn.Module, dtype, selector: Union[str, Sequence
                         complete_module, node.target, Conv2D(swapped, str(node.target)))
                 else:
                     mod.internal.set_algo(algo)
+    gm.recompile()
 
 
 def swap_layer(module: nn.Module, dtype, algo: str) -> Optional[layers.Layer]:

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "../avgpool2d/plain.hpp"
 #include "ai3.hpp"
-#include "avgpool2d_plain.hpp"
 #include <optional>
 #include <vector>
 

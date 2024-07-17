@@ -7,6 +7,7 @@ from runners import BATCH
 
 def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
     torch_out = predict_show_time(module, input_data, name + " torch")
+    assert(isinstance(torch_out, torch.Tensor))
 
     for algo in ['default', 'direct', 'smm']:
         ai3.swap_conv2d(module, algo)

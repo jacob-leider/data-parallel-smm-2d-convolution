@@ -1,15 +1,14 @@
 # * Python *
-# TODO for easier swap_module https://github.com/pytorch/examples/blob/main/fx/replace_op.py
-# TODO can actually pass the function to the swap_torch.Conv2D which can then call it with the input size known
+# TODO can pass the function to the swap_torch.Conv2D which can then call it with the input size known
 
 # * CPP *
-# TODO organize the CPP files by operation
-# TODO probably better to make the vector for stride and dilation, just be the two ints
 # TODO groups and padding modes for convolution implementations
 # TODO adaptiveavgpool2d where output dim isn't multiple of input dim
 
 
 # * FUTURE *
+# TODO integrate with torch.compile()
+# TODO backpropagation support
 # TODO onnx format support
 # TODO tensorflow format support
 

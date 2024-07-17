@@ -236,8 +236,9 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
             } else {
 #if USE_CUDNN
                 return implicit_precomp_gemm_conv2d<dtype>(
-                    std::move(input), weight, bias, padding, stride, dilation,
-                    padding_mode, groups, ctx);
+                    std::move(input), weight, bias, padding_h, padding_w,
+                    stride_h, stride_w, dilation_h, dilation_w, padding_mode,
+                    groups, ctx);
 #else
                 return direct_conv2d<dtype>(std::move(input), weight, bias,
                                             padding_h, padding_w, stride_h,

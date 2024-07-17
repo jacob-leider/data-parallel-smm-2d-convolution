@@ -120,7 +120,7 @@ if __name__ == "__main__":
             test_all()
         elif cmd.startswith(EXAMPLE_MOD):
             run_command(f"{PY} {cmd}")
-        elif cmd.startswith("utest"):
+        elif starts_with_any(cmd, ["utest", "test.unit"]):
             updated_command = cmd.replace("utest", UNIT_TEST_MOD, 1)
             run_command(f"{PY} {updated_command}")
         elif cmd == BENCH_MOD:

@@ -1,7 +1,6 @@
 GROUPED_CONVOLUTION = False  # noqa
 BATCH = 2  # noqa
 
-from ai3 import errors
 from .models import *
 
 
@@ -13,7 +12,7 @@ def run_on(runner, name):
         if model_func:
             model_func(runner)
         else:
-            errors.bail(f'Invalid model {name}')
+            print(f'Invalid model {name}')
 
 
 def run_all(runner):

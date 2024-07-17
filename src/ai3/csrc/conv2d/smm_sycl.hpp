@@ -7,12 +7,12 @@
 using namespace cl;
 
 template <typename dtype>
-Tensor<dtype>
-smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
-           const std::optional<const Tensor<dtype>> &bias,
-           const std::vector<uint> &padding, const std::vector<uint> &stride,
-           const std::vector<uint> &dilation, const PaddingMode padding_mode,
-           int groups) {
+Tensor<dtype> smm_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
+                         const std::optional<const Tensor<dtype>> &bias,
+                         const uint padding_h, const uint padding_w,
+                         const uint stride_h, const uint stride_w,
+                         const uint dilation_h, const uint dilation_w,
+                         const PaddingMode padding_mode, uint groups) {
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
@@ -27,9 +27,9 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
     const uint output_channels = kernel.out_channels();
 
     const uint output_height = output_size_for_2d<dtype>(
-        input_height, kernel_height, padding[0], dilation[0], stride[0], false);
+        input_height, kernel_height, padding_h, dilation_h, stride_h, false);
     const uint output_width = output_size_for_2d<dtype>(
-        input_width, kernel_width, padding[1], dilation[1], stride[1], false);
+        input_width, kernel_width, padding_w, dilation_w, stride_w, false);
 
     uint num_samples;
     Tensor<dtype> output;
@@ -41,13 +41,6 @@ smm_conv2d(const Tensor<dtype> &input, const Tensor<dtype> &kernel,
         num_samples = 1;
         output = Tensor<dtype>({output_channels, output_height, output_width});
     }
-
-    uint padding_h = padding[0];
-    uint padding_w = padding[1];
-    uint stride_h = stride[0];
-    uint stride_w = stride[1];
-    uint dilation_h = dilation[0];
-    uint dilation_w = dilation[1];
 
     uint col_height = input_channels * kernel_height * kernel_width;
     uint col_width = output_height * output_width;

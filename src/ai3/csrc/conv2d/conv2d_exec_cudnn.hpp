@@ -1,17 +1,16 @@
 #pragma once
 
+#include "../cuda_utils.hpp"
 #include "ai3.hpp"
-#include "cuda_utils.hpp"
 
 template <typename dtype>
-Tensor<dtype>
-conv_bias_forward_with_algo(Tensor<dtype> input, const Tensor<dtype> &kernel,
-                            const std::optional<const Tensor<dtype>> &bias,
-                            const uint padding_h, const uint padding_w,
-                            const uint stride_h, const uint stride_w,
-                            const uint dilation_h, const uint dilation_w,
-                            const PaddingMode padding_mode, uint groups,
-                            Context &ctx, const bool guess = false) {
+Tensor<dtype> conv_bias_forward_with_algo(
+    Tensor<dtype> input, const Tensor<dtype> &kernel,
+    const std::optional<const Tensor<dtype>> &bias, const uint padding_h,
+    const uint padding_w, const uint stride_h, const uint stride_w,
+    const uint dilation_h, const uint dilation_w,
+    const PaddingMode padding_mode, uint groups, cudnnConvolutionFwdAlgo_t algo,
+    Context &ctx, const bool guess = false) {
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
