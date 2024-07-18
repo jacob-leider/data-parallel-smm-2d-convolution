@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ai3.hpp"
-#include "conv2d_exec_cudnn.hpp"
+#include "exec_cudnn.hpp"
 
 template <typename dtype>
 Tensor<dtype> implicit_precomp_gemm_conv2d(

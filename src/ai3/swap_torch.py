@@ -100,8 +100,8 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
                     torch.nn.Flatten(), algos, layer_counters)
                 errors.bail_if(algo == "torch",
                                "can't use torch backend when in swap_backend")
-                assert(isinstance(start_dim, int))
-                assert(isinstance(end_dim, int))
+                assert (isinstance(start_dim, int))
+                assert (isinstance(end_dim, int))
                 forwards.append(layers.Flatten(
                     dtype, start_dim, end_dim, algo))
             elif node.target == torch.relu:
