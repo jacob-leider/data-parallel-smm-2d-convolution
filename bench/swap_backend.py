@@ -3,7 +3,8 @@ import ai3
 from ai3.errors import UnsupportedCallableError
 from test import compare_tensors
 from bench import predict_show_time
-from runners import BATCH
+import runners
+import sys
 
 
 def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
@@ -17,4 +18,8 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
         output = predict_show_time(ai3_model, input_data, name + "ai3")
         assert isinstance(target, torch.Tensor)
         compare_tensors(
-            output, target, f'{name} ai3, {BATCH} samples', print_pass=False)
+            output, target, f'{name} ai3, {runners.BATCH} samples', print_pass=False)
+
+
+if __name__ == "__main__":
+    runners.from_args(runner, sys.argv)

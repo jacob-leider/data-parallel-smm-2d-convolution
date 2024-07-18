@@ -20,14 +20,16 @@ class Conv2D(nn.Module):
 
 def run_on(input):
     orig = Conv2D(input.shape[1], input.shape[1], (3, 3))
-    orig_out = predict_show_time(orig, input, "pytorch")
+    input_shape = tuple(input.size())
+
+    orig_out = predict_show_time(orig, input, f"pytorch {input_shape}")
     assert (isinstance(orig_out, torch.Tensor))
 
     optim = ai3.swap_backend(orig, {"conv2d": "direct"})
-    direct_out = predict_show_time(optim, input, "ai3 direct")
+    direct_out = predict_show_time(optim, input, f"ai3 direct {input_shape}")
 
     optim = ai3.swap_backend(orig, {"conv2d": "smm"})
-    smm_out = predict_show_time(optim, input, "ai3 smm")
+    smm_out = predict_show_time(optim, input, f"ai3 smm {input_shape}")
 
     compare_tensors(direct_out, orig_out.detach().numpy(),
                     "direct", print_pass=False)

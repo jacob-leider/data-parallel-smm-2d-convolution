@@ -1,7 +1,6 @@
-from bench import models, layers, swap_conv2d
+from bench import layers, swap_conv2d, swap_backend
+import runners
 
-if __name__ == "__main__":
-    print('BENCH')
-    layers.run()
-    models.run()
-    swap_conv2d.run()
+layers.run()
+runners.run_on(swap_conv2d.runner)
+runners.run_on(swap_backend.runner)

@@ -1,90 +1,70 @@
 import torchvision.models as tvm
-from .helper import wrapped_run
 from example.simple_conv2d import ConvNet
 
 
-def alexnet(runner):
-    wrapped_run(tvm.alexnet(),
-                (3, 224, 224), runner)
+def alexnet():
+    return tvm.alexnet(), (3, 224, 224), 'alexnet'
 
 
-def convnext(runner):
-    wrapped_run(tvm.convnext_base(weights='DEFAULT'),
-                (3, 224, 224), runner)
+def convnext():
+    return tvm.convnext_base(weights='DEFAULT'), (3, 224, 224), 'convnext'
 
 
-def densenet(runner):
-    wrapped_run(tvm.DenseNet(), (3, 224, 224), runner)
+def densenet():
+    return tvm.DenseNet(), (3, 224, 224), 'densenet'
 
 
-def efficientnet(runner):
-    wrapped_run(tvm.efficientnet_v2_s(
-        weights=tvm.EfficientNet_V2_S_Weights.DEFAULT), (3, 224, 224), runner)
+def efficientnet():
+    return tvm.efficientnet_v2_s(weights=tvm.EfficientNet_V2_S_Weights.DEFAULT), (3, 224, 224), 'efficientnet'
 
 
-def googlenet(runner):
-    wrapped_run(tvm.googlenet(
-        weights=tvm.GoogLeNet_Weights.DEFAULT),
-        (3, 224, 224), runner)
+def googlenet():
+    return tvm.googlenet(weights=tvm.GoogLeNet_Weights.DEFAULT), (3, 224, 224), 'googlenet'
 
 
-def inception(runner):
-    wrapped_run(tvm.inception_v3(
-        weights=tvm.Inception_V3_Weights.DEFAULT),
-        (3, 224, 224), runner)
+def inception():
+    return tvm.inception_v3(weights=tvm.Inception_V3_Weights.DEFAULT), (3, 224, 224), 'inception'
 
 
-def maxvit(runner):
-    wrapped_run(tvm.maxvit_t(),
-                (3, 224, 224), runner)
+def maxvit():
+    return tvm.maxvit_t(), (3, 224, 224), 'maxvit'
 
 
-def mnasnet(runner):
-    wrapped_run(tvm.mnasnet1_0(
-        weights=tvm.MNASNet1_0_Weights.DEFAULT),
-        (3, 224, 224),
-        runner)
+def mnasnet():
+    return tvm.mnasnet1_0(weights=tvm.MNASNet1_0_Weights.DEFAULT), (3, 224, 224), 'mnasnet'
 
 
-def mobilenet(runner):
-    wrapped_run(tvm.mobilenet_v3_large(),
-                (3, 224, 224), runner)
+def mobilenet():
+    return tvm.mobilenet_v3_large(), (3, 224, 224), 'mobilenet'
 
 
-def regnet(runner):
-    wrapped_run(tvm.regnet_y_16gf(),
-                (3, 224, 224), runner)
+def regnet():
+    return tvm.regnet_y_16gf(), (3, 224, 224), 'regnet'
 
 
-def resnet(runner):
-    wrapped_run(tvm.resnet152(),
-                (3, 224, 224), runner)
+def resnet():
+    return tvm.resnet152(), (3, 224, 224), 'resnet'
 
 
-def shufflenet(runner):
-    wrapped_run(tvm.shufflenet_v2_x2_0(),
-                (3, 224, 224), runner)
+def shufflenet():
+    return tvm.shufflenet_v2_x2_0(), (3, 224, 224), 'shufflenet'
 
 
-def simple_created(runner):
-    wrapped_run(ConvNet(), (3, 224, 224), runner)
+def simple_created():
+    return ConvNet(), (3, 224, 224), 'simple created'
 
 
-def squeezenet(runner):
-    wrapped_run(tvm.squeezenet1_1(),
-                (3, 224, 224), runner)
+def squeezenet():
+    return tvm.squeezenet1_1(), (3, 224, 224), 'squeezenet'
 
 
-def swintransformer(runner):
-    wrapped_run(tvm.swin_b(),
-                (3, 224, 224), runner)
+def swintransformer():
+    return tvm.swin_b(), (3, 224, 224), 'swin transformer'
 
 
-def vgg16(runner):
-    wrapped_run(tvm.vgg16(weights=tvm.VGG16_Weights.DEFAULT),
-                (3, 224, 224), runner)
+def vgg16():
+    return tvm.vgg16(weights=tvm.VGG16_Weights.DEFAULT), (3, 224, 224), 'vgg16'
 
 
-def visiontransformer(runner):
-    wrapped_run(tvm.vit_b_16(),
-                (3, 224, 224), runner)
+def visiontransformer():
+    return tvm.vit_b_16(), (3, 224, 224), 'vision transformer'
