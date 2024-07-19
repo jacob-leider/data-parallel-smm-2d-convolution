@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.11
+#!/usr/bin/env python
 
 import subprocess
 import re
@@ -6,8 +6,8 @@ import os
 from pathlib import Path
 import argparse
 
-PY = "python3.11 -m"
-PIP = "pip3.11"
+PY = "python -m"
+PIP = "pip"
 C_FORMAT = "clang-format"
 PY_FORMAT = "autopep8"
 
@@ -29,6 +29,8 @@ def gen_clangd(file_path):
         '-Wextra',
         '-Werror',
         '-std=c++17',
+        '-I' +
+        os.path.join(os.getcwd(), 'src', 'ai3', 'csrc'),
         '-I' +
         os.path.join(os.path.dirname(pybind11.__file__), 'include'),
         *subprocess.check_output(
@@ -85,10 +87,6 @@ if __name__ == "__main__":
             build(editable=True, verbose=True)
         elif cmd == "install_d":
             build(dev=True)
-        elif cmd == "test":
-            run_command(f"{PY} test")
-        elif cmd == "bench":
-            run_command(f"{PY} bench")
         elif cmd.startswith("example"):
             run_command(f"{PY} {cmd}")
         elif starts_with_any(cmd, ["utest", "test.unit"]):
@@ -105,6 +103,10 @@ if __name__ == "__main__":
             fix_cmd_run(cmd, "scbench", "bench.swap_conv2d")
         elif starts_with_any(cmd, ["sbbench", "bench.swap_backend"]):
             fix_cmd_run(cmd, "sbbench", "bench.swap_backend")
+        elif cmd.startswith("test"):
+            run_command(f"{PY} {cmd}")
+        elif cmd.startswith("bench"):
+            run_command(f"{PY} {cmd}")
         elif cmd == "format":
             run_command(f"{C_FORMAT} -i {' '.join(CSRC_FILES)}")
             run_command(f"{PY_FORMAT} --in-place {' '.join(PY_FILES)}")

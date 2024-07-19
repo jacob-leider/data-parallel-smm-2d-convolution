@@ -14,7 +14,7 @@ This framework contains built-in high performance implementations of common deep
 ### Examples
 The framework currently features two methods for algorithmic swapping. A function that swaps a specific module type and one that swaps every module type of a *DNN* and returns an object completely managed by the framework.
 
-For example, the following code could be used with a *PyTorch* *DNN* which utilizes convolution and *maxpool2d* layers. The first function called ```swap_backend```, takes the *DNN* and a mapping from the name of the module to an algorithmic selector, passing no algorithm for a module type is equivalent to passing *"default"*. The second function, implemented for convolution layers, ```swap_conv2d```, takes the *DNN* and an algorithmic selector for the module type in the function name.
+For example, the following code could be used with a *PyTorch* *DNN* which utilizes two convolution layers and *maxpool2d* layers. The first function called ```swap_backend```, takes the *DNN* and a mapping from the name of a module to an algorithmic selector, passing no algorithm for a module type is equivalent to passing *"default"*. The second function, implemented for convolution layers, ```swap_conv2d```, takes the *DNN* and an algorithmic selector for the module type in the function name.
 ```python
 input_data = torch.randn(10, 3, 224, 224)
 orig = ConvNet()
@@ -47,7 +47,7 @@ pip install git+<link to this repo>.git
 
 For users who implemented their own algorithms as described below or users wishing to build from source, use *pip*.
 ```sh
-pip install . # path to local clone of this repository
+pip install <path to local clone of this repository>
 ```
 
 ### Implementing Custom Algorithms
