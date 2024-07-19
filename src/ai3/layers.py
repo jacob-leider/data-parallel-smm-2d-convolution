@@ -104,8 +104,8 @@ class MaxPool2D(Layer):
 
 class AvgPool2D(Layer):
     def __init__(self, dtype, kernel_shape: Union[int, Tuple[int, int]],
-                 stride: Union[int, Tuple[int]],
-                 padding: Union[int, Tuple[int]],
+                 stride: Union[int, Tuple[int, int]],
+                 padding: Union[int, Tuple[int,int]],
                  ceil_mode: bool,
                  count_include_pad: bool,
                  divisor_override: Optional[int],
