@@ -1,19 +1,20 @@
-from ai3 import layers, errors
+from ai3 import core, layers, errors, utils
 from typing import Mapping, Optional, List, Sequence, Union, Callable, DefaultDict
 from collections import defaultdict
 import torch
 from torch import nn, fx
+from torch.nn import grad
 
 
 def mod_to_op(mod: nn.Module) -> str:
     if isinstance(mod, (nn.Conv2d, Conv2D)):
-        return "conv2d"
+        return 'conv2d'
     elif isinstance(mod, nn.Linear):
-        return "linear"
+        return 'linear'
     elif isinstance(mod, nn.MaxPool2d):
-        return "maxpool2d"
+        return 'maxpool2d'
     elif isinstance(mod, nn.AvgPool2d):
-        return "avgpool2d"
+        return 'avgpool2d'
     elif isinstance(mod, nn.AdaptiveAvgPool2d):
         return 'adaptiveavgpool2d'
     elif isinstance(mod, nn.ReLU):
@@ -44,26 +45,150 @@ def setmodule(module: nn.Module, name, new: nn. Module) -> nn.Module:
     return module
 
 
+def conv2d(input: torch.Tensor,
+           weight: torch.Tensor, bias: Optional[torch.Tensor],
+           padding_h: int, padding_w: int, stride_h: int, stride_w: int,
+           dilation_h: int, dilation_w: int, padding_mode: int, groups: int,
+           algorithm: str) -> torch.Tensor:
+    if bias is not None:
+        bias_ptr = bias.data_ptr()
+    else:
+        bias_ptr = None
+    out = utils.get_item(input.dtype, core.conv2d_float,
+                         core.conv2d_double)(input.data_ptr(), input.shape, weight.data_ptr(), weight.shape,
+                                             bias_ptr, padding_h, padding_w, stride_h, stride_w,
+                                             dilation_h, dilation_w, padding_mode, groups, algorithm)
+    return torch.frombuffer(out, dtype=input.dtype).view(out.shape)
+
+
+def conv2d_abstract(input: torch.Tensor,
+                    weight: torch.Tensor, bias: torch.Tensor,
+                    padding_h: int, padding_w: int, stride_h: int, stride_w: int,
+                    dilation_h: int, dilation_w: int, padding_mode: int, groups: int,
+                    algorithm: str) -> torch.Tensor:
+    if len(input.shape) == 4:
+        n = input.shape[0]
+        _, h, w = input.shape[1:]
+    else:
+        n = None
+        _, h, w = input.shape
+    del bias, padding_mode, groups, algorithm
+    out_c = weight.shape[0]
+    height = core.output_hw_for_2d(
+        h, weight.shape[2], padding_h, dilation_h, stride_h)
+    width = core.output_hw_for_2d(
+        w, weight.shape[3], padding_w, dilation_w, stride_w)
+    if n:
+        s = (n, out_c, height, width)
+    else:
+        s = (out_c, height, width)
+    return torch.empty(s, dtype=input.dtype, device='cpu')
+
+
+def conv2d_backward(ctx, out_grad):
+    input, weight = ctx.saved_tensors
+    padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w, padding_mode, groups = ctx.hparams
+    del padding_mode
+    grad_input = grad_weight = grad_bias = None
+
+    grad_input = grad_weight = grad_bias = None
+
+    if len(input.shape) == 3:
+        input = input.reshape(1, *input.shape)
+    if len(out_grad.shape) == 3:
+        out_grad = out_grad.reshape(1, *out_grad.shape)
+
+    if ctx.needs_input_grad[0]:
+        grad_input = grad.conv2d_input(
+            input.shape, weight, out_grad,
+            stride=(stride_h, stride_w),  # type: ignore
+            padding=(padding_h, padding_w),  # type: ignore
+            dilation=(dilation_h, dilation_w),  # type: ignore
+            groups=groups
+        )
+
+    if ctx.needs_input_grad[1]:
+        grad_weight = grad.conv2d_weight(
+            input, weight.shape, out_grad,
+            stride=(stride_h, stride_w),  # type: ignore
+            padding=(padding_h, padding_w),  # type: ignore
+            dilation=(dilation_h, dilation_w),  # type: ignore
+            groups=groups
+        )
+
+    if ctx.needs_input_grad[2]:
+        # sum along the batch, height, and width dimensions to get the gradient for the bias
+        if len(out_grad.shape) == 4:
+            grad_bias = out_grad.sum(dim=(0, 2, 3))
+        elif len(out_grad.shape) == 3:
+            grad_bias = out_grad.sum(dim=(1, 2))
+        else:
+            errors.bail(f'conv2d output gradient must be 3 or 4 dimensions but is {len(out_grad.shape)} dimensions')
+
+    return grad_input, grad_weight, grad_bias, None, None, None, None, None, None, None, None, None
+
+
+def setup_context(ctx, inputs, output):
+    input, weight, bias, padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w, padding_mode, groups, algorithm = inputs
+    del output, algorithm, bias
+
+    saved_input = saved_weight = None
+    if ctx.needs_input_grad[0] or ctx.needs_input_grad[1] or ctx.needs_input_grad[2]:
+        saved_input = input
+        saved_weight = weight
+    assert not hasattr(ctx, 'hparams')
+    ctx.hparams = (padding_h, padding_w, stride_h, stride_w,
+                   dilation_h, dilation_w, padding_mode, groups)
+    ctx.save_for_backward(saved_input, saved_weight)
+
+
+torch.library.custom_op("ai3::conv2d", conv2d, mutates_args=())
+torch.library.register_fake("ai3::conv2d", conv2d_abstract)
+torch.library.register_autograd(
+    "ai3::conv2d", conv2d_backward, setup_context=setup_context)
+
+
 class Conv2D(nn.Module):
-    def __init__(self, internal: layers.Conv2D, target: str):
+    def __init__(self, orig: nn.Conv2d, algorithm: str, target: str):
         super(Conv2D, self).__init__()
-        self.internal = internal
         self.target = target
+        self.algorithm = algorithm
 
-    def forward(self, x):
-        if isinstance(x, torch.Tensor):
-            return self.internal.forward(x).torch()
-        elif isinstance(x, fx.proxy.Proxy):
-            tracer = x.tracer
-            node = tracer.create_node('call_module', self.target, ('', ), {})
-            return fx.proxy.Proxy(node, tracer)
+        self.stride = utils.make_2d(orig.stride)
+        self.dilation = utils.make_2d(orig.dilation)
+        self.padding = utils.make_padding_2d(
+            orig.padding, self.stride, self.dilation, orig.weight.size())
+        errors.bail_if(orig.padding_mode not in [
+                       'zeros', 'reflect', 'replicate', 'circular'], f"invalid padding mode: {orig.padding_mode}")
+        self.groups = orig.groups
+        self.pad_mode = int({
+            'zeros': core.PaddingMode.zeros,
+            'reflect': core.PaddingMode.reflect,
+            'replicate': core.PaddingMode.replicate,
+            'circular': core.PaddingMode.circular
+        }[orig.padding_mode])
+        self.weight = orig.weight
+        self.bias = orig.bias
+        if self.bias is not None:
+            self.bias_data_ptr = self.bias.data_ptr()
+        else:
+            self.bias_data_ptr = None
+
+    def forward(self, x: torch.Tensor):
+        return torch.ops.ai3.conv2d(x, self.weight, self.bias, self.padding[0], self.padding[1], self.stride[0], self.stride[1],
+                                    self.dilation[0], self.dilation[1], self.pad_mode, self.groups, self.algorithm)  # type: ignore
 
 
-def get_algo_inc_counter(orig: nn.Module,
+def get_algo_inc_counter(orig: Union[nn.Module, str],
                          algos: Mapping,
                          layer_counters: DefaultDict[str, int]) -> str:
-    op = mod_to_op(orig)
+    if isinstance(orig, nn.Module):
+        op = mod_to_op(orig)
+    else:
+        op = orig
     if callable(algos[op]):
+        errors.bail_if(isinstance(orig, str),
+                       f"trying to use function selector for a function or module which is already swapped")
         algo = algos[op](orig)
     elif isinstance(algos[op], list):
         algo = algos[op][layer_counters[op]]
@@ -71,7 +196,7 @@ def get_algo_inc_counter(orig: nn.Module,
     else:
         algo = algos[op]
     errors.bail_if(not isinstance(algo, str),
-                   "Invalid algorithm, {algo}, associated with {op}")
+                   f"Invalid algorithm, {algo}, found for {op}")
     return algo
 
 
@@ -82,6 +207,7 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
     layer_counters = defaultdict(int)
 
     for node in gm.graph.nodes:
+        assert isinstance(node, fx.Node)
         if node.op == 'placeholder' or node.op == 'output':
             pass
         elif node.op == 'call_function':
@@ -97,7 +223,7 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
                 if 'end_dim' in node.kwargs:
                     end_dim = node.kwargs['end_dim']
                 algo = get_algo_inc_counter(
-                    torch.nn.Flatten(), algos, layer_counters)
+                    'flatten', algos, layer_counters)
                 errors.bail_if(algo == "torch",
                                "can't use torch backend when in swap_backend")
                 assert (isinstance(start_dim, int))
@@ -106,7 +232,7 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
                     dtype, start_dim, end_dim, algo))
             elif node.target == torch.relu:
                 algo = get_algo_inc_counter(
-                    torch.nn.ReLU(), algos, layer_counters)
+                    'relu', algos, layer_counters)
                 errors.bail_if(algo == "torch",
                                "can't use torch backend when in swap_backend")
                 forwards.append(layers.ReLU(dtype, algo))
@@ -128,25 +254,32 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
     return forwards
 
 
-def swap_conv2d(complete_module: nn.Module, dtype, selector: Union[str, Sequence[str], Callable]):
-    gm: fx.GraphModule = fx.symbolic_trace(complete_module)
+class Tracer(fx.Tracer):
+    def is_leaf_module(self, m, module_qualified_name):
+        if isinstance(m, Conv2D):
+            return True
+        return super().is_leaf_module(m, module_qualified_name)
+
+
+def swap_conv2d(module: nn.Module, selector: Union[str, Sequence[str], Callable]):
+    tracer = Tracer()
+    gm: fx.Graph = tracer.trace(module)
+
     layer_counters = defaultdict(int)
-    for node in gm.graph.nodes:
+    for node in gm.nodes:
+        assert isinstance(node, fx.Node)
         if node.op == 'call_module':
-            mod = getmodule(complete_module, node.target)
+            mod = getmodule(module, node.target)
             if isinstance(mod, (nn.Conv2d, Conv2D)):
                 algo = get_algo_inc_counter(
                     mod, {'conv2d': selector}, layer_counters)
                 if algo == 'torch':
                     continue
                 if isinstance(mod, nn.Conv2d):
-                    swapped = swap_layer(mod, dtype, algo)
-                    assert isinstance(swapped, layers.Conv2D)
-                    complete_module = setmodule(
-                        complete_module, node.target, Conv2D(swapped, str(node.target)))
+                    module = setmodule(
+                        module, node.target, Conv2D(mod, algo, str(node.target)))
                 else:
-                    mod.internal.set_algo(algo)
-    gm.recompile()
+                    mod.algorithm = algo
 
 
 def swap_layer(module: nn.Module, dtype, algo: str) -> Optional[layers.Layer]:

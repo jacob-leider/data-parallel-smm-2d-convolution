@@ -1,5 +1,5 @@
 from collections.abc import Buffer
-from typing import Sequence, Union, Optional
+from typing import Sequence, Optional
 from enum import Enum
 
 class PaddingMode(Enum):
@@ -26,6 +26,26 @@ class Model():
 class Model_float(Model):
     ...
 class Model_double(Model):
+    ...
+
+def output_hw_for_2d(input: int, kernel: int,
+                               padding: int ,
+                               dilation: Optional[int], stride):
+    ...
+
+
+def conv2d_float(input_address: int, input_shape: Sequence[int],
+                 weight_address: int, weight_shape: Sequence[int], bias_addr:
+                 Optional[int], padding_h: int, padding_w: int, stride_h: int,
+                 stride_w: int, dilation_h: int, dilation_w: int, padding_mode:
+                 int, groups: int, algorithm: str) -> Tensor_float:
+    ...
+
+def conv2d_double(input_address: int, input_shape: Sequence[int],
+                 weight_address: int, weight_shape: Sequence[int], bias_addr:
+                 Optional[int], padding_h: int, padding_w: int, stride_h: int,
+                 stride_w: int, dilation_h: int, dilation_w: int, padding_mode:
+                 int, groups: int, algorithm: str) -> Tensor_double:
     ...
 
 class Conv2D():

@@ -10,11 +10,11 @@ FLOAT32_STR = "float32"
 FLOAT64_STR = "float64"
 
 
-def get_item_and_type(dtype, float_item, double_item):
+def get_item(dtype, float_item, double_item):
     if str(dtype) == 'torch.float32':
-        return float_item, FLOAT32_STR
+        return float_item
     if str(dtype) == 'torch.float64':
-        return double_item, FLOAT64_STR
+        return double_item
     assert False, f'using bad dtype: {str(dtype)}'
 
 
@@ -31,7 +31,7 @@ def get_shape(frontend_data) -> tuple:
 
 
 def make_padding_2d(padding: Union[str, Union[int, Tuple[int, ...]]],
-                    stride: Tuple[int, ...], dilation: Tuple[int, ...],
+                    stride: Tuple[int, int], dilation: Tuple[int, int],
                     kernel_shape: Sequence[int], dtype=int) -> tuple[int, int]:
     if isinstance(padding, str):
         if padding == 'valid':

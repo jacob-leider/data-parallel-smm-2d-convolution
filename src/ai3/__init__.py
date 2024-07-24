@@ -1,14 +1,17 @@
 # * Python *
-# TODO can pass the function to the swap_torch.Conv2D which can then call it with the input size known
+# TODO when swapping could provide a sample input size so that algorithms can be swapped with input sizes known, thinking this can be done with trace
 
 # * CPP *
 # TODO groups and padding modes for convolution implementations
 # TODO adaptiveavgpool2d where output dim isn't multiple of input dim
 
+# * PUBLISHING *
+# TODO after PyTorch 2.4 release 7-24-24 add that version to pyproject
+# TODO documentation for both the framework and CPP library
+# TODO add homepage information, docs, tests to pyproject.toml
 
 # * FUTURE *
-# TODO integrate with torch.compile()
-# TODO backpropagation support
+# TODO custom backpropagation algorithms
 # TODO onnx format support
 # TODO tensorflow format support
 
@@ -25,7 +28,7 @@ DEFAULT_ALGOS: Mapping[str, str] = {key: "default" for key in [
 class Model():
     def __init__(self, dtype, layers: Sequence[layers.Layer]):
         cores = [layer.core for layer in layers]
-        (model, self.dtype) = utils.get_item_and_type(
+        model = utils.get_item(
             dtype, core.Model_float, core.Model_double)
         self.core = model(cores)
 
@@ -52,4 +55,4 @@ def swap_backend(module: torch.nn.Module, algos: Optional[Mapping[str, Union[str
 def swap_conv2d(module: torch.nn.Module, algos: Optional[Union[str, Sequence[str], Callable]] = None):
     if not algos:
         algos = DEFAULT_ALGOS["conv2d"]
-    swap_torch.swap_conv2d(module, torch.get_default_dtype(), algos)
+    swap_torch.swap_conv2d(module, algos)
