@@ -19,6 +19,7 @@ def predict_show_time(runner, data, runner_name: str, recur: bool = True):
         warm_up(runner, data)
         with torch.inference_mode():
             start_time = time.time()
+            runner.eval()
             out = runner(data)
     elif isinstance(runner, ai3.Model):
         warm_up(runner, data)

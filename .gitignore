@@ -1,10 +1,10 @@
 .DS_Store
+datasets
 build
 *.egg-info
 *.so
 __pycache__
 venv
 .clangd
-ignore
 CMakeFiles
 .ninja*

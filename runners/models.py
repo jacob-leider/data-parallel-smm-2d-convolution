@@ -1,5 +1,5 @@
 import torchvision.models as tvm
-from example.simple_conv2d import ConvNet
+from example.manual_conv2d import ConvNet
 
 
 def alexnet():
@@ -50,8 +50,8 @@ def shufflenet():
     return tvm.shufflenet_v2_x2_0(), (3, 224, 224), 'shufflenet'
 
 
-def simple_created():
-    return ConvNet(), (3, 224, 224), 'simple created'
+def manual_conv2d():
+    return ConvNet(), (3, 224, 224), 'manual conv2d'
 
 
 def squeezenet():

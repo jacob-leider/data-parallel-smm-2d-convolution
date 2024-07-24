@@ -1,18 +1,19 @@
-[build-system]
-requires = ["scikit-build-core>=0.3.3", "pybind11"]
-build-backend = "scikit_build_core.build"
-
 [project]
-name = "ai3"
+name = "ai-3"
 version = "0.0.1"
 readme = "README.md"
 requires-python = ">=3.7"
 dependencies = ["torch"]
 
+[build-system]
+requires = ["scikit-build-core", "pybind11"]
+build-backend = "scikit_build_core.build"
+
 [project.optional-dependencies]
 dev = ["numpy", "torchvision", "pybind11"]
 
 [tool.scikit-build]
-wheel.expand-macos-universal-tags = true
 cmake.build-type = "Release"
-cmake.define = {"FIND_ACPP"="OFF"}
+wheel.packages = ["src/ai3"]
+sdist.cmake = false
+cmake.define = {"FIND_ACPP"="OFF", SKBUILD_PROJECT_NAME="ai3"}

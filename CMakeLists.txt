@@ -6,12 +6,10 @@ project(
     VERSION ${SKBUILD_PROJECT_VERSION}
     LANGUAGES CXX)
 
-find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG REQUIRED)
 
 set(CSRC_DIR src/ai3/csrc)
-
-python_add_library(core MODULE ${CSRC_DIR}/ai3.cpp WITH_SOABI)
+pybind11_add_module(core MODULE ${CSRC_DIR}/ai3.cpp)
 
 set_property(TARGET core PROPERTY CXX_STANDARD 17)
 set_property(TARGET core PROPERTY CXX_STANDARD_REQUIRED YES)

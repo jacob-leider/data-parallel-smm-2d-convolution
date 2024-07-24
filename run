@@ -1,13 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import subprocess
-import re
 import os
 from pathlib import Path
 import argparse
 
-PY = "python -m"
-PIP = "pip"
+PY = "python3 -m"
+PIP = "pip3"
 C_FORMAT = "clang-format"
 PY_FORMAT = "autopep8"
 
@@ -65,10 +64,11 @@ def clean_start(cmd, starts):
             return cmd[len(s) + 1:]
     assert False and "cleaning with unmatched start"
 
+
 def fix_cmd_run(cmd, prefix, replacement):
-    updated_command = cmd.replace(prefix, replacement, 1)
-    updated_command = re.sub(rf'\b{replacement}\.', f'{replacement} ', updated_command)
-    run_command(f"{PY} {updated_command}")
+    cmd = cmd.replace(prefix, replacement, 1)
+    cmd = cmd.replace(f'{replacement}.', f'{replacement} ')
+    run_command(f"{PY} {cmd}")
 
 
 if __name__ == "__main__":
@@ -82,6 +82,8 @@ if __name__ == "__main__":
         elif cmd == "install":
             build()
         elif cmd == "install_e":
+            print('editable installs do not work with scikit-build, remove this once using scikit-build-core')
+            exit(1)
             build(editable=True)
         elif cmd == "install_ev":
             build(editable=True, verbose=True)
@@ -95,6 +97,8 @@ if __name__ == "__main__":
         elif starts_with_any(cmd, ["lbench", "bench.layers"]):
             updated_command = cmd.replace("lbench", "bench.layers", 1)
             run_command(f"{PY} {updated_command}")
+        elif starts_with_any(cmd, ["otest", "test.ops"]):
+            fix_cmd_run(cmd, "otest", "test.ops")
         elif starts_with_any(cmd, ["sctest", "test.swap_conv2d"]):
             fix_cmd_run(cmd, "sctest", "test.swap_conv2d")
         elif starts_with_any(cmd, ["sbtest", "test.swap_backend"]):

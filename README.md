@@ -37,7 +37,7 @@ def conv2d_selector(orig: torch.nn.Conv2d) -> str:
 model: ai3.Model = ai3.swap_backend(model, {"conv2d": conv2d_selector})
 ai3_out = model(input_data)
 ```
-The first code sample is sampled from [example/simple_conv2d.py](./example/simple_conv2d.py), the second from [./example/vgg16.py](./example/vgg16.py).
+The first code sample is sampled from [example/manual_conv2d](./example/manual_conv2d.py), the second from [./example/vgg16.py](./example/vgg16.py).
 
 ### Installation
 For users not seeking to implement their own algorithms the package will soon be on [pypi.org](pypi.org). For now the package can be installed via a link to this repository or the instructions below.
