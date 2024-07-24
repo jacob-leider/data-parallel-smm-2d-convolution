@@ -3,7 +3,6 @@
 # TODO adaptiveavgpool2d where output dim isn't multiple of input dim
 
 # * PUBLISHING *
-# TODO after PyTorch 2.4 release 7-24-24 add that version to pyproject
 # TODO documentation for both the framework and CPP library
 # TODO add homepage information, docs, tests to pyproject.toml
 

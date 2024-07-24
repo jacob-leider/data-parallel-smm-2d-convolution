@@ -2,8 +2,7 @@
 name = "ai-3"
 version = "0.0.1"
 readme = "README.md"
-requires-python = ">=3.7"
-dependencies = ["torch"]
+dependencies = ["torch>=2.4"]
 
 [build-system]
 requires = ["scikit-build-core", "pybind11"]
