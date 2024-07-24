@@ -2,7 +2,11 @@
 name = "ai-3"
 version = "0.0.1"
 readme = "README.md"
+description = "Algorithmic Innovations for Accelerated Implementations of Artificial Intelligence"
 dependencies = ["torch>=2.4"]
+authors = [
+{name = "Timothy Cronin", email = "tcroniniv@gmail.com"},
+]
 
 [build-system]
 requires = ["scikit-build-core", "pybind11"]
