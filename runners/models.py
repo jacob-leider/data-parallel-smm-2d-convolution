@@ -15,15 +15,21 @@ def densenet():
 
 
 def efficientnet():
-    return tvm.efficientnet_v2_s(weights=tvm.EfficientNet_V2_S_Weights.DEFAULT), (3, 224, 224), 'efficientnet'
+    return tvm.efficientnet_v2_s(
+        weights=tvm.EfficientNet_V2_S_Weights.DEFAULT), (
+        3, 224, 224), 'efficientnet'
 
 
 def googlenet():
-    return tvm.googlenet(weights=tvm.GoogLeNet_Weights.DEFAULT), (3, 224, 224), 'googlenet'
+    return tvm.googlenet(
+        weights=tvm.GoogLeNet_Weights.DEFAULT), (
+        3, 224, 224), 'googlenet'
 
 
 def inception():
-    return tvm.inception_v3(weights=tvm.Inception_V3_Weights.DEFAULT), (3, 224, 224), 'inception'
+    return tvm.inception_v3(
+        weights=tvm.Inception_V3_Weights.DEFAULT), (
+        3, 224, 224), 'inception'
 
 
 def maxvit():
@@ -31,7 +37,9 @@ def maxvit():
 
 
 def mnasnet():
-    return tvm.mnasnet1_0(weights=tvm.MNASNet1_0_Weights.DEFAULT), (3, 224, 224), 'mnasnet'
+    return tvm.mnasnet1_0(
+        weights=tvm.MNASNet1_0_Weights.DEFAULT), (
+        3, 224, 224), 'mnasnet'
 
 
 def mobilenet():

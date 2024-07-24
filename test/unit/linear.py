@@ -9,19 +9,25 @@ def test(*, num_samples, in_features: int, out_features: int,
          with_bias: bool = False,
          test_name: str) -> None:
     if num_samples:
-        input = torch.randn((num_samples, in_features), dtype=torch.float32)
+        input = torch.randn(
+            (num_samples, in_features), dtype=torch.float32)
     else:
-        input = torch.randn(in_features, dtype=torch.float32)
-    weight = torch.randn((out_features, in_features), dtype=torch.float32)
+        input = torch.randn(
+            in_features, dtype=torch.float32)
+    weight = torch.randn(
+        (out_features, in_features), dtype=torch.float32)
     if with_bias:
         bias = torch.randn(out_features)
     else:
         bias = None
 
-    model = Model(input.dtype, [Linear(input.dtype, weight, bias, "default")])
+    model = Model(input.dtype, [Linear(
+        input.dtype, weight, bias, "default")])
     ai3_output = model.predict(input)
-    torch_output = F.linear(input, weight, bias=bias)
-    compare_tensors(ai3_output, torch_output, test_name)
+    torch_output = F.linear(
+        input, weight, bias=bias)
+    compare_tensors(
+        ai3_output, torch_output, test_name)
 
 
 print('LINEAR')

@@ -14,8 +14,10 @@ def test(*, input_channels: int, in_height: int, in_width: int,
     model = Model(input.dtype, [AdaptiveAvgPool2D(
         input.dtype, output_shape, "default")])
     ai3_output = model.predict(input)
-    torch_output = nn.AdaptiveAvgPool2d(output_shape)(input)
-    compare_tensors(ai3_output, torch_output, test_name)
+    torch_output = nn.AdaptiveAvgPool2d(
+        output_shape)(input)
+    compare_tensors(
+        ai3_output, torch_output, test_name)
 
 
 print('ADAPTIVE AVG POOL 2D')

@@ -8,7 +8,7 @@ import argparse
 PY = "python3 -m"
 PIP = "pip3"
 C_FORMAT = "clang-format"
-PY_FORMAT = "autopep8"
+PY_FORMAT = "autopep8 --in-place --experimental"
 
 CSRC_FILES = [str(f) for f in Path('.').rglob('*') if f.suffix in ['.cpp', '.hpp'] and 'venv' not in f.parts]
 PY_FILES = [str(f) for f in Path('.').rglob('*.py') if 'venv' not in f.parts]
@@ -111,7 +111,7 @@ if __name__ == "__main__":
             run_command(f"{PY} {cmd}")
         elif cmd == "format":
             run_command(f"{C_FORMAT} -i {' '.join(CSRC_FILES)}")
-            run_command(f"{PY_FORMAT} --in-place {' '.join(PY_FILES)}")
+            run_command(f"{PY_FORMAT} {' '.join(PY_FILES)}")
         else:
             print(f'Error: unsupported command: {cmd}')
             exit(1)

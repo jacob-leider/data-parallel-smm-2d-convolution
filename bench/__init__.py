@@ -24,14 +24,16 @@ def predict_show_time(runner, data, runner_name: str, recur: bool = True):
     elif isinstance(runner, ai3.Model):
         warm_up(runner, data)
         start_time = time.time()
-        out = runner.predict(data, out_type=torch.Tensor)
+        out = runner.predict(
+            data, out_type=torch.Tensor)
     else:
         print(f"invalid runner f{type(runner)}")
         assert (False)
     end_time = time.time()
     assert (start_time > 0)
     inference_time = end_time - start_time
-    print(f"  Time {runner_name}: {inference_time} seconds")
+    print(
+        f"  Time {runner_name}: {inference_time} seconds")
 
     if USE_TORCH_COMPILE and isinstance(runner, torch.nn.Module) and recur:
         predict_show_time(torch.compile(runner), data,

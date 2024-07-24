@@ -11,12 +11,14 @@ class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
         self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 8, kernel_size=5, stride=1, padding=2),
+            nn.Conv2d(1, 8, kernel_size=5,
+                      stride=1, padding=2),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
         self.conv2 = nn.Sequential(
-            nn.Conv2d(8, 16, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(8, 16, kernel_size=3,
+                      stride=1, padding=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2, stride=2)
         )
@@ -34,7 +36,8 @@ class ConvNet(nn.Module):
 
 def train(model, loader, criterion):
     lr = 0.001
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    optimizer = optim.Adam(
+        model.parameters(), lr=lr)
 
     model.train()
 
@@ -63,9 +66,11 @@ def evaluate(model, loader, criterion):
             outputs = model(inputs)
             loss = criterion(outputs, labels)
             total_loss += loss.item()
-            _, predicted = torch.max(outputs.data, 1)
+            _, predicted = torch.max(
+                outputs.data, 1)
             total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+            correct += (predicted ==
+                        labels).sum().item()
 
     avg_loss = total_loss / len(loader)
     accuracy = correct / total * 100
@@ -75,7 +80,8 @@ def evaluate(model, loader, criterion):
 
 dataset = datasets.MNIST(root='./datasets', train=True,
                          download=True, transform=transforms.ToTensor())
-loader = DataLoader(dataset, batch_size=int(len(dataset)/100), shuffle=True)
+loader = DataLoader(dataset, batch_size=int(
+    len(dataset)/100), shuffle=True)
 
 model = ConvNet()
 ai3.swap_conv2d(model)

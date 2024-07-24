@@ -16,7 +16,8 @@ class Tensor():
             return self.torch()
         elif out_type is None:
             return self
-        errors.bail(f"unsupported type to transfer tensor to {out_type}")
+        errors.bail(
+            f"unsupported type to transfer tensor to {out_type}")
 
     def numpy(self):
         import numpy
@@ -26,9 +27,11 @@ class Tensor():
         }[self.typestr]
         errors.bail_if(dtype is None,
                        f"type, {self.typestr} is neither float32 or float64")
-        data = numpy.frombuffer(self.core, dtype=dtype)
+        data = numpy.frombuffer(
+            self.core, dtype=dtype)
         return data.reshape(self.core.shape)
 
     def torch(self):
-        return torch.frombuffer(self.core,
-                                dtype=torch.__dict__[self.typestr]).view(self.core.shape)
+        return torch.frombuffer(
+            self.core, dtype=torch.__dict__[self.typestr]).view(
+            self.core.shape)

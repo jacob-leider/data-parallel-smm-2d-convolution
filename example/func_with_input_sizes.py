@@ -17,10 +17,14 @@ orig.eval()
 
 with torch.inference_mode():
     torch_out = orig(input_data)
-    ai3.swap_conv2d(orig, conv2d_selector, (3, 224, 224))
+    ai3.swap_conv2d(
+        orig, conv2d_selector, (3, 224, 224))
     swap_out = orig(input_data)
-    assert torch.allclose(torch_out, swap_out, atol=1e-6)
-    model = ai3.swap_backend(orig, {'conv2d':conv2d_selector}, (3, 224, 224))
+    assert torch.allclose(
+        torch_out, swap_out, atol=1e-6)
+    model = ai3.swap_backend(
+        orig, {'conv2d': conv2d_selector}, (3, 224, 224))
     ai3_out = model.predict(input_data)
     assert isinstance(ai3_out, ai3.Tensor)
-    assert torch.allclose(torch_out, ai3_out.torch(), atol=1e-6)
+    assert torch.allclose(
+        torch_out, ai3_out.torch(), atol=1e-6)

@@ -8,7 +8,8 @@ class ConvNet(nn.Module):
         super(ConvNet, self).__init__()
         self.conv1 = nn.Conv2d(
             in_channels=3, out_channels=16, kernel_size=3, padding=1)
-        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.maxpool = nn.MaxPool2d(
+            kernel_size=2, stride=2)
         self.conv2 = nn.Conv2d(
             in_channels=16, out_channels=32, kernel_size=3, padding=1)
 
@@ -29,5 +30,7 @@ if __name__ == "__main__":
     ai3_out = model(input_data)
     ai3.swap_conv2d(orig, ["direct", "smm"])
     swap_out = orig(input_data)
-    assert torch.allclose(torch_out, ai3_out, atol=1e-6)
-    assert torch.allclose(torch_out, swap_out, atol=1e-6)
+    assert torch.allclose(
+        torch_out, ai3_out, atol=1e-6)
+    assert torch.allclose(
+        torch_out, swap_out, atol=1e-6)

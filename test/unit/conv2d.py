@@ -9,7 +9,8 @@ from typing import Union, Sequence
 def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int,
          output_channels: int, kernel_height: int, kernel_width: int,
          with_bias: bool = False,
-         padding: Union[str, Union[int, Sequence[int]]] = 1,
+         padding: Union[str,
+                        Union[int, Sequence[int]]] = 1,
          dilation: Union[int, Sequence[int]] = 1,
          stride: Union[int, Sequence[int]] = 1,
          groups: int = 1,
@@ -23,7 +24,8 @@ def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int
     kernel = torch.randn(output_channels, input_channels // groups,
                          kernel_height, kernel_width, dtype=torch.float64)
     if with_bias:
-        bias = torch.randn(output_channels, dtype=torch.float64)
+        bias = torch.randn(
+            output_channels, dtype=torch.float64)
     else:
         bias = None
 
@@ -35,10 +37,12 @@ def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int
                      "implicit gemm", "gemm", "guess"])
 
     for algo in algos:
-        model = Model(input.dtype, [Conv2D(input.dtype, kernel, bias,
-                                           stride, padding, dilation, 'zeros', 1, algo)])
-        out = model.predict(input, out_type=torch.Tensor)
-        compare_tensors(out, torch_output, test_name + f' {algo}')
+        model = Model(input.dtype, [Conv2D(
+            input.dtype, kernel, bias, stride, padding, dilation, 'zeros', 1, algo)])
+        out = model.predict(
+            input, out_type=torch.Tensor)
+        compare_tensors(
+            out, torch_output, test_name + f' {algo}')
 
 
 print('CONV2D')

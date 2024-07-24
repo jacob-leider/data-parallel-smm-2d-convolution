@@ -7,7 +7,8 @@ def bail(message) -> NoReturn:
 
 class UnsupportedCallableError(Exception):
     def __init__(self, module: str):
-        super().__init__(f"Unsupported callable: {module}")
+        super().__init__(
+            f"Unsupported callable: {module}")
 
 
 def unsupported(module) -> NoReturn:

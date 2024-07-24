@@ -17,10 +17,13 @@ vgg16.eval()
 with torch.inference_mode():
     torch_out = vgg16(input_data)
 
-    model: ai3.Model = ai3.swap_backend(vgg16, {"conv2d": conv2d_selector})
+    model: ai3.Model = ai3.swap_backend(
+        vgg16, {"conv2d": conv2d_selector})
     ai3_out = model(input_data)
-    assert torch.allclose(torch_out, ai3_out, atol=1e-4)
+    assert torch.allclose(
+        torch_out, ai3_out, atol=1e-4)
 
     ai3.swap_conv2d(vgg16, conv2d_selector)
     swapped_out = vgg16(input_data)
-    assert torch.allclose(torch_out, swapped_out, atol=1e-4)
+    assert torch.allclose(
+        torch_out, swapped_out, atol=1e-4)

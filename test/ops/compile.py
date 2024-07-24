@@ -11,9 +11,11 @@ class ConvNet(nn.Module):
         super(ConvNet, self).__init__()
         self.conv1 = nn.Conv2d(
             in_channels=3, out_channels=16, kernel_size=3, padding=1)
-        self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.maxpool = nn.MaxPool2d(
+            kernel_size=2, stride=2)
         self.conv2 = nn.Conv2d(
-            in_channels=16, out_channels=32, kernel_size=3, padding=1, bias=False)
+            in_channels=16, out_channels=32, kernel_size=3, padding=1,
+            bias=False)
 
     def forward(self, x):
         x = torch.relu(self.conv1(x))
@@ -40,5 +42,6 @@ def conv2d():
     swap_comped = compile(orig)
     swap_comped_out = swap_comped(input_data)
 
-    assert torch.allclose(swap_comped_out, tar, atol=1e-6)
+    assert torch.allclose(
+        swap_comped_out, tar, atol=1e-6)
     print(PASS_MES + 'conv2d')

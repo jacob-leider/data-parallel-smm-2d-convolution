@@ -21,7 +21,8 @@ def run_on(runner, name=None):
         model_func = globals().get(name)
         if model_func:
             model, input_shape, name = model_func()
-            wrapped_run(model, input_shape, name, runner)
+            wrapped_run(
+                model, input_shape, name, runner)
         else:
             print(f'Invalid model {name}')
 
@@ -38,15 +39,19 @@ def check_mod(module: torch.nn.Module):
     return grouped_conv, found_conv2d
 
 
-def wrapped_run(module: torch.nn.Module, input_sample_shape: Sequence[int], name, runner):
+def wrapped_run(
+        module: torch.nn.Module, input_sample_shape: Sequence[int],
+        name, runner):
     name = name.upper()
     print(f"{name}")
     module.eval()
     (needs_groups, has_conv) = check_mod(module)
     if needs_groups and not GROUPED_CONVOLUTION:
-        print(f"  skipping {name} as it requires groups > 1")
+        print(
+            f"  skipping {name} as it requires groups > 1")
     elif has_conv:
-        runner(module, torch.randn(BATCH, *input_sample_shape), name)
+        runner(module, torch.randn(
+            BATCH, *input_sample_shape), name)
     else:
         print(f"{name} doesn't use convolution")
 
