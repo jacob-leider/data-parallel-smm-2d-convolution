@@ -8,6 +8,7 @@ from copy import deepcopy
 import numpy as np
 import ai3
 
+
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
@@ -32,10 +33,13 @@ class ConvNet(nn.Module):
         x = self.fc2(x)
         return x
 
+
 def conv2d():
-    dataset = datasets.MNIST(root='./datasets', train=True, download=True, transform=transforms.ToTensor())
+    dataset = datasets.MNIST(
+        root='./datasets', train=True, download=True, transform=transforms.ToTensor())
     subset_size = 1000
-    indices = np.random.choice(len(dataset), subset_size, replace=False).tolist()
+    indices = np.random.choice(
+        len(dataset), subset_size, replace=False).tolist()
     dataset = Subset(dataset, indices)
     loader = DataLoader(dataset, batch_size=10, shuffle=True)
 
@@ -46,8 +50,9 @@ def conv2d():
     lr = 0.001
     atol = 1
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=lr) # type: ignore
-    optimizer_swapped = optim.Adam(model_swapped.parameters(), lr=lr) # type: ignore
+    optimizer = optim.Adam(model.parameters(), lr=lr)  # type: ignore
+    optimizer_swapped = optim.Adam(
+        model_swapped.parameters(), lr=lr)  # type: ignore
 
     model.train()
     model_swapped.train()
@@ -69,8 +74,10 @@ def conv2d():
             loss_swapped.backward()
 
             for param, param_swapped in zip(model.named_parameters(), model_swapped.named_parameters()):
-                if not torch.allclose(param[1].grad, param_swapped[1].grad, atol=atol): # type: ignore
-                    print(f"Grads differ for {param[0]}: {param[1].grad} vs {param_swapped[1].grad}")
+                # type: ignore
+                if not torch.allclose(param[1].grad, param_swapped[1].grad, atol=atol):
+                    print(
+                        f"Grads differ for {param[0]}: {param[1].grad} vs {param_swapped[1].grad}")
                     exit(1)
 
             optimizer.step()
@@ -78,22 +85,27 @@ def conv2d():
 
             for param, param_swapped in zip(model.named_parameters(), model_swapped.named_parameters()):
                 if not torch.allclose(param[1], param_swapped[1], atol=atol):
-                    print(f"Weights differ for {param[0]}: {param[1]} vs {param_swapped[1]}")
+                    print(
+                        f"Weights differ for {param[0]}: {param[1]} vs {param_swapped[1]}")
                     exit(1)
 
             total_loss_model += loss.item()
             total_loss_swapped += loss_swapped.item()
 
-        print(f'Epoch {epoch+1} - Loss Orig: {total_loss_model / len(loader):.4f}')
-        print(f'Epoch {epoch+1} - Loss Swapped: {total_loss_swapped / len(loader):.4f}')
+        print(
+            f'Epoch {epoch+1} - Loss Orig: {total_loss_model / len(loader):.4f}')
+        print(
+            f'Epoch {epoch+1} - Loss Swapped: {total_loss_swapped / len(loader):.4f}')
 
     model_loss = evaluate_loss(model, loader, criterion)
     swapped_loss = evaluate_loss(model_swapped, loader, criterion)
     final_atol = 1e-3
     if abs(model_loss - swapped_loss) > final_atol:
-        print(f"Final loss for orig {model_loss} and swapped {swapped_loss} differ")
+        print(
+            f"Final loss for orig {model_loss} and swapped {swapped_loss} differ")
     else:
         print(f"Final loss for orig and swapped are within atol {final_atol}")
+
 
 def evaluate_loss(model, loader, criterion):
     model.eval()

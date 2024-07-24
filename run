@@ -82,8 +82,6 @@ if __name__ == "__main__":
         elif cmd == "install":
             build()
         elif cmd == "install_e":
-            print('editable installs do not work with scikit-build, remove this once using scikit-build-core')
-            exit(1)
             build(editable=True)
         elif cmd == "install_ev":
             build(editable=True, verbose=True)

@@ -6,6 +6,7 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import ai3
 
+
 class ConvNet(nn.Module):
     def __init__(self):
         super(ConvNet, self).__init__()
@@ -30,6 +31,7 @@ class ConvNet(nn.Module):
         x = self.fc2(x)
         return x
 
+
 def train(model, loader, criterion):
     lr = 0.001
     optimizer = optim.Adam(model.parameters(), lr=lr)
@@ -46,7 +48,9 @@ def train(model, loader, criterion):
             optimizer.step()
             total_loss_model += loss.item()
 
-        print(f'Epoch {epoch+1} - Loss Orig: {total_loss_model / len(loader):.4f}')
+        print(
+            f'Epoch {epoch+1} - Loss Orig: {total_loss_model / len(loader):.4f}')
+
 
 def evaluate(model, loader, criterion):
     model.eval()
@@ -68,7 +72,9 @@ def evaluate(model, loader, criterion):
     print(f'Average Loss: {avg_loss}')
     print(f'Accuracy: {accuracy:.2f}%')
 
-dataset = datasets.MNIST(root='./datasets', train=True, download=True, transform=transforms.ToTensor())
+
+dataset = datasets.MNIST(root='./datasets', train=True,
+                         download=True, transform=transforms.ToTensor())
 loader = DataLoader(dataset, batch_size=int(len(dataset)/100), shuffle=True)
 
 model = ConvNet()
