@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <memory>
-#include <vector>
 
 #ifdef USE_CUDNN
 #include "cuda_utils.hpp"

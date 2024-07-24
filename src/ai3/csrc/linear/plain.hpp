@@ -2,7 +2,6 @@
 
 #include "ai3.hpp"
 #include <optional>
-#include <vector>
 
 template <typename dtype>
 Tensor<dtype> _linear(Tensor<dtype> input, const Tensor<dtype> &weight,

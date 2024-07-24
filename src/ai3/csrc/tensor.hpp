@@ -12,9 +12,9 @@ namespace py = pybind11;
 template <typename dtype> class Tensor {
   public:
     Tensor(const intptr_t data_address, const std::vector<uint> &s,
-           bool owned = true)
-        : shape(s), owned(owned) {
-        if (owned) {
+           bool own = true)
+        : shape(s), owned(own) {
+        if (own) {
             data = new dtype[_count(s)];
             std::memcpy(data, reinterpret_cast<const dtype *>(data_address),
                         _count(s) * sizeof(dtype));
@@ -39,9 +39,9 @@ template <typename dtype> class Tensor {
 
     static std::optional<Tensor>
     from_optional(const std::optional<intptr_t> &data_address,
-                  const std::vector<uint> &s, bool input_data = false) {
+                  const std::vector<uint> &s, bool own = true) {
         if (data_address.has_value()) {
-            return Tensor<dtype>((*data_address), s, input_data);
+            return Tensor<dtype>((*data_address), s, own);
         } else {
             return std::nullopt;
         }

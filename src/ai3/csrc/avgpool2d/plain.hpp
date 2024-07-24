@@ -3,7 +3,6 @@
 #include "ai3.hpp"
 #include "utils.hpp"
 #include <optional>
-#include <vector>
 
 template <typename dtype>
 Tensor<dtype> _avgpool2d(Tensor<dtype> input, const uint kernel_h,
@@ -18,9 +17,9 @@ Tensor<dtype> _avgpool2d(Tensor<dtype> input, const uint kernel_h,
 
     const uint output_channels = input_channels;
 
-    const uint output_height = output_size_for_2d<dtype>(
+    const uint output_height = output_hw_for_2d<dtype>(
         input_height, kernel_h, padding_h, std::nullopt, stride_h, ceil_mode);
-    const uint output_width = output_size_for_2d<dtype>(
+    const uint output_width = output_hw_for_2d<dtype>(
         input_width, kernel_w, padding_w, std::nullopt, stride_w, ceil_mode);
 
     Tensor<dtype> output;

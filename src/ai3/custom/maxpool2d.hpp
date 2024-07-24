@@ -2,7 +2,7 @@
 
 #include <ai3.hpp>
 
-constexpr bool DEFAULT_TO_CUSTOM_MAXPOOL2D = false;
+const bool DEFAULT_TO_CUSTOM_MAXPOOL2D = false;
 
 template <typename dtype>
 Tensor<dtype> maxpool2d(Tensor<dtype> input, const uint kernel_h,

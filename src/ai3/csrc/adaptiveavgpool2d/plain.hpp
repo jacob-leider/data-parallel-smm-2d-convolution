@@ -3,7 +3,6 @@
 #include "../avgpool2d/plain.hpp"
 #include "ai3.hpp"
 #include <optional>
-#include <vector>
 
 template <typename dtype>
 Tensor<dtype> _adaptiveavgpool2d(Tensor<dtype> input,

@@ -220,9 +220,10 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
            const uint padding_w, const uint stride_h, const uint stride_w,
            const uint dilation_h, const uint dilation_w,
            const PaddingMode padding_mode, const uint groups,
-           const std::string algorithm)
-        : weight(weight_address, weight_shape),
-          bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]})),
+           const std::string algorithm, bool own_params = true)
+        : weight(weight_address, weight_shape, own_params),
+          bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]},
+                                            own_params)),
           padding_h(padding_h), padding_w(padding_w), stride_h(stride_h),
           stride_w(stride_w), dilation_h(dilation_h), dilation_w(dilation_w),
           padding_mode(padding_mode), groups(groups), algorithm(algorithm) {}
@@ -289,8 +290,6 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
 
     ~Conv2D() = default;
 
-    std::string algorithm;
-
   private:
     static Context ctx;
     const Tensor<dtype> weight;
@@ -303,8 +302,26 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
     const uint dilation_w;
     const PaddingMode padding_mode;
     const uint groups;
+    const std::string algorithm;
 };
+
 template <typename dtype> Context Conv2D<dtype>::ctx = Context();
+
+template <typename dtype>
+Tensor<dtype> conv2d_with_algo(
+    const intptr_t input_address, const std::vector<uint> input_shape,
+    const intptr_t weight_address, const std::vector<uint> weight_shape,
+    const std::optional<intptr_t> bias_addr, const uint padding_h,
+    const uint padding_w, const uint stride_h, const uint stride_w,
+    const uint dilation_h, const uint dilation_w, const uint padding_mode_uint,
+    const uint groups, const std::string algorithm) {
+    PaddingMode padding_mode = static_cast<PaddingMode>(padding_mode_uint);
+    Conv2D<dtype> layer(weight_address, weight_shape, bias_addr, padding_h,
+                        padding_w, stride_h, stride_w, dilation_h, dilation_w,
+                        padding_mode, groups, algorithm, false);
+
+    return layer.forward(input_address, input_shape);
+}
 
 template <typename dtype> class Model {
   public:
@@ -355,12 +372,9 @@ void define_layer_classes(py::module &m, std::string type_str) {
                       const std::optional<intptr_t>, const uint, const uint,
                       const uint, const uint, const uint, const uint,
                       const PaddingMode, const uint, const std::string>())
-        .def("forward", &Conv2D<dtype>::forward)
-        .def_property(
-            "algorithm", [](Conv2D<dtype> &self) { return self.algorithm; },
-            [](Conv2D<dtype> &self, const std::string &alg) {
-                self.algorithm = alg;
-            });
+        .def("forward", &Conv2D<dtype>::forward);
+
+    m.def(("conv2d_" + type_str).c_str(), &conv2d_with_algo<dtype>);
 
     py::class_<Linear<dtype>, Layer<dtype>, std::shared_ptr<Linear<dtype>>>(
         m, ("Linear_" + type_str).c_str())
@@ -398,4 +412,5 @@ PYBIND11_MODULE(core, m) {
         .value("replicate", PaddingMode::Replicate)
         .value("circular", PaddingMode::Circular)
         .export_values();
+    m.def("output_hw_for_2d", &output_hw_for_2d_no_ceil);
 }

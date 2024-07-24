@@ -3,7 +3,6 @@
 #include "ai3.hpp"
 #include <CL/sycl.hpp>
 #include <optional>
-#include <vector>
 using namespace cl;
 
 template <typename dtype>
@@ -26,9 +25,9 @@ Tensor<dtype> smm_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
 
     const uint output_channels = kernel.out_channels();
 
-    const uint output_height = output_size_for_2d<dtype>(
+    const uint output_height = output_hw_for_2d<dtype>(
         input_height, kernel_height, padding_h, dilation_h, stride_h, false);
-    const uint output_width = output_size_for_2d<dtype>(
+    const uint output_width = output_hw_for_2d<dtype>(
         input_width, kernel_width, padding_w, dilation_w, stride_w, false);
 
     uint num_samples;

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <optional>
 #include <sstream>
-#include <vector>
 
 #ifndef GROUP_SIZE_GUESS
 #define GROUP_SIZE_GUESS 1024
@@ -64,13 +63,28 @@ inline uint to_linear(uint i, uint j, uint k, uint J, uint K) {
 }
 inline uint to_linear(uint i, uint j, uint J) { return i * J + j; }
 
+inline uint output_hw_for_2d_numerator(const uint input, const uint kernel,
+                                       const uint padding,
+                                       const std::optional<uint> dilation) {
+    return input + (2 * padding) - (dilation.value_or(1) * (kernel - 1)) - 1;
+}
+
+inline uint output_hw_for_2d_no_ceil(const uint input, const uint kernel,
+                                     const uint padding,
+                                     const std::optional<uint> dilation,
+                                     const uint stride) {
+    return output_hw_for_2d_numerator(input, kernel, padding, dilation) /
+               stride +
+           1;
+}
+
 template <typename dtype>
-inline uint output_size_for_2d(const uint input, const uint kernel,
-                               const uint padding,
-                               const std::optional<uint> dilation,
-                               const uint stride, const bool ceil_mode) {
+inline uint output_hw_for_2d(const uint input, const uint kernel,
+                             const uint padding,
+                             const std::optional<uint> dilation,
+                             const uint stride, const bool ceil_mode) {
     const uint top =
-        input + (2 * padding) - (dilation.value_or(1) * (kernel - 1)) - 1;
+        output_hw_for_2d_numerator(input, kernel, padding, dilation);
     const uint bot = stride;
 
     const uint poss =

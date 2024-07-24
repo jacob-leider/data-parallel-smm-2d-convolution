@@ -1,7 +1,7 @@
 #pragma once
 #include <ai3.hpp>
 
-constexpr bool DEFAULT_TO_CUSTOM_CONV2D = false;
+const bool DEFAULT_TO_CUSTOM_CONV2D = false;
 
 template <typename dtype>
 Tensor<dtype> conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,

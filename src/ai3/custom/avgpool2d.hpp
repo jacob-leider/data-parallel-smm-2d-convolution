@@ -2,7 +2,7 @@
 
 #include <ai3.hpp>
 
-constexpr bool DEFAULT_TO_CUSTOM_AVGPOOL2D = false;
+const bool DEFAULT_TO_CUSTOM_AVGPOOL2D = false;
 
 template <typename dtype>
 Tensor<dtype> avgpool2d(Tensor<dtype> input, const uint kernel_h,
