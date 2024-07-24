@@ -3,7 +3,7 @@
 #### A Framework to Enable Algorithmic Design Choices in *DNNs*
 
 ### Table of Contents
-1. [Examples](#examples)
+1. [Overview](#overview)
 2. [Installation](#installation)
 3. [Implementing Custom Algorithms](#implementing-custom-algorithms)
 4. [Testing](#testing)
@@ -11,51 +11,65 @@
 
 This framework contains built-in high performance implementations of common deep learning operations and methods by which users can implement their own algorithms in *C++*. The framework’s built-in accelerated implementations yield outputs equivalent to and exhibit similar performance as implementations in *PyTorch*. The framework incurs no additional performance overhead, meaning that performance depends solely on the algorithms chosen by the user.
 
-### Examples
+### Overview
 The framework currently features two methods for algorithmic swapping. A function that swaps a specific module type and one that swaps every module type of a *DNN* and returns an object completely managed by the framework.
 
-For example, the following code could be used with a *PyTorch* *DNN* which utilizes two convolution layers and *maxpool2d* layers. The first function called ```swap_backend```, takes the *DNN* and a mapping from the name of a module to an algorithmic selector, passing no algorithm for a module type is equivalent to passing *"default"*. The second function, implemented for convolution layers, ```swap_conv2d```, takes the *DNN* and an algorithmic selector for the module type in the function name. After ```swap_conv2d``` is executed, the model can still be used for training but will now use the algorithm decided by the user for forward propagation. An example of this is seen in [example/train](./example/train.py).
+The first function called ```swap_backend```, takes the *DNN* and a mapping from the name of a module to an algorithmic selector, passing no algorithm for a module type is equivalent to passing *"default"*. The second function, implemented for convolution layers, ```swap_conv2d```, takes the *DNN* and an algorithmic selector for the module type in the function name. After ```swap_conv2d``` is executed, the model can still be used for training but will now use the selected algorithm for forward propagation. An example of this is seen in [example/train](./example/train.py).
 
-#### Use of ```swap_conv2d``` and ```swap_backend``` Sampled from [example/manual_conv2d](./example/manual_conv2d.py)
+There are three supported forms of algorithmic selection, the first is a string containing the name of the algorithm, this algorithm will be used for all modules of the associated type, the second is a list of algorithm names, as modules are encountered, they are replaced with an implementation of the algorithm in the list with the same index as that module has relative to the other modules of the same type, the third method for algorithmic selection is a function. This function is given the module to swap and returns the name of the algorithm to use, the function can optionally take the input size for this module if you pass a sample input shape to the swapping function.
+
+#### Using String Selectors, Sampled from [example/manual_conv2d](./example/manual_conv2d.py)
 ```python
 input_data = torch.randn(10, 3, 224, 224)
 orig = ConvNet()
 torch_out = orig(input_data)
+
 model: ai3.Model = ai3.swap_backend(orig, {'conv2d': 'direct', 'maxpool2d': 'default'})
-ai3_out = model(input_data)
+sb_out = model(input_data)
+assert torch.allclose(torch_out, sb_out, atol=1e-6)
+
 ai3.swap_conv2d(orig, ['direct', 'smm'])
-swap_out = orig(input_data)
-assert torch.allclose(torch_out, ai3_out, atol=1e-6)
-assert torch.allclose(torch_out, swap_out, atol=1e-6)
+sc_out = orig(input_data)
+assert torch.allclose(torch_out, sc_out, atol=1e-6)
 ```
-There are three supported forms of algorithmic selection, the first is a string containing the name of the algorithm, this algorithm will be used for all modules of the associated type, the second is a list of algorithm names, as modules are encountered, they are replaced with an implementation of the algorithm in the list with the same index as that module has relative to the other modules of the same type, the third method for algorithmic selection is a function. This function receives the module to swap and returns the name of the algorithm to use, the function can optionally take the input size for this module if you pass a sample input shape to the swapping function.
-#### No Sample Input Shape Sampled from [example/vgg16](./example/vgg16.py)
+
+#### Function Selector, Sampled from [example/vgg16](./example/vgg16.py)
 ```python
 def conv2d_selector(orig: torch.nn.Conv2d) -> str:
     in_channels = orig.weight.shape[1]
     if in_channels > 200:
-        return "smm"
-    return "direct"
+        return 'smm'
+    return 'direct'
 
-model: ai3.Model = ai3.swap_backend(model, {"conv2d": conv2d_selector})
-ai3_out = model(input_data)
+vgg16 = torchvision.models.vgg16(
+    weights=torchvision.models.VGG16_Weights.DEFAULT)
+vgg16.eval()
+torch_out = vgg16(input_data)
+
+model: ai3.Model = ai3.swap_backend(vgg16, {'conv2d': conv2d_selector})
+sb_out = model(input_data)
+assert torch.allclose(torch_out, sb_out, atol=1e-4)
 ```
-#### With Sample Input Shape Sampled from [example/func_with_input_shape](./example/func_with_input_shape.py)
+#### Function Selector With Input Shape, Sampled from [example/func_with_input_shape](./example/func_with_input_shape.py)
 ```python
 def conv2d_selector(orig: torch.nn.Conv2d, input_shape: Sequence[int]) -> str:
     out_channels = orig.weight.shape[0]
     if out_channels < 50 and input_shape[0] < 50 and input_shape[1] > 150 and input_shape[2] > 150:
-        return "direct"
+        return 'direct'
     return 'smm'
 
 input_data = torch.randn(10, 3, 224, 224)
 orig = ConvNet()
-orig.eval()
-
 torch_out = orig(input_data)
+
+model = ai3.swap_backend(
+    orig, {'conv2d': conv2d_selector}, (3, 224, 224))
+sb_out = model.predict(input_data)
+assert torch.allclose(torch_out, sb_out.torch(), atol=1e-6)
+
 ai3.swap_conv2d(orig, conv2d_selector, (3, 224, 224))
-swap_out = orig(input_data)
-assert torch.allclose(torch_out, swap_out, atol=1e-6)
+sc_out = orig(input_data)
+assert torch.allclose(torch_out, sc_out, atol=1e-6)
 ```
 
 ### Installation

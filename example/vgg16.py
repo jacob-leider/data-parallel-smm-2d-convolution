@@ -19,9 +19,9 @@ with torch.inference_mode():
 
     model: ai3.Model = ai3.swap_backend(
         vgg16, {"conv2d": conv2d_selector})
-    ai3_out = model(input_data)
+    sb_out = model(input_data)
     assert torch.allclose(
-        torch_out, ai3_out, atol=1e-4)
+        torch_out, sb_out, atol=1e-4)
 
     ai3.swap_conv2d(vgg16, conv2d_selector)
     swapped_out = vgg16(input_data)

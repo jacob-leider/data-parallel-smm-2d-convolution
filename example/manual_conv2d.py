@@ -26,11 +26,11 @@ if __name__ == "__main__":
     orig = ConvNet()
     torch_out = orig(input_data)
     model: ai3.Model = ai3.swap_backend(
-        orig, {"conv2d": "direct", "maxpool2d": "default"})
-    ai3_out = model(input_data)
-    ai3.swap_conv2d(orig, ["direct", "smm"])
-    swap_out = orig(input_data)
+        orig, {'conv2d': 'direct', 'maxpool2d': 'default'})
+    sb_out = model(input_data)
+    ai3.swap_conv2d(orig, ['direct', 'smm'])
+    sc_out = orig(input_data)
     assert torch.allclose(
-        torch_out, ai3_out, atol=1e-6)
+        torch_out, sb_out, atol=1e-6)
     assert torch.allclose(
-        torch_out, swap_out, atol=1e-6)
+        torch_out, sc_out, atol=1e-6)
