@@ -14,19 +14,22 @@ This framework contains built-in high performance implementations of common deep
 ### Examples
 The framework currently features two methods for algorithmic swapping. A function that swaps a specific module type and one that swaps every module type of a *DNN* and returns an object completely managed by the framework.
 
-For example, the following code could be used with a *PyTorch* *DNN* which utilizes two convolution layers and *maxpool2d* layers. The first function called ```swap_backend```, takes the *DNN* and a mapping from the name of a module to an algorithmic selector, passing no algorithm for a module type is equivalent to passing *"default"*. The second function, implemented for convolution layers, ```swap_conv2d```, takes the *DNN* and an algorithmic selector for the module type in the function name.
+For example, the following code could be used with a *PyTorch* *DNN* which utilizes two convolution layers and *maxpool2d* layers. The first function called ```swap_backend```, takes the *DNN* and a mapping from the name of a module to an algorithmic selector, passing no algorithm for a module type is equivalent to passing *"default"*. The second function, implemented for convolution layers, ```swap_conv2d```, takes the *DNN* and an algorithmic selector for the module type in the function name. After ```swap_conv2d``` is executed, the model can still be used for training but will now use the algorithm decided by the user for forward propagation. An example of this is seen in [example/train](./example/train.py).
+
+#### Use of ```swap_conv2d``` and ```swap_backend``` Sampled from [example/manual_conv2d](./example/manual_conv2d.py)
 ```python
 input_data = torch.randn(10, 3, 224, 224)
 orig = ConvNet()
 torch_out = orig(input_data)
-model: ai3.Model = ai3.swap_backend(orig, {"conv2d": "direct", "maxpool2d": "default"})
+model: ai3.Model = ai3.swap_backend(orig, {'conv2d': 'direct', 'maxpool2d': 'default'})
 ai3_out = model(input_data)
-ai3.swap_conv2d(orig, ["direct", "smm"])
+ai3.swap_conv2d(orig, ['direct', 'smm'])
 swap_out = orig(input_data)
 assert torch.allclose(torch_out, ai3_out, atol=1e-6)
 assert torch.allclose(torch_out, swap_out, atol=1e-6)
 ```
-There are three supported forms of algorithmic selection, the first is a string containing the name of the algorithm, this algorithm will be used for all modules of the associated type, the second is a list of algorithm names, as modules are encountered, they are replaced with an implementation of the algorithm in the list with the same index as that module has relative to the other modules of the same type, the third method for algorithmic selection is a function which returns the algorithm to use and whose single parameter is the module the framework is currently swapping.
+There are three supported forms of algorithmic selection, the first is a string containing the name of the algorithm, this algorithm will be used for all modules of the associated type, the second is a list of algorithm names, as modules are encountered, they are replaced with an implementation of the algorithm in the list with the same index as that module has relative to the other modules of the same type, the third method for algorithmic selection is a function. This function receives the module to swap and returns the name of the algorithm to use, the function can optionally take the input size for this module if you pass a sample input shape to the swapping function.
+#### No Sample Input Shape Sampled from [example/vgg16](./example/vgg16.py)
 ```python
 def conv2d_selector(orig: torch.nn.Conv2d) -> str:
     in_channels = orig.weight.shape[1]
@@ -37,7 +40,23 @@ def conv2d_selector(orig: torch.nn.Conv2d) -> str:
 model: ai3.Model = ai3.swap_backend(model, {"conv2d": conv2d_selector})
 ai3_out = model(input_data)
 ```
-The first code sample is sampled from [example/manual_conv2d](./example/manual_conv2d.py), the second from [./example/vgg16.py](./example/vgg16.py).
+#### With Sample Input Shape Sampled from [example/func_with_input_shape](./example/func_with_input_shape.py)
+```python
+def conv2d_selector(orig: torch.nn.Conv2d, input_shape: Sequence[int]) -> str:
+    out_channels = orig.weight.shape[0]
+    if out_channels < 50 and input_shape[0] < 50 and input_shape[1] > 150 and input_shape[2] > 150:
+        return "direct"
+    return 'smm'
+
+input_data = torch.randn(10, 3, 224, 224)
+orig = ConvNet()
+orig.eval()
+
+torch_out = orig(input_data)
+ai3.swap_conv2d(orig, conv2d_selector, (3, 224, 224))
+swap_out = orig(input_data)
+assert torch.allclose(torch_out, swap_out, atol=1e-6)
+```
 
 ### Installation
 For users not seeking to implement their own algorithms the package will soon be on [pypi.org](pypi.org). For now the package can be installed via a link to this repository or the instructions below.
@@ -136,4 +155,4 @@ python -m bench.swap_backend
 python -m bench.swap_backend vgg16
 ```
 
-Models ran in both the *swap_conv2d* and *swap_backend* benchmarks are in [runners/models.py](./runners/models.py)
+Models ran in both the *swap_conv2d* and *swap_backend* benchmarks are in [runners/models.py](./runners/models.py).
