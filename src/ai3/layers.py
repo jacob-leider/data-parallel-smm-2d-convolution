@@ -19,20 +19,21 @@ class Layer(ABC):
 class Conv2D(Layer):
     def __init__(self, dtype, weight, bias, _stride: Union[int, Tuple[int, ...]],
                  padding: Union[str, Union[int, Tuple[int, ...]]], _dilation:
-                 Union[int, Tuple[int, ...]], padding_mode: str, groups: int,
+                 Union[int, Tuple[int, ...]], padding_mode: Union[str, core.PaddingMode], groups: int,
                  algorithm: str):
         stride = utils.make_2d(_stride)
         dilation = utils.make_2d(_dilation)
         padding = utils.make_padding_2d(
             padding, stride, dilation, weight.size())
-        errors.bail_if(padding_mode not in [
-                       'zeros', 'reflect', 'replicate', 'circular'], f"invalid padding mode: {padding_mode}")
-        pad_mode = {
-            'zeros': core.PaddingMode.zeros,
-            'reflect': core.PaddingMode.reflect,
-            'replicate': core.PaddingMode.replicate,
-            'circular': core.PaddingMode.circular
-        }[padding_mode]
+        if isinstance(padding_mode, str):
+            errors.bail_if(padding_mode not in [
+                           'zeros', 'reflect', 'replicate', 'circular'], f"invalid padding mode: {padding_mode}")
+            padding_mode = core.PaddingMode({
+                'zeros': core.PaddingMode.zeros,
+                'reflect': core.PaddingMode.reflect,
+                'replicate': core.PaddingMode.replicate,
+                'circular': core.PaddingMode.circular
+            }[padding_mode])
 
         weight_addr = utils.get_address(weight)
         weight_shape = utils.get_shape(weight)
@@ -50,8 +51,7 @@ class Conv2D(Layer):
                                                        stride[1],
                                                        dilation[0],
                                                        dilation[1],
-                                                       core.PaddingMode(
-                                                           pad_mode),
+                                                       padding_mode,
                                                        groups,
                                                        algorithm)
 

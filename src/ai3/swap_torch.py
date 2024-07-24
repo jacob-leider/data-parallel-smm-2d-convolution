@@ -1,8 +1,9 @@
 from ai3 import core, layers, errors, utils
-from typing import Mapping, Optional, List, Sequence, Union, Callable, DefaultDict
+from typing import Mapping, Optional, List, Sequence, Union, Callable, DefaultDict, Tuple
 from collections import defaultdict
 import torch
 from torch import nn, fx
+from torch.fx import passes
 from torch.nn import grad
 
 
@@ -117,13 +118,13 @@ def conv2d_backward(ctx, out_grad):
         )
 
     if ctx.needs_input_grad[2]:
-        # sum along the batch, height, and width dimensions to get the gradient for the bias
         if len(out_grad.shape) == 4:
             grad_bias = out_grad.sum(dim=(0, 2, 3))
         elif len(out_grad.shape) == 3:
             grad_bias = out_grad.sum(dim=(1, 2))
         else:
-            errors.bail(f'conv2d output gradient must be 3 or 4 dimensions but is {len(out_grad.shape)} dimensions')
+            errors.bail(
+                f'conv2d output gradient must be 3 or 4 dimensions but is {len(out_grad.shape)} dimensions')
 
     return grad_input, grad_weight, grad_bias, None, None, None, None, None, None, None, None, None
 
@@ -161,12 +162,12 @@ class Conv2D(nn.Module):
         errors.bail_if(orig.padding_mode not in [
                        'zeros', 'reflect', 'replicate', 'circular'], f"invalid padding mode: {orig.padding_mode}")
         self.groups = orig.groups
-        self.pad_mode = int({
+        self.padding_mode = {
             'zeros': core.PaddingMode.zeros,
             'reflect': core.PaddingMode.reflect,
             'replicate': core.PaddingMode.replicate,
             'circular': core.PaddingMode.circular
-        }[orig.padding_mode])
+        }[orig.padding_mode]
         self.weight = orig.weight
         self.bias = orig.bias
         if self.bias is not None:
@@ -176,12 +177,12 @@ class Conv2D(nn.Module):
 
     def forward(self, x: torch.Tensor):
         return torch.ops.ai3.conv2d(x, self.weight, self.bias, self.padding[0], self.padding[1], self.stride[0], self.stride[1],
-                                    self.dilation[0], self.dilation[1], self.pad_mode, self.groups, self.algorithm)  # type: ignore
-
+                                    self.dilation[0], self.dilation[1], int(self.padding_mode), self.groups, self.algorithm)  # type: ignore
 
 def get_algo_inc_counter(orig: Union[nn.Module, str],
                          algos: Mapping,
-                         layer_counters: DefaultDict[str, int]) -> str:
+                         layer_counters: DefaultDict[str, int],
+                         input_shape: Optional[Sequence[int]]) -> str:
     if isinstance(orig, nn.Module):
         op = mod_to_op(orig)
     else:
@@ -189,7 +190,10 @@ def get_algo_inc_counter(orig: Union[nn.Module, str],
     if callable(algos[op]):
         errors.bail_if(isinstance(orig, str),
                        f"trying to use function selector for a function or module which is already swapped")
-        algo = algos[op](orig)
+        if input_shape is not None:
+            algo = algos[op](orig, input_shape)
+        else:
+            algo = algos[op](orig)
     elif isinstance(algos[op], list):
         algo = algos[op][layer_counters[op]]
         layer_counters[op] += 1
@@ -199,15 +203,34 @@ def get_algo_inc_counter(orig: Union[nn.Module, str],
                    f"Invalid algorithm, {algo}, found for {op}")
     return algo
 
+def trace_module(module: nn.Module,
+                 sample_input_shape: Optional[Sequence[int]] = None) -> Tuple[fx.Graph, bool]:
+    tracer = Tracer()
+    graph: fx.Graph = tracer.trace(module)
+    with_shapes = False
+    if sample_input_shape is not None:
+        gm = fx.GraphModule(module, graph)
+        passes.shape_prop.ShapeProp(gm).propagate(
+            torch.randn(sample_input_shape))
+        graph = gm.graph
+        with_shapes = True
+    return graph, with_shapes
 
-def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping[str, Union[str, Sequence[str], Callable]]) -> List[layers.Layer]:
-    gm: fx.GraphModule = fx.symbolic_trace(complete_module)
+
+def swap_backend_layers(complete_module: nn.Module, dtype,
+                           algos: Mapping[str, Union[str, Sequence[str], Callable]],
+                           sample_input_shape: Optional[Sequence[int]] = None) -> List[layers.Layer]:
+    graph, with_shapes = trace_module(complete_module, sample_input_shape)
+
     forwards = []
 
     layer_counters = defaultdict(int)
 
-    for node in gm.graph.nodes:
+    node_input_shape = None
+    for node in graph.nodes:
         assert isinstance(node, fx.Node)
+        if with_shapes:
+            node_input_shape = node.meta['tensor_meta'].shape
         if node.op == 'placeholder' or node.op == 'output':
             pass
         elif node.op == 'call_function':
@@ -223,7 +246,7 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
                 if 'end_dim' in node.kwargs:
                     end_dim = node.kwargs['end_dim']
                 algo = get_algo_inc_counter(
-                    'flatten', algos, layer_counters)
+                    'flatten', algos, layer_counters, node_input_shape)
                 errors.bail_if(algo == "torch",
                                "can't use torch backend when in swap_backend")
                 assert (isinstance(start_dim, int))
@@ -232,7 +255,7 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
                     dtype, start_dim, end_dim, algo))
             elif node.target == torch.relu:
                 algo = get_algo_inc_counter(
-                    'relu', algos, layer_counters)
+                    'relu', algos, layer_counters, node_input_shape)
                 errors.bail_if(algo == "torch",
                                "can't use torch backend when in swap_backend")
                 forwards.append(layers.ReLU(dtype, algo))
@@ -241,7 +264,7 @@ def get_swapped_backend_layers(complete_module: nn.Module, dtype, algos: Mapping
         elif node.op == 'call_module':
             mod = getmodule(complete_module, node.target)
             if not isinstance(mod, nn.Dropout):
-                algo = get_algo_inc_counter(mod, algos, layer_counters)
+                algo = get_algo_inc_counter(mod, algos, layer_counters, node_input_shape)
                 errors.bail_if(algo == "torch",
                                "can't use torch backend when in swap_backend")
                 swapped = swap_layer(mod, dtype, algo)
@@ -261,18 +284,20 @@ class Tracer(fx.Tracer):
         return super().is_leaf_module(m, module_qualified_name)
 
 
-def swap_conv2d(module: nn.Module, selector: Union[str, Sequence[str], Callable]):
-    tracer = Tracer()
-    gm: fx.Graph = tracer.trace(module)
+def swap_conv2d(module: nn.Module, selector: Union[str, Sequence[str], Callable], sample_input_shape: Optional[Sequence[int]] = None):
+    graph, with_shapes = trace_module(module, sample_input_shape)
 
     layer_counters = defaultdict(int)
-    for node in gm.nodes:
+    node_input_shape = None
+    for node in graph.nodes:
         assert isinstance(node, fx.Node)
+        if with_shapes:
+            node_input_shape = node.meta['tensor_meta'].shape
         if node.op == 'call_module':
             mod = getmodule(module, node.target)
             if isinstance(mod, (nn.Conv2d, Conv2D)):
                 algo = get_algo_inc_counter(
-                    mod, {'conv2d': selector}, layer_counters)
+                    mod, {'conv2d': selector}, layer_counters, node_input_shape)
                 if algo == 'torch':
                     continue
                 if isinstance(mod, nn.Conv2d):
@@ -282,8 +307,8 @@ def swap_conv2d(module: nn.Module, selector: Union[str, Sequence[str], Callable]
                     mod.algorithm = algo
 
 
-def swap_layer(module: nn.Module, dtype, algo: str) -> Optional[layers.Layer]:
-    if isinstance(module, nn.Conv2d):
+def swap_layer(module: Union[nn.Module, layers.Layer], dtype, algo: str) -> Optional[layers.Layer]:
+    if isinstance(module, (nn.Conv2d, Conv2D)):
         return layers.Conv2D(dtype, module.weight, module.bias, module.stride,
                              module.padding, module.dilation, module.padding_mode,
                              module.groups, algo)

@@ -2,13 +2,28 @@ from typing import (
     Union,
     Sequence,
     Any,
-    Tuple
+    Tuple,
+    Mapping,
+    Callable,
+    Optional
 )
 import torch
+import inspect
+from ai3 import errors
 
 FLOAT32_STR = "float32"
 FLOAT64_STR = "float64"
 
+def check_callable_params_with_shape(algos: Mapping[str, Union[str, Sequence[str], Callable]],
+                                     sample_input_shape: Optional[Sequence[int]] = None):
+    for key, value in algos.items():
+        if callable(value):
+            if len(inspect.signature(value).parameters) == 2:
+                errors.bail_if(sample_input_shape is None,
+                               f'for {key} using function selector which depends on input shape, but no sample input shape provided')
+            else:
+                errors.bail_if(sample_input_shape is not None,
+                               f'provided sample input shape but function selector for {key} doesn\'t take an input shape')
 
 def get_item(dtype, float_item, double_item):
     if str(dtype) == 'torch.float32':
