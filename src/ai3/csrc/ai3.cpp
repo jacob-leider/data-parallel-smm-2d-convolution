@@ -221,7 +221,9 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
            const uint dilation_h, const uint dilation_w,
            const PaddingMode padding_mode, const uint groups,
            const std::string algorithm, bool own_params = true)
-        : weight(weight_address, weight_shape, own_params),
+        : weight(own_params ? Tensor<dtype>(weight_address, weight_shape)
+                            : Tensor<dtype>::form_tensor(weight_address,
+                                                         weight_shape)),
           bias(Tensor<dtype>::from_optional(bias_addr, {weight_shape[0]},
                                             own_params)),
           padding_h(padding_h), padding_w(padding_w), stride_h(stride_h),
@@ -285,7 +287,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
 
     Tensor<dtype> forward(const intptr_t input_address,
                           std::vector<uint> input_shape) {
-        return _forward(Tensor<dtype>(input_address, input_shape));
+        return _forward(Tensor<dtype>::form_tensor(input_address, input_shape));
     }
 
     ~Conv2D() = default;
@@ -330,7 +332,8 @@ template <typename dtype> class Model {
 
     Tensor<dtype> predict(const intptr_t input_address,
                           std::vector<uint> input_shape) {
-        Tensor<dtype> output(input_address, input_shape, false);
+        Tensor<dtype> output =
+            Tensor<dtype>::form_tensor(input_address, input_shape);
         for (const std::shared_ptr<Layer<dtype>> &layer : layers) {
             output = layer->_forward(std::move(output));
         }

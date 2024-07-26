@@ -1,10 +1,11 @@
 # * CPP *
 # TODO groups and padding modes for convolution implementations
 # TODO adaptiveavgpool2d where output dim isn't multiple of input dim
+# TODO add accelerate implementations for more operations
 
 # * PUBLISHING *
 # TODO documentation for both the framework and CPP library
-# TODO add homepage information, docs, tests to pyproject.toml
+# TODO add homepage information, docs, to pyproject.toml
 
 # * FUTURE *
 # TODO custom backpropagation algorithms

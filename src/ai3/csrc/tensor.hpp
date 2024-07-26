@@ -11,37 +11,30 @@ namespace py = pybind11;
 
 template <typename dtype> class Tensor {
   public:
-    Tensor(const intptr_t data_address, const std::vector<uint> &s,
-           bool own = true)
-        : shape(s), owned(own) {
-        if (own) {
-            data = new dtype[_count(s)];
-            std::memcpy(data, reinterpret_cast<const dtype *>(data_address),
-                        _count(s) * sizeof(dtype));
-        } else {
-            data = reinterpret_cast<dtype *>(data_address);
-        }
-    }
-
     Tensor(const std::vector<uint> &s)
         : data(new dtype[_count(s)]), shape(s), owned(true) {}
 
-    static Tensor<dtype> concat(Tensor<dtype> *tens, uint len) {
-        uint each_size = tens[0].count();
-        tens[0].shape.insert(tens[0].shape.begin(), len);
-        Tensor<dtype> output(tens[0].shape);
-        for (uint i = 0; i < len; ++i) {
-            std::memcpy(&output.data[i * each_size], tens[i].data,
-                        each_size * sizeof(dtype));
-        }
-        return output;
+    Tensor(const intptr_t data_address, const std::vector<uint> &s)
+        : shape(s), owned(true) {
+        data = new dtype[_count(s)];
+        std::memcpy(data, reinterpret_cast<const dtype *>(data_address),
+                    _count(s) * sizeof(dtype));
+    }
+
+    static Tensor<dtype> form_tensor(const intptr_t data_address,
+                                     const std::vector<uint> &s) {
+        return Tensor(reinterpret_cast<dtype *>(data_address), s, false);
     }
 
     static std::optional<Tensor>
     from_optional(const std::optional<intptr_t> &data_address,
                   const std::vector<uint> &s, bool own = true) {
         if (data_address.has_value()) {
-            return Tensor<dtype>((*data_address), s, own);
+            if (own) {
+                return Tensor<dtype>(*data_address, s);
+            } else {
+                return form_tensor(*data_address, s);
+            }
         } else {
             return std::nullopt;
         }
@@ -113,4 +106,7 @@ template <typename dtype> class Tensor {
         }
         return count;
     }
+
+    Tensor(dtype *data, const std::vector<uint> &s, bool own)
+        : data(data), shape(s), owned(own) {}
 };
