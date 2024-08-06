@@ -1,4 +1,3 @@
-#define CONV2D_SYCL
 #include "ai3.hpp"
 #include "algo_paths.hpp"
 #include <optional>
@@ -171,7 +170,12 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
             if constexpr (DEFAULT_TO_CUSTOM_LINEAR) {
                 return linear<dtype>(std::move(input), weight, bias);
             } else {
+#ifdef USE_CUDA_TOOLS
+                return cublas_linear<dtype>(std::move(input), weight, bias,
+                                            ctx);
+#else
                 return _linear<dtype>(std::move(input), weight, bias);
+#endif
             }
         } else if (CUSTOM(algorithm)) {
             return linear<dtype>(std::move(input), weight, bias);
@@ -182,10 +186,12 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
     ~Linear() = default;
 
   private:
+    static Context ctx;
     const Tensor<dtype> weight;
     const std::optional<const Tensor<dtype>> bias;
     const std::string algorithm;
 };
+template <typename dtype> Context Linear<dtype>::ctx = Context();
 
 template <typename dtype> class Flatten : virtual public Layer<dtype> {
   public:
@@ -237,7 +243,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
                                      padding_w, stride_h, stride_w, dilation_h,
                                      dilation_w, padding_mode, groups);
             } else {
-#if USE_CUDNN
+#if USE_CUDA_TOOLS
                 return implicit_precomp_gemm_conv2d<dtype>(
                     std::move(input), weight, bias, padding_h, padding_w,
                     stride_h, stride_w, dilation_h, dilation_w, padding_mode,
