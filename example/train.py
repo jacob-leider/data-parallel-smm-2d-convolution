@@ -52,7 +52,7 @@ def train(model, loader, criterion):
             total_loss_model += loss.item()
 
         print(
-            f'Epoch {epoch+1} - Loss Orig: {total_loss_model / len(loader):.4f}')
+            f'Epoch {epoch+1} - Loss: {total_loss_model / len(loader):.4f}')
 
 
 def evaluate(model, loader, criterion):

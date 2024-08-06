@@ -46,7 +46,7 @@ Tensor<dtype> conv_bias_forward_with_algo(
         output = Tensor<dtype>({output_channels, output_height, output_width});
     }
 
-    cudnnDataType_t cudnn_dtype = cudnnDataType<dtype>();
+    cudnnDataType_t cudnn_dtype = cudnn_data_type<dtype>();
 
     dtype *d_input;
     CUDA_CHECK(cudaMalloc(&d_input, input.count() * sizeof(dtype)));
@@ -61,7 +61,7 @@ Tensor<dtype> conv_bias_forward_with_algo(
     CUDNN_CHECK(cudnnCreateFilterDescriptor(&kernel_desc));
     dtype *d_kernel;
     CUDNN_CHECK(cudnnSetFilter4dDescriptor(
-        kernel_desc, cudnnDataType<dtype>(), CUDNN_TENSOR_NCHW, output_channels,
+        kernel_desc, cudnn_dtype, CUDNN_TENSOR_NCHW, output_channels,
         input_channels, kernel_height, kernel_width));
     CUDA_CHECK(cudaMalloc(&d_kernel, kernel.count() * sizeof(dtype)));
     CUDA_CHECK(cudaMemcpyAsync(d_kernel, kernel.data,
@@ -112,7 +112,7 @@ Tensor<dtype> conv_bias_forward_with_algo(
 
     CUDA_CHECK(cudaMalloc(&d_workspace, workspace_bytes));
 
-    dtype alpha = 1.0f, beta = 0.0f;
+    const dtype alpha = 1.0, beta = 0.0;
 
     CUDA_CHECK(cudaStreamSynchronize(cpy_stream));
     CUDNN_CHECK(cudnnConvolutionForward(
@@ -130,7 +130,6 @@ Tensor<dtype> conv_bias_forward_with_algo(
     CUDA_CHECK(cudaFree(d_workspace));
     CUDA_CHECK(cudaFree(d_input));
     CUDA_CHECK(cudaFree(d_kernel));
-    CUDA_CHECK(cudaFree(d_output));
     if (with_bias) {
         CUDA_CHECK(cudaFree(d_bias));
         CUDNN_CHECK(cudnnDestroyTensorDescriptor(bias_desc));
@@ -141,6 +140,7 @@ Tensor<dtype> conv_bias_forward_with_algo(
     CUDNN_CHECK(cudnnDestroyConvolutionDescriptor(conv_desc));
 
     CUDA_CHECK(cudaStreamSynchronize(cpy_stream));
+    CUDA_CHECK(cudaFree(d_output));
     CUDA_CHECK(cudaStreamDestroy(cpy_stream));
 
     return output;

@@ -1,16 +1,19 @@
-# * CPP *
+# TODO backpropagation is very slow need to implement a custom method
 # TODO groups and padding modes for convolution implementations
 # TODO adaptiveavgpool2d where output dim isn't multiple of input dim
-# TODO add accelerate implementations for more operations
+# TODO add attention support similar to the current convolution support
+# TODO examine impact of caching queue for SYCL then maybe use context
 
 # * PUBLISHING *
 # TODO documentation for both the framework and CPP library
 # TODO add homepage information, docs, to pyproject.toml
+# TODO should have an example of an actual sped up example
 
 # * FUTURE *
 # TODO custom backpropagation algorithms
 # TODO onnx format support
 # TODO tensorflow format support
+# TODO metal support
 
 
 import torch

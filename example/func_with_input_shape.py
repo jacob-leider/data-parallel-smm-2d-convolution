@@ -6,7 +6,10 @@ from typing import Sequence
 
 def conv2d_selector(orig: torch.nn.Conv2d, input_shape: Sequence[int]) -> str:
     out_channels = orig.weight.shape[0]
-    if out_channels < 50 and input_shape[0] < 50 and input_shape[1] > 150 and input_shape[2] > 150:
+    if (out_channels < 50 and
+        input_shape[0] < 50 and
+        input_shape[1] > 150 and
+            input_shape[2] > 150):
         return 'direct'
     return 'smm'
 
@@ -22,8 +25,9 @@ with torch.inference_mode():
     assert torch.allclose(
         torch_out, sc_out, atol=1e-6)
     model = ai3.swap_backend(
-        orig, {'conv2d': conv2d_selector}, (3, 224, 224))
-    ab_out = model.predict(input_data)
-    assert isinstance(ab_out, ai3.Tensor)
+        orig, {'conv2d': conv2d_selector, 'maxpool2d': 'default'},
+        (3, 224, 224))
+    sb_out = model.predict(input_data)
+    assert isinstance(sb_out, ai3.Tensor)
     assert torch.allclose(
-        torch_out, ab_out.torch(), atol=1e-6)
+        torch_out, sb_out.torch(), atol=1e-6)

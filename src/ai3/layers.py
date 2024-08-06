@@ -21,7 +21,7 @@ class Conv2D(Layer):
             self, dtype, weight, bias, _stride: Union[int, Tuple[int, ...]],
             padding: Union[str, Union[int, Tuple[int, ...]]],
             _dilation: Union[int, Tuple[int, ...]],
-            padding_mode: Union[str, core.PaddingMode],
+            padding_mode: Union[str, int, core.PaddingMode],
             groups: int, algorithm: str):
         stride = utils.make_2d(_stride)
         dilation = utils.make_2d(_dilation)

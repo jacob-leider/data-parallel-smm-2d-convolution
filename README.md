@@ -12,7 +12,7 @@
 This framework contains built-in high performance implementations of common deep learning operations and methods by which users can implement their own algorithms in *C++*. The framework’s built-in accelerated implementations yield outputs equivalent to and exhibit similar performance as implementations in *PyTorch*. The framework incurs no additional performance overhead, meaning that performance depends solely on the algorithms chosen by the user.
 
 ### Overview
-The framework currently features two methods for algorithmic swapping. A function that swaps a specific module type and one that swaps every module type of a *DNN* and returns an object completely managed by the framework.
+The framework currently features two methods for algorithmic swapping. A function that swaps every module type of a *DNN* returning an object completely managed by the framework and one that swaps a specific module type out of the existing *DNN*.
 
 The first function called ```swap_backend```, takes the *DNN* and a mapping from the name of a module to an algorithmic selector, passing no algorithm for a module type is equivalent to passing *"default"*. The second function, implemented for convolution layers, ```swap_conv2d```, takes the *DNN* and an algorithmic selector for the module type in the function name. After ```swap_conv2d``` is executed, the model can still be used for training but will now use the selected algorithm for forward propagation. An example of this is seen in [example/train](./example/train.py).
 

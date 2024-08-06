@@ -181,9 +181,11 @@ def save_model_data_table(models_data):
     df = df.drop(columns=[norm_column])
     df = df.round(4)
 
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
     ax.axis('tight')
     ax.axis('off')
+    ax.set_title('Model Execution Times Relative to PyTorch',
+                 fontsize=18, loc='center', pad=0)
 
     table = ax.table(cellText=df.values, colLabels=df.columns,
                      rowLabels=df.index, cellLoc='center', loc='center')

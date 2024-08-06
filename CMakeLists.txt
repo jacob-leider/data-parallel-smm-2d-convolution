@@ -31,7 +31,7 @@ if(CUDAToolkit_FOUND)
     )
 
     target_link_libraries(core PRIVATE CUDA::cudart CUDA::cublas cudnn)
-    target_compile_definitions(core PRIVATE USE_CUDNN)
+    target_compile_definitions(core PRIVATE USE_CUDA_TOOLS)
 endif()
 
 find_package(SYCL)
