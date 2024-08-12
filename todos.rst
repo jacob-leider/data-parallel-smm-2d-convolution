@@ -8,8 +8,8 @@ General
 
 Publishing
 ~~~~~~~~~~
-- documentation for both the framework and CPP library
-- host HTML on github pages not sure how that works since repo not public
+- host documentation HTML on github pages need repo public
+- update the links to be the public links in Doxyfile and intro.rst
 - add homepage information, docs, to pyproject.toml
 - should have an example of an actual sped up example
 

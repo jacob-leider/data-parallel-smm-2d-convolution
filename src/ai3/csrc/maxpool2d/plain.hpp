@@ -22,8 +22,8 @@ Tensor<dtype> _maxpool2d(Tensor<dtype> input, const uint kernel_h,
 
     Tensor<dtype> output;
     uint num_samples;
-    if (input.batched(input_dims::POOL2D)) {
-        num_samples = input.batch_size(input_dims::POOL2D);
+    if (input.batched(sample_dims::POOL2D)) {
+        num_samples = input.batch_size(sample_dims::POOL2D);
         output = Tensor<dtype>(
             {num_samples, output_channels, output_height, output_width});
     } else {

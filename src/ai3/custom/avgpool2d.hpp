@@ -2,8 +2,14 @@
 
 #include <ai3.hpp>
 
+/**
+ * @DEFAULT_BOOL{avgpool2d}
+ */
 const bool DEFAULT_TO_CUSTOM_AVGPOOL2D = false;
 
+/**
+ * @CUSTOM_OP{AvgPool2D, avgpool2d}
+ */
 template <typename dtype>
 Tensor<dtype> avgpool2d(Tensor<dtype> input, const uint kernel_h,
                         const uint kernel_w, const uint padding_h,

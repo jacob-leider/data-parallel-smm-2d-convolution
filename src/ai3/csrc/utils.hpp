@@ -123,10 +123,13 @@ template <typename... Args> void bail_if(bool check, Args... args) {
 
 } // namespace errs
 
-namespace input_dims {
+/**
+ * @brief Number of dimensions per sample of common deep learning operations.
+ */
+namespace sample_dims {
 const int LINEAR = 1;
 const int POOL2D = 3;
 const int CONV2D = 3;
 const int ACTIVATION = -1;
 const int FLATTEN = -1;
-}; // namespace input_dims
+}; // namespace sample_dims

@@ -9,23 +9,65 @@
 
 namespace py = pybind11;
 
+/**
+ * @brief Tensor class used for built-in and custom implementations
+ *
+ * Represents a multi-dimensional tensor which can be initialized from raw data
+ * or constructed from existing data with optional ownership semantics.
+ *
+ * @tparam dtype The data type of the tensor elements
+ */
 template <typename dtype> class Tensor {
   public:
+    /**
+     * @brief Allocates data to construct a Tensor with the given shape
+     *
+     * @param s Shape of the tensor
+     */
     Tensor(const std::vector<uint> &s)
         : data(new dtype[_count(s)]), shape(s), owned(true) {}
 
+    /**
+     * @brief Allocates and copies data to construct a Tensor with the given
+     * shape and data
+     *
+     * @param data_address Address of the data copied to the Tensor
+     * @param s Shape of the tensor
+     */
     Tensor(const intptr_t data_address, const std::vector<uint> &s)
         : shape(s), owned(true) {
         data = new dtype[_count(s)];
         std::memcpy(data, reinterpret_cast<const dtype *>(data_address),
                     _count(s) * sizeof(dtype));
     }
-
+    /**
+     * @brief Wraps existing data with a Tensor without allocating or copying
+     *
+     * @param data_address Address of the data
+     * @param s Shape of the tensor
+     *
+     * @return A Tensor object around the provided data
+     */
     static Tensor<dtype> form_tensor(const intptr_t data_address,
                                      const std::vector<uint> &s) {
         return Tensor(reinterpret_cast<dtype *>(data_address), s, false);
     }
 
+    /**
+     * @brief Creates a Tensor object depending on an optional data
+     * address
+     *
+     * If the data address is present, a Tensor is created with ownership
+     * determined by the *own* parameter. If the data address is not present,
+     * *std::nullopt* is returned.
+     *
+     * @param data_address Optional address of the raw data.
+     * @param s Shape of the tensor.
+     * @param own Whether to take ownership of the data.
+     *
+     * @return Tensor object if data_address has a value; otherwise,
+     * *std::nullopt*.
+     */
     static std::optional<Tensor>
     from_optional(const std::optional<intptr_t> &data_address,
                   const std::vector<uint> &s, bool own = true) {
@@ -61,6 +103,14 @@ template <typename dtype> class Tensor {
         return *this;
     }
 
+    /**
+     * @brief Implementation of
+     * <a href="https://docs.python.org/3/c-api/buffer.html">Python Buffer
+     * Protocol</a> for interoperability with Python.
+     *
+     * @return *pybind11::buffer_info* object containing the tensor's data,
+     * shape, and strides.
+     */
     py::buffer_info buffer() {
         std::vector<uint> stride(shape.size());
         stride[shape.size() - 1] = sizeof(dtype);
@@ -72,28 +122,55 @@ template <typename dtype> class Tensor {
                                shape.size(), shape, stride);
     }
 
-    inline bool batched(const int data_dim = -1) const {
-        if (data_dim == -1) {
-            return false;
-        }
+    /**
+     * @param data_dim The number of dimensions required per sample, see
+     * `sample_dims`
+     *
+     * @return *true* if the tensor has a dimension for batch size false
+     * otherwise
+     */
+    inline bool batched(const int data_dim) const {
         return shape.size() == unsigned(data_dim + 1);
     }
+
+    /**
+     * @param data_dim The number of dimensions required per sample, see
+     * `sample_dims`
+     *
+     * @return the number of samples in a batched Tensor
+     */
     inline uint batch_size(const uint input_dims) const {
         return shape[shape.size() - 1 - input_dims];
     }
+
+    /**
+     * @return Number of output channels of the Tensor
+     */
     inline uint out_channels() const { return shape[shape.size() - 4]; }
+    /**
+     * @return Number of input channels of the Tensor
+     */
     inline uint input_channels() const { return shape[shape.size() - 3]; }
+    /**
+     * @return Height of the Tensor
+     */
     inline uint height() const { return shape[shape.size() - 2]; }
+    /**
+     * @return Width of the Tensor
+     */
     inline uint width() const { return shape[shape.size() - 1]; }
 
+    /**
+     * @return Number of elements in the Tensor
+     */
     inline uint count() const { return _count(shape); }
 
     Tensor(const Tensor &) = delete;
     Tensor &operator=(const Tensor &) = delete;
 
-    dtype *data;
-    std::vector<uint> shape;
-    bool owned;
+    dtype *data;             ///< Pointer to the tensor data.
+    std::vector<uint> shape; ///< Shape of the tensor.
+    bool owned;              ///< Indicates whether the tensor owns the data.
 
   private:
     static uint _count(const std::vector<uint> &s) {

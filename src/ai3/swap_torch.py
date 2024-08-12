@@ -1,5 +1,5 @@
 from ai3 import core, layers, errors, utils
-from typing import Mapping, Optional, List, Sequence, Union, Callable, DefaultDict, Tuple
+from typing import Mapping, Optional, List, Sequence, Union, DefaultDict, Tuple
 from collections import defaultdict
 import torch
 from torch import nn, fx
@@ -106,24 +106,18 @@ def conv2d_backward(ctx, out_grad):
     if ctx.needs_input_grad[0]:
         grad_input = grad.conv2d_input(
             input.shape, weight, out_grad,
-            # type: ignore
-            stride=(stride_h, stride_w),
-            # type: ignore
-            padding=(padding_h, padding_w),
-            # type: ignore
-            dilation=(dilation_h, dilation_w),
+            stride=(stride_h, stride_w),  # type: ignore
+            padding=(padding_h, padding_w),  # type: ignore
+            dilation=(dilation_h, dilation_w),  # type: ignore
             groups=groups
         )
 
     if ctx.needs_input_grad[1]:
         grad_weight = grad.conv2d_weight(
             input, weight.shape, out_grad,
-            # type: ignore
-            stride=(stride_h, stride_w),
-            # type: ignore
-            padding=(padding_h, padding_w),
-            # type: ignore
-            dilation=(dilation_h, dilation_w),
+            stride=(stride_h, stride_w),  # type: ignore
+            padding=(padding_h, padding_w),  # type: ignore
+            dilation=(dilation_h, dilation_w),  # type: ignore
             groups=groups
         )
 
@@ -227,6 +221,8 @@ def get_algo_inc_counter(orig: Union[nn.Module, str],
         algo = algos[op]
     errors.bail_if(not isinstance(algo, str),
                    f"Invalid algorithm, {algo}, found for {op}")
+    errors.bail_if(not algo in utils.SUPPORTED_ALGORITHMS[op],
+                   f"Unsupported algorithm, {algo}, found for {op}")
     return algo
 
 
@@ -245,7 +241,7 @@ def trace_module(module: nn.Module,
 
 
 def swap_backend_layers(complete_module: nn.Module, dtype,
-                        algos: Mapping[str, Union[str, Sequence[str], Callable]],
+                        algos: Mapping[str, utils.AlgorithmicSelector],
                         sample_input_shape: Optional[Sequence[int]] = None) -> List[layers.Layer]:
     graph, with_shapes = trace_module(
         complete_module, sample_input_shape)
@@ -302,8 +298,7 @@ def swap_backend_layers(complete_module: nn.Module, dtype,
                 swapped = swap_layer(
                     mod, dtype, algo)
                 if not swapped:
-                    errors.bail(
-                        f"unsupported module: {mod}")
+                    errors.unsupported(mod)
                 forwards.append(swapped)
         else:
             errors.bail(
@@ -320,8 +315,7 @@ class Tracer(fx.Tracer):
 
 
 def swap_conv2d(
-        module: nn.Module, selector: Union[str, Sequence[str],
-                                           Callable],
+        module: nn.Module, selector: utils.AlgorithmicSelector,
         sample_input_shape: Optional[Sequence[int]] = None):
     graph, with_shapes = trace_module(
         module, sample_input_shape)

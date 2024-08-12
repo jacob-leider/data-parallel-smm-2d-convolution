@@ -41,7 +41,12 @@ template <typename dtype> class MaxPool2D : virtual public Layer<dtype> {
             return maxpool2d<dtype>(std::move(input), kernel_h, kernel_w,
                                     padding_h, padding_w, stride_h, stride_w,
                                     dilation_h, dilation_w, ceil_mode);
+        } else if (algorithm == "direct") {
+            return _maxpool2d<dtype>(std::move(input), kernel_h, kernel_w,
+                                     padding_h, padding_w, stride_h, stride_w,
+                                     dilation_h, dilation_w, ceil_mode);
         }
+
         errs::invalid_algo("maxpool2d", algorithm);
     }
     ~MaxPool2D() = default;
@@ -89,6 +94,11 @@ template <typename dtype> class AvgPool2D : virtual public Layer<dtype> {
                                     padding_h, padding_w, stride_h, stride_w,
                                     ceil_mode, count_include_pad,
                                     divisor_override);
+        } else if (algorithm == "direct") {
+            return _avgpool2d<dtype>(std::move(input), kernel_h, kernel_w,
+                                     padding_h, padding_w, stride_h, stride_w,
+                                     ceil_mode, count_include_pad,
+                                     divisor_override);
         }
         errs::invalid_algo("avgpool2d", algorithm);
     }
@@ -124,6 +134,8 @@ class AdaptiveAvgPool2D : virtual public Layer<dtype> {
             }
         } else if (CUSTOM(algorithm)) {
             return adaptiveavgpool2d(std::move(input), output_h, output_w);
+        } else if (algorithm == "direct") {
+            return _adaptiveavgpool2d(std::move(input), output_h, output_w);
         }
         errs::invalid_algo("adaptiveavgpool2d", algorithm);
     }
@@ -148,7 +160,10 @@ template <typename dtype> class ReLU : virtual public Layer<dtype> {
             }
         } else if (CUSTOM(algorithm)) {
             return relu<dtype>(std::move(input));
+        } else if (algorithm == "direct") {
+            return _relu(std::move(input));
         }
+
         errs::invalid_algo("relu", algorithm);
     }
     ~ReLU() = default;
@@ -179,7 +194,10 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
             }
         } else if (CUSTOM(algorithm)) {
             return linear<dtype>(std::move(input), weight, bias);
+        } else if (algorithm == "gemm") {
+            return _linear<dtype>(std::move(input), weight, bias);
         }
+
         errs::invalid_algo("linear", algorithm);
     }
 
@@ -208,7 +226,10 @@ template <typename dtype> class Flatten : virtual public Layer<dtype> {
             }
         } else if (CUSTOM(algorithm)) {
             return flatten<dtype>(std::move(input), start_dim, end_dim);
+        } else if (algorithm == "direct") {
+            return _flatten<dtype>(std::move(input), start_dim, end_dim);
         }
+
         errs::invalid_algo("flatten", algorithm);
     }
     ~Flatten() = default;

@@ -18,8 +18,8 @@ Tensor<dtype> cublas_linear(Tensor<dtype> input, const Tensor<dtype> &weight,
 
     Tensor<dtype> output;
     uint num_samples;
-    if (input.batched(input_dims::LINEAR)) {
-        num_samples = input.batch_size(input_dims::LINEAR);
+    if (input.batched(sample_dims::LINEAR)) {
+        num_samples = input.batch_size(sample_dims::LINEAR);
         output = Tensor<dtype>({num_samples, out_features});
     } else {
         num_samples = 1;

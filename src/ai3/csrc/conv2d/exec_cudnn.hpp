@@ -37,8 +37,8 @@ Tensor<dtype> conv_bias_forward_with_algo(
 
     uint num_samples;
     Tensor<dtype> output;
-    if (input.batched(input_dims::CONV2D)) {
-        num_samples = input.batch_size(input_dims::CONV2D);
+    if (input.batched(sample_dims::CONV2D)) {
+        num_samples = input.batch_size(sample_dims::CONV2D);
         output = Tensor<dtype>(
             {num_samples, output_channels, output_height, output_width});
     } else {

@@ -1,8 +1,14 @@
 #pragma once
 #include <ai3.hpp>
 
+/**
+ * @DEFAULT_BOOL{Conv2D}
+ */
 const bool DEFAULT_TO_CUSTOM_CONV2D = false;
 
+/**
+ * @CUSTOM_OP{Conv2D,conv2d}
+ */
 template <typename dtype>
 Tensor<dtype> conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
                      const std::optional<const Tensor<dtype>> &bias,

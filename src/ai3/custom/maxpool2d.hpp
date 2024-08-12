@@ -2,8 +2,14 @@
 
 #include <ai3.hpp>
 
+/**
+ * @DEFAULT_BOOL{MaxPool2D}
+ */
 const bool DEFAULT_TO_CUSTOM_MAXPOOL2D = false;
 
+/**
+ * @CUSTOM_OP{MaxPool2D,maxpool2d}
+ */
 template <typename dtype>
 Tensor<dtype> maxpool2d(Tensor<dtype> input, const uint kernel_h,
                         const uint kernel_w, const uint padding_h,

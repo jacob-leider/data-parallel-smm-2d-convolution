@@ -5,14 +5,32 @@ from typing import (
     Tuple,
     Mapping,
     Callable,
-    Optional
+    Optional,
+    TypeAlias
 )
 import torch
 import inspect
 from ai3 import errors
 
-FLOAT32_STR = "float32"
-FLOAT64_STR = "float64"
+FLOAT32_STR = 'float32'
+FLOAT64_STR = 'float64'
+
+AlgorithmicSelector: TypeAlias = Union[str, Sequence[str], Callable]
+
+SUPPORTED_ALGORITHMS = {
+    'conv2d': ['direct', 'smm', 'winograd', 'gemm',
+               'implicit gemm', 'implicit precomp gemm', 'guess'],
+    'linear': ['gemm'],
+    'maxpool2d': ['direct'],
+    'avgpool2d': ['direct'],
+    'adaptiveavgpool2d': ['direct'],
+    'linear': ['direct'],
+    'relu': ['direct'],
+    'flatten': ['direct'],
+}
+DEFAULT_OPTION = 'default'
+for key in SUPPORTED_ALGORITHMS:
+    SUPPORTED_ALGORITHMS[key].append(DEFAULT_OPTION)
 
 
 def check_callable_params_with_shape(

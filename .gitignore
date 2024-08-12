@@ -8,3 +8,9 @@ venv
 .clangd
 CMakeFiles
 .ninja*
+
+docs/_build
+docs/_templates
+docs/doxygen
+docs/html
+docs/latex
