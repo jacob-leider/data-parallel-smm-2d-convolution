@@ -23,7 +23,7 @@ def test(*, num_samples, in_features: int, out_features: int,
 
     model = Model(input.dtype, [Linear(
         input.dtype, weight, bias, "default")])
-    ai3_output = model.predict(input)
+    ai3_output = model.predict(input, torch.Tensor)
     torch_output = F.linear(
         input, weight, bias=bias)
     compare_tensors(

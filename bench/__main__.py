@@ -1,6 +1,6 @@
-from bench import layers, swap_conv2d, swap_backend
-import runners
+from bench import layer, swap_conv2d, swap_backend
+import models
 
-layers.run()
-runners.run_on(swap_conv2d.runner)
-runners.run_on(swap_backend.runner)
+layer.run()
+models.run_on(swap_conv2d.runner)
+models.run_on(swap_backend.runner)

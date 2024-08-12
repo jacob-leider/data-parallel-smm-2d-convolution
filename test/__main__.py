@@ -1,6 +1,6 @@
 from test import unit, swap_backend, swap_conv2d
-import runners
+import models
 
 unit.run()
-runners.run_on(swap_conv2d.runner)
-runners.run_on(swap_backend.runner)
+models.run_on(swap_conv2d.runner)
+models.run_on(swap_backend.runner)

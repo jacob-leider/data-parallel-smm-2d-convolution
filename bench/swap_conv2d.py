@@ -2,7 +2,7 @@ import torch
 import ai3
 from bench import predict_show_time
 from test import compare_tensors
-import runners
+import models
 import sys
 
 
@@ -16,9 +16,9 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
         ai3_out = predict_show_time(
             module, input_data, f"{name} ai3 {algo}")
         compare_tensors(ai3_out, torch_out,
-                        f"{name} ai3 {algo}, {runners.BATCH} samples",
+                        f"{name} ai3 {algo}, {models.BATCH} samples",
                         print_pass=False)
 
 
 if __name__ == "__main__":
-    runners.from_args(runner, sys.argv)
+    models.from_args(runner, sys.argv)

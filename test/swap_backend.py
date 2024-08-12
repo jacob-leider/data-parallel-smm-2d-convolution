@@ -2,7 +2,7 @@ import torch
 import ai3
 from ai3.errors import UnsupportedCallableError
 from test import compare_tensors
-import runners
+import models
 import sys
 
 
@@ -23,8 +23,8 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
             output = ai3_model(input_data)
             compare_tensors(
                 output, target,
-                f"{name} swap backend, {runners.BATCH} samples")
+                f"{name} swap backend, {models.BATCH} samples")
 
 
 if __name__ == "__main__":
-    runners.from_args(runner, sys.argv)
+    models.from_args(runner, sys.argv)

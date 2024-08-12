@@ -1,6 +1,6 @@
 import torch
 import ai3
-import runners
+import models
 import sys
 from test import compare_tensors
 
@@ -17,8 +17,8 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
             output = module(input_data)
             compare_tensors(
                 output, target,
-                f"{name} swap conv2d with {algo}, {runners.BATCH} samples")
+                f"{name} swap conv2d with {algo}, {models.BATCH} samples")
 
 
 if __name__ == "__main__":
-    runners.from_args(runner, sys.argv)
+    models.from_args(runner, sys.argv)
