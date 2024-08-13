@@ -75,6 +75,7 @@ def fix_cmd_run(cmd, prefix, replacement):
     cmd = cmd.replace(f'{replacement}.', f'{replacement} ')
     run_command(f"{PY} {cmd}")
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run various development commands")
@@ -110,6 +111,8 @@ if __name__ == "__main__":
             fix_cmd_run(cmd, "scbench", "bench.swap_conv2d")
         elif starts_with_any(cmd, ["sbbench", "bench.swap_backend"]):
             fix_cmd_run(cmd, "sbbench", "bench.swap_backend")
+        elif starts_with_any(cmd, ["bsbench", "bench.backward_step"]):
+            fix_cmd_run(cmd, "bsbench", "bench.backward_step")
         elif cmd.startswith("test"):
             run_command(f"{PY} {cmd}")
         elif cmd.startswith("bench"):
