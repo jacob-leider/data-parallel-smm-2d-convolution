@@ -4,9 +4,10 @@ import ai3
 import textwrap
 import inspect
 
+
 def prune_rst_links_and_remove_args(obj) -> str:
     docstring = inspect.getdoc(obj)
-    assert(docstring)
+    assert (docstring)
 
     docstring = re.sub(r':func:`([^`]+)`', r'*\1*', docstring)
     docstring = re.sub(r':type:`([^`]+)`', r'*\1*', docstring)
@@ -19,8 +20,8 @@ def prune_rst_links_and_remove_args(obj) -> str:
 
     return docstring
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
 
     with open(os.path.join('docs', 'intro.rst'), 'r') as index_file:
         index_content = index_file.read()
@@ -34,7 +35,6 @@ if __name__ == "__main__":
         readme_file.write('\n\n')
 
         sc_doc = prune_rst_links_and_remove_args(ai3.swap_conv2d)
-
 
         readme_file.writelines(['*swap_conv2d*\n',
                                 '~~~~~~~~~~~~~\n',

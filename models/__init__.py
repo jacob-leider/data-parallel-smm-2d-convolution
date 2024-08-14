@@ -70,7 +70,7 @@ def run_all(runner):
     wrapped_run(*regnet(), runner)
     wrapped_run(*resnet(), runner)
     wrapped_run(*shufflenet(), runner)
-    wrapped_run(*simple_created(), runner)
+    wrapped_run(*manual_conv2d(), runner)
     wrapped_run(*squeezenet(), runner)
     wrapped_run(*swintransformer(), runner)
     wrapped_run(*vgg16(), runner)

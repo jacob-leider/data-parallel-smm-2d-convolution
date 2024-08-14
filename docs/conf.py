@@ -12,6 +12,7 @@ parent_directory = os.path.abspath(
     os.path.join(os.path.dirname(__file__), '..'))
 sys.path.append(parent_directory)
 
+
 class PrettyPrintIterable(Directive):
     required_arguments = 1
 
@@ -64,6 +65,6 @@ breathe_projects = {
 }
 breathe_default_project = "ai3"
 
+
 def setup(app):
     app.add_directive('pprint', PrettyPrintIterable)
-

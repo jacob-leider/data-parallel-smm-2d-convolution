@@ -117,9 +117,7 @@ template <typename dtype> class Tensor {
         for (int i = shape.size() - 2; i >= 0; --i) {
             stride[i] = stride[i + 1] * shape[i + 1];
         }
-        return py::buffer_info(data, sizeof(dtype),
-                               py::format_descriptor<dtype>::format(),
-                               shape.size(), shape, stride);
+        return py::buffer_info(data, shape, stride);
     }
 
     /**

@@ -3,8 +3,8 @@ from typing import Mapping, Optional, List, Sequence, Union, DefaultDict, Tuple
 from collections import defaultdict
 import torch
 from torch import nn, fx
-from torch.fx import passes
 from torch.nn import grad
+from torch.fx import passes
 
 
 def mod_to_op(mod: nn.Module) -> str:
@@ -62,7 +62,8 @@ def conv2d(input: torch.Tensor,
         input.shape, weight.data_ptr(),
         weight.shape, bias_ptr, padding_h, padding_w, stride_h, stride_w,
         dilation_h, dilation_w, padding_mode, groups, algorithm)
-    return torch.frombuffer(out, dtype=input.dtype).view(out.shape)
+    buffered = torch.frombuffer(out, dtype=input.dtype).view(out.shape)
+    return buffered.clone() if input.requires_grad else buffered
 
 
 def conv2d_abstract(
@@ -93,7 +94,6 @@ def conv2d_backward(ctx, out_grad):
     input, weight = ctx.saved_tensors
     padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w, padding_mode, groups = ctx.hparams
     del padding_mode
-    grad_input = grad_weight = grad_bias = None
 
     grad_input = grad_weight = grad_bias = None
 
@@ -135,13 +135,14 @@ def conv2d_backward(ctx, out_grad):
 
 
 def setup_context(ctx, inputs, output):
-    input, weight, bias, padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w, padding_mode, groups, algorithm = inputs
+    (input, weight, bias, padding_h, padding_w, stride_h, stride_w,
+     dilation_h, dilation_w, padding_mode, groups, algorithm) = inputs
     del output, algorithm, bias
 
     saved_input = saved_weight = None
     if ctx.needs_input_grad[0] or ctx.needs_input_grad[1] or ctx.needs_input_grad[2]:
-        saved_input = input
-        saved_weight = weight
+        saved_input = input.clone()
+        saved_weight = weight.clone()
     assert not hasattr(ctx, 'hparams')
     ctx.hparams = (padding_h, padding_w, stride_h, stride_w,
                    dilation_h, dilation_w, padding_mode, groups)
