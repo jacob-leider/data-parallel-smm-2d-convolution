@@ -1,8 +1,10 @@
 .. include:: intro.rst
 
+Contents
+--------
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
    python
    cpp

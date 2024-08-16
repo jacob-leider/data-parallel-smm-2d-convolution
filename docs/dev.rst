@@ -1,10 +1,11 @@
 Developer Tools
 ================
 
-*run* Script
-------------
+Testing and Benchmarking
+------------------------
 
-An easy interface for building, testing, benchmarking and more.
+The *run.py* script provides an easy interface for building, testing,
+benchmarking and more.
 
     $ python run.py <command> <command> ...
 
@@ -26,37 +27,35 @@ algorithm. When not performing unit tests, all applicable models in
 algorithms to test in the file performing the tests.
 
 * *test*:
-  Runs all of the following tests for all models in :mod:`models`.
+  Runs all of the following tests
 
 Unit
 ^^^^
 
-* *utest:* and *test.unit*:
-  Runs all unit tests with ``python -m test.unit``
-* *utest.<>:* and *test.unit.<>*:
-  Runs unit tests with for the operation where <> is the operation with
-  ``python -m test.unit.<>``
+* *test.unit*:
+  Runs all unit tests
+* *test.unit.<operation>*:
+  Runs unit tests for the operation
 
 Integration
 ^^^^^^^^^^^
 
-#. Ensures results are equivalent after swapping original *conv2d* modules out of
-   the original *DNN* for the framework's implementations.
+#. Ensures outputs are equivalent before and after after swapping *conv2d*
+   modules for the framework's implementations
 
-   * *sctest:* and *test.swap_conv2d*:
-     Runs ``python -m test.swap_conv2d``
-   * *sctest.<>:* and *test.swap_conv2d.<>*:
-     Runs ``python -m test.swap_conv2d <>``
-     where <> is the model to use from :mod:`models`
+   * *test.swap_conv2d*:
+     Runs test for all :mod:`models`
+   * *test.swap_conv2d.<model>*:
+     Runs test for model from :mod:`models`
 
-#. Ensures results are equivalent after swapping all modules out of the original
-   *DNN* for the framework's implementations.
+#. Ensures outputs are equivalent before and after swapping all modules for the
+   framework's implementations
 
-   * *sbtest:* and *test.swap_backend*:
-     Runs ``python -m test.swap_backend``
-   * *sbtest.<>:* and *test.swap_backend.<>*:
-     Runs ``python -m test.swap_backend <>``
-     where <> is the model to use from :mod:`models`
+   * *test.swap_backend*:
+     Runs test for all :mod:`models`
+
+   * *test.swap_backend.<model>*:
+     Runs test for model from :mod:`models`
 
 Benchmarking
 ~~~~~~~~~~~~
@@ -64,32 +63,32 @@ Benchmarking
 By Layer
 ^^^^^^^^
 
-* *lbench* and *bench.layer*:
-  Shows latency in completing all operation originally
-  and with the framework's implementation
-* *lbench.<>* and *bench.layer.<>*:
-  Shows latency in completing the specified operation originally
-  and with the framework's implementation
+* *bench.layer*:
+  Shows latency for all operations, both original and framework implementations
+
+* *bench.layer.<layer>*:
+  Shows latency for the specified operation, both original and framework implementations
+
 
 By *DNN*
 ^^^^^^^^
 
-* *scbench* and *bench.swap_conv2d*:
-  Shows latency of all *DNNs* in :mod:`models`
-  before and after swapping *conv2d* operations for
-  the framework's implementation
-* *scbench.<>* and *bench.swap_conv2d.<>*:
-  Shows latency of the specific *DNN*, where <> is
-  the *DNN* before and after swapping *conv2d*
-  operations for the framework's implementation
-* *sbbench* and *bench.swap_backend*:
-  Shows latency of all *DNNs* in :mod:`models`
-  before and after swapping all operations for
-  the framework's implementation
-* *sbbench.<>* and *bench.swap_backend.<>*:
-  Shows latency of the specific *DNN*, where <> is
-  the *DNN* before and after swapping all
-  operations for the framework's implementation
+#. Shows latencies before and after after swapping *conv2d*
+   modules for the framework's implementations
+
+   * *bench.swap_conv2d*:
+     Shows latency for all :mod:`models`
+   * *bench.swap_conv2d.<model>*:
+     Shows latency for the model from :mod:`models`
+
+
+#. Shows latencies before and after swapping all modules for the
+   framework's implementations
+
+   * *bench.swap_backend*:
+     Shows latency for all :mod:`models`
+   * *bench.swap_backend.<model>*:
+     Shows latency for the model from :mod:`models`
 
 Documentation
 ~~~~~~~~~~~~~

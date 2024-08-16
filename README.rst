@@ -30,7 +30,8 @@ existing *DNN*.
 *swap_conv2d*
 ~~~~~~~~~~~~~
 Swaps, in-place, conv2d operations out of the existing *DNN* for an implementation of
-the user specified algorithm. If no *AlgorithmicSelector* is given then the default
+the user specified algorithm. After swapping, the same *DNN* can still be trained
+and compiled. If no *AlgorithmicSelector* is given then the default
 algorithm decided by the framework are used.
 
 Example:
@@ -57,7 +58,8 @@ Example:
 *swap_backend*
 ~~~~~~~~~~~~~
 Swaps, in-place, conv2d operations out of the existing *DNN* for an implementation of
-the user specified algorithm. If no *AlgorithmicSelector* is given then the default
+the user specified algorithm. After swapping, the same *DNN* can still be trained
+and compiled. If no *AlgorithmicSelector* is given then the default
 algorithm decided by the framework are used.
 
 Example:
