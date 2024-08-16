@@ -1,13 +1,9 @@
 .DS_Store
 datasets
-build
-*.egg-info
-*.so
 __pycache__
 venv
 .clangd
-CMakeFiles
-.ninja*
+todos.rst
 
 docs/_build
 docs/_templates

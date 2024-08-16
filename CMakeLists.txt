@@ -19,7 +19,6 @@ target_link_libraries(core PRIVATE pybind11::headers)
 target_include_directories(core PRIVATE ${CSRC_DIR})
 
 find_package(CUDAToolkit)
-
 if(CUDAToolkit_FOUND)
     message(STATUS "Using CUDAToolkit")
     set_target_properties(core PROPERTIES

@@ -185,17 +185,12 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
             if constexpr (DEFAULT_TO_CUSTOM_LINEAR) {
                 return linear<dtype>(std::move(input), weight, bias);
             } else {
-#ifdef USE_CUDA_TOOLS
-                return cublas_linear<dtype>(std::move(input), weight, bias,
-                                            ctx);
-#else
-                return _linear<dtype>(std::move(input), weight, bias);
-#endif
+                return _linear<dtype>(std::move(input), weight, bias, ctx);
             }
         } else if (CUSTOM(algorithm)) {
             return linear<dtype>(std::move(input), weight, bias);
         } else if (algorithm == "gemm") {
-            return _linear<dtype>(std::move(input), weight, bias);
+            return _linear<dtype>(std::move(input), weight, bias, ctx);
         }
 
         errs::invalid_algo("linear", algorithm);
@@ -264,7 +259,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
                                      padding_w, stride_h, stride_w, dilation_h,
                                      dilation_w, padding_mode, groups);
             } else {
-#if USE_CUDA_TOOLS
+#ifdef USE_CUDNN_TOOLS
                 return implicit_precomp_gemm_conv2d<dtype>(
                     std::move(input), weight, bias, padding_h, padding_w,
                     stride_h, stride_w, dilation_h, dilation_w, padding_mode,

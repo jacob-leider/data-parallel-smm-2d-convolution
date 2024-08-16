@@ -65,7 +65,7 @@ Linear
    :align: left
 
    * - Algorithm
-     - gemm
+     - *gemm*
    * - *none*
      - |y|
    * - *sycl*

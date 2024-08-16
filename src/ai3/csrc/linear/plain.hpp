@@ -5,7 +5,10 @@
 
 template <typename dtype>
 Tensor<dtype> _linear(Tensor<dtype> input, const Tensor<dtype> &weight,
-                      const std::optional<const Tensor<dtype>> &bias) {
+                      const std::optional<const Tensor<dtype>> &bias,
+                      Context &ctx) {
+    (void)ctx;
+
     errs::bail_if(input.width() != weight.width(),
                   "Invalid matrix multiplication: input width=", input.width(),
                   " weight width=", weight.width());

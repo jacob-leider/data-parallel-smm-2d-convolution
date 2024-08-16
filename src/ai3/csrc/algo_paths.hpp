@@ -2,6 +2,7 @@
 
 #define STRINGIFY(x) #x
 // clang-format off
+#define CUST(file) STRINGIFY(../custom/file.hpp)
 #define CONV2D(file) STRINGIFY(conv2d/file.hpp)
 #define MAXPOOL2D(file) STRINGIFY(maxpool2d/file.hpp)
 #define LINEAR(file) STRINGIFY(linear/file.hpp)
@@ -11,8 +12,8 @@
 #define FLATTEN(file) STRINGIFY(flatten/file.hpp)
 // clang-format on
 
-#include "../custom/conv2d.hpp"
-#if USE_CUDA_TOOLS
+#include CUST(conv2d)
+#ifdef USE_CUDA_TOOLS
 #include CONV2D(gemm_cudnn)
 #include CONV2D(guess_cudnn)
 #include CONV2D(implicit_gemm_cudnn)
@@ -25,7 +26,7 @@
 #include CONV2D(implicit_precomp_gemm_plain)
 #include CONV2D(winograd_plain)
 #endif
-#if defined(USE_SYCL)
+#ifdef USE_SYCL
 #include CONV2D(direct_sycl)
 #include CONV2D(smm_sycl)
 #else
@@ -33,23 +34,23 @@
 #include CONV2D(smm_plain)
 #endif
 
-#include "../custom/linear.hpp"
-#if USE_CUDA_TOOLS
+#include CUST(linear)
+#ifdef USE_CUDA_TOOLS
 #include LINEAR(cublas)
 #endif
 #include LINEAR(plain)
 
-#include "../custom/maxpool2d.hpp"
+#include CUST(maxpool2d)
 #include MAXPOOL2D(plain)
 
-#include "../custom/avgpool2d.hpp"
+#include CUST(avgpool2d)
 #include AVGPOOL2D(plain)
 
-#include "../custom/adaptiveavgpool2d.hpp"
+#include CUST(adaptiveavgpool2d)
 #include ADAPTIVEAVGPOOL2D(plain)
 
-#include "../custom/relu.hpp"
+#include CUST(relu)
 #include RELU(plain)
 
-#include "../custom/flatten.hpp"
+#include CUST(flatten)
 #include FLATTEN(plain)

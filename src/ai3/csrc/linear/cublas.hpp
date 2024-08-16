@@ -5,9 +5,9 @@
 #include <optional>
 
 template <typename dtype>
-Tensor<dtype> cublas_linear(Tensor<dtype> input, const Tensor<dtype> &weight,
-                            const std::optional<const Tensor<dtype>> &bias,
-                            Context &ctx) {
+Tensor<dtype> _linear(Tensor<dtype> input, const Tensor<dtype> &weight,
+                      const std::optional<const Tensor<dtype>> &bias,
+                      Context &ctx) {
     errs::bail_if(input.width() != weight.width(),
                   "Invalid matrix multiplication: input width=", input.width(),
                   " weight width=", weight.width());

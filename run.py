@@ -106,10 +106,12 @@ if __name__ == "__main__":
         elif cmd == "format":
             run_command(f"{C_FORMAT} -i {' '.join(CSRC_FILES)}")
             run_command(f"{PY_FORMAT} {' '.join(PY_FILES)}")
+        elif cmd.startswith('test.unit'):
+            run_command(f'{PY} {cmd}')
         else:
             cmd_found = False
             for start in [
-                'test.ops', 'test.unit', 'test.swap_conv2d',
+                'test.ops', 'test.swap_conv2d',
                 'test.swap_backend', 'bench.backward_step',
                     'bench.swap_conv2d', 'bench.swap_backend', 'bench.compile']:
                 if cmd.startswith(start):
