@@ -56,14 +56,20 @@ def conv2d(input: torch.Tensor,
         bias_ptr = bias.data_ptr()
     else:
         bias_ptr = None
-    out = utils.get_item(
-        input.dtype, core.conv2d_float, core.conv2d_double)(
+
+    requires_grad = False
+    if input.requires_grad or weight.requires_grad or (
+            bias is not None and bias.requires_grad):
+        requires_grad = True
+    out = utils.get_item(input.dtype, core.conv2d_float, core.conv2d_double)(
         input.data_ptr(),
         input.shape, weight.data_ptr(),
         weight.shape, bias_ptr, padding_h, padding_w, stride_h, stride_w,
         dilation_h, dilation_w, padding_mode, groups, algorithm)
-    buffered = torch.frombuffer(out, dtype=input.dtype).view(out.shape)
-    return buffered.clone() if input.requires_grad else buffered
+    buffer = torch.frombuffer(
+        out, dtype=input.dtype, requires_grad=requires_grad).view(
+        out.shape)
+    return buffer.clone() if requires_grad else buffer
 
 
 def conv2d_abstract(
@@ -103,6 +109,7 @@ def conv2d_backward(ctx, out_grad):
         out_grad = out_grad.reshape(
             1, *out_grad.shape)
 
+    # CHECK errors with the params
     if ctx.needs_input_grad[0]:
         grad_input = grad.conv2d_input(
             input.shape, weight, out_grad,

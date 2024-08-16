@@ -3,7 +3,7 @@ from torch import nn
 import ai3
 import platform
 
-PASS_MES = 'Able to use torch.compile with '
+PASS_MES = 'ai3 and torch Models compiled with torch.compile produce same outputs '
 
 
 class ConvNet(nn.Module):
@@ -30,7 +30,7 @@ def compile(orig):
     if platform.system() == 'Darwin':
         return torch.compile(orig, backend='aot_eager')
     else:
-        return torch.compile(orig, mode='reduce-overhead')
+        return torch.compile(orig)
 
 
 def conv2d():

@@ -1,4 +1,4 @@
-from . import backward, compile, opcheck, train
+from . import backward, compile, opcheck, train, run
 import sys
 import ai3  # to initialize the torch.ops.ai3
 _ = ai3
@@ -12,9 +12,6 @@ if len(sys.argv) > 1:
             backward.conv2d()
             train.conv2d()
         else:
-            print(f'Invalid model {arg}')
+            print(f'Invalid op {arg}')
 else:
-    opcheck.conv2d()
-    compile.conv2d()
-    backward.conv2d()
-    train.conv2d()
+    run()

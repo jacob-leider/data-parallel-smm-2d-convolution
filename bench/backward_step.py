@@ -11,7 +11,7 @@ criterion = nn.CrossEntropyLoss()
 
 def time_backward_step(module, input_data, name: str):
     input_data.requires_grad_(True)
-    # module.train() # for some reason this breaks inception check later
+    # module.train() # CHECK for some reason this breaks inception check later
     optimizer = optim.Adam(  # type: ignore
         module.parameters(), lr=0.01)
     optimizer.zero_grad()

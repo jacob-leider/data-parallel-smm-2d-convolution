@@ -70,9 +70,8 @@ def clean_start(cmd, starts):
     assert False and "cleaning with unmatched start"
 
 
-def fix_cmd_run(cmd, prefix, replacement):
-    cmd = cmd.replace(prefix, replacement, 1)
-    cmd = cmd.replace(f'{replacement}.', f'{replacement} ')
+def fix_cmd_run(cmd, starter):
+    cmd = cmd.replace(f'{starter}.', f'{starter} ')
     run_command(f"{PY} {cmd}")
 
 
@@ -95,25 +94,7 @@ if __name__ == "__main__":
             build(dev=True)
         elif cmd.startswith("example"):
             run_command(f"{PY} {cmd}")
-        elif starts_with_any(cmd, ["utest", "test.unit"]):
-            updated_command = cmd.replace("utest", "test.unit", 1)
-            run_command(f"{PY} {updated_command}")
-        elif starts_with_any(cmd, ["lbench", "bench.layers"]):
-            updated_command = cmd.replace("lbench", "bench.layers", 1)
-            run_command(f"{PY} {updated_command}")
-        elif starts_with_any(cmd, ["otest", "test.ops"]):
-            fix_cmd_run(cmd, "otest", "test.ops")
-        elif starts_with_any(cmd, ["sctest", "test.swap_conv2d"]):
-            fix_cmd_run(cmd, "sctest", "test.swap_conv2d")
-        elif starts_with_any(cmd, ["sbtest", "test.swap_backend"]):
-            fix_cmd_run(cmd, "sbtest", "test.swap_backend")
-        elif starts_with_any(cmd, ["scbench", "bench.swap_conv2d"]):
-            fix_cmd_run(cmd, "scbench", "bench.swap_conv2d")
-        elif starts_with_any(cmd, ["sbbench", "bench.swap_backend"]):
-            fix_cmd_run(cmd, "sbbench", "bench.swap_backend")
-        elif starts_with_any(cmd, ["bsbench", "bench.backward_step"]):
-            fix_cmd_run(cmd, "bsbench", "bench.backward_step")
-        elif cmd.startswith("test"):
+        elif cmd == "test":
             run_command(f"{PY} {cmd}")
         elif cmd.startswith("bench"):
             run_command(f"{PY} {cmd}")
@@ -126,5 +107,14 @@ if __name__ == "__main__":
             run_command(f"{C_FORMAT} -i {' '.join(CSRC_FILES)}")
             run_command(f"{PY_FORMAT} {' '.join(PY_FILES)}")
         else:
-            print(f'Error: unsupported command: {cmd}')
-            exit(1)
+            cmd_found = False
+            for start in [
+                'test.ops', 'test.unit', 'test.swap_conv2d',
+                'test.swap_backend', 'bench.backward_step',
+                    'bench.swap_conv2d', 'bench.swap_backend', 'bench.compile']:
+                if cmd.startswith(start):
+                    fix_cmd_run(cmd, start)
+                    break
+            else:
+                print(f'Error: unsupported command: {cmd}')
+                exit(1)

@@ -3,24 +3,24 @@ import ai3
 import torch
 
 
-USE_TORCH_COMPILE = False
-
-
 def warm_up(runner, data):
     data_sample = data[0]
     data_shape = (1,) + data_sample.size()
     runner(data_sample.view(data_shape))
 
 
-def predict_show_time(runner, data, runner_name: str, recur: bool = True):
+def timed_predict(runner, data, grad: bool = False):
     out = None
-    start_time = -1
+    start_time = None
     if isinstance(runner, torch.nn.Module):
         warm_up(runner, data)
-        with torch.inference_mode():
+        if grad:
             start_time = time.time()
-            runner.eval()
             out = runner(data)
+        else:
+            with torch.inference_mode():
+                start_time = time.time()
+                out = runner(data)
     elif isinstance(runner, ai3.Model):
         warm_up(runner, data)
         start_time = time.time()
@@ -31,11 +31,13 @@ def predict_show_time(runner, data, runner_name: str, recur: bool = True):
         assert (False)
     end_time = time.time()
     assert (start_time > 0)
-    inference_time = end_time - start_time
-    print(
-        f"  Time {runner_name}: {inference_time} seconds")
+    latency = end_time - start_time
 
-    if USE_TORCH_COMPILE and isinstance(runner, torch.nn.Module) and recur:
-        predict_show_time(torch.compile(runner), data,
-                          runner_name + " compiled", recur=False)
+    return out, latency
+
+
+def predict_show_time(runner, data, runner_name: str, grad: bool = False):
+    out, latency = timed_predict(runner, data, grad=grad)
+    print(
+        f"  Time {runner_name}: {latency} seconds")
     return out

@@ -23,14 +23,17 @@ def add_fail(mes):
 
 
 def compare_tensors(
-        out_tensor, tar_tensor: torch.Tensor, mes: Optional[str] = None,
+        out_tensor, tar_tensor, mes: Optional[str] = None,
         atol=1e-4, print_pass=True) -> None:
+    assert (isinstance(tar_tensor, torch.Tensor))
     if isinstance(out_tensor, np.ndarray):
         out = out_tensor
     else:
+        if isinstance(out_tensor, torch.Tensor) and out_tensor.requires_grad:
+            out_tensor = out_tensor.detach()
         out = out_tensor.numpy()
-    tar = np.array(tar_tensor)
-    assert (isinstance(out, np.ndarray))
+
+    tar = np.array(tar_tensor.detach())
 
     if np.isnan(tar).any():
         add_fail(mes)
