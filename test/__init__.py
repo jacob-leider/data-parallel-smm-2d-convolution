@@ -46,6 +46,7 @@ def compare_tensors(
         print(
             f'Failed Test `{mes}`, output has NaNs')
         return
+
     if tar.shape != out.shape:
         add_fail(mes)
         print(

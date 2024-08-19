@@ -117,6 +117,7 @@ if __name__ == '__main__':
             cmd_found = False
             for start in [
                 'test.ops', 'test.swap_conv2d', 'test.swap_backend',
+                'test.serialization.pickle', 'test.serialization.deepcopy',
                 'bench.backward_step', 'bench.swap_conv2d',
                     'bench.swap_backend', 'bench.compile']:
                 if cmd.startswith(start):
