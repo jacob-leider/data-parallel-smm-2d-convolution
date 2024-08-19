@@ -1,10 +1,10 @@
 import torch
 import ai3
 from .manual_conv2d import ConvNet
-from typing import Sequence
+from typing import Sequence, Union
 
 
-def conv2d_selector(orig: torch.nn.Conv2d, input_shape: Sequence[int]) -> str:
+def conv2d_selector(orig: Union[torch.nn.Conv2d, ai3.swap_torch.Conv2D], input_shape: Sequence[int]) -> str:
     out_channels = orig.weight.shape[0]
     if (out_channels < 50 and
         input_shape[0] < 50 and
@@ -21,9 +21,16 @@ with torch.inference_mode():
     torch_out = orig(input_data)
     ai3.swap_conv2d(
         orig, conv2d_selector, (3, 224, 224))
-    sc_out = orig(input_data)
+    sc_out_first = orig(input_data)
+
+    ai3.swap_conv2d(
+        orig, conv2d_selector, (3, 512, 512))
+    sc_out_second = orig(input_data)
+
     assert torch.allclose(
-        torch_out, sc_out, atol=1e-6)
+        torch_out, sc_out_first, atol=1e-6)
+    assert torch.allclose(
+        torch_out, sc_out_second, atol=1e-6)
     model = ai3.swap_backend(
         orig, {'conv2d': conv2d_selector, 'maxpool2d': 'default'},
         (3, 224, 224))
