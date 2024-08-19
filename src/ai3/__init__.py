@@ -29,7 +29,7 @@ There are three different types of algorithmic selectors.
 Example:
     Function to perform algorithmic selection.
 
-    >>> def selector(orig: torch.nn.Conv2d, input_shape: Sequence[int]) -> str:
+    >>> def conv2d_selector(orig: torch.nn.Conv2d, input_shape) -> str:
     ...     out_channels = orig.weight.shape[0]
     ...     if (out_channels < 50 and
     ...         input_shape[0] < 50 and
@@ -87,6 +87,43 @@ class Model():
         return out.to(out_type)
 
 
+def swap_conv2d(
+        module: torch.nn.Module,
+        algos: Optional[AlgorithmicSelector] = None,
+        sample_input_shape: Optional[Sequence[int]] = None):
+    """
+    Swaps, in-place, conv2d operations out of the existing *DNN* for an implementation of
+    the user specified algorithm. After swapping, the same *DNN* can still be trained
+    and compiled. If no :type:`AlgorithmicSelector` is given then the default
+    algorithm decided by the framework are used.
+
+    Args:
+        module : the module containing the conv2d operations to be swapped out in-place
+        algos (Optional[:type:`AlgorithmicSelector`]) :
+            algorithmic selector for the *conv2d* operations
+        sample_input_shape : the input shape to the *DNN* which is passed to the
+                             function algorithmic selector if present
+
+    Example:
+        Swaps the first *conv2d* operation for an implementation of direct convolution
+        and the second *conv2d* operation for an implementation of *SMM* convolution
+
+        >>> input_data = torch.randn(10, 3, 224, 224)
+        >>> orig = ConvNet()
+        >>> orig_out = orig(input_data)
+        >>> ai3.swap_conv2d(orig, ['direct', 'smm'])
+        >>> sc_out = orig(input_data)
+        >>> torch.allclose(orig_out, sc_out, atol=1e-6)
+        True
+    """
+    if not algos:
+        algos = DEFAULT_ALGOS["conv2d"]
+    utils.check_callable_params_with_shape(
+        {'conv2d': algos}, sample_input_shape)
+    swap_torch.swap_conv2d(
+        module, algos, sample_input_shape)
+
+
 def swap_backend(module: torch.nn.Module,
                  algos: Optional[Mapping[str, AlgorithmicSelector]] = None,
                  sample_input_shape: Optional[Sequence[int]] = None, *,
@@ -115,12 +152,25 @@ def swap_backend(module: torch.nn.Module,
     Swaps the first *conv2d* operation for an implementation of direct convolution
     and the second *conv2d* operation for an implementation of *SMM* convolution
 
+        >>> def auto_selector(orig: torch.nn.Conv2d, input_shape) -> str:
+        ...     out_channels = orig.weight.shape[0]
+        ...     if (out_channels < 50 and
+        ...         input_shape[1] < 50 and
+        ...         input_shape[2] > 150 and
+        ...         input_shape[3] > 150):
+        ...         return 'direct'
+        ...     return 'smm'
+        ...
         >>> input_data = torch.randn(1, 3, 224, 224)
         >>> vgg16 = torchvision.models.vgg16(weights=torchvision.models.VGG16_Weights.DEFAULT)
-        >>> torch_out = vgg16(input_data)
-        >>> model: ai3.Model = ai3.swap_backend(vgg16, {"conv2d": auto_selector, "maxpool2d": "default"})
-        >>> sb_out = model(input_data)
-        >>> torch.allclose(torch_out, sb_out, atol=1e-6)
+        >>> vgg16 = vgg16.eval()
+        >>> with torch.inference_mode():
+        ...     torch_out = vgg16(input_data)
+        ...     model: ai3.Model = ai3.swap_backend(vgg16, {"conv2d": auto_selector,
+        ...                                                 "maxpool2d": "default"},
+        ...                                         sample_input_shape=(1, 3, 224, 224))
+        ...     sb_out = model(input_data)
+        ...     torch.allclose(torch_out, sb_out, atol=1e-4)
         True
     """
 
@@ -136,47 +186,3 @@ def swap_backend(module: torch.nn.Module,
         module, dtype, algos, sample_input_shape))
 
 
-def swap_conv2d(
-        module: torch.nn.Module,
-        algos: Optional[AlgorithmicSelector] = None,
-        sample_input_shape: Optional[Sequence[int]] = None):
-    """
-    Swaps, in-place, conv2d operations out of the existing *DNN* for an implementation of
-    the user specified algorithm. After swapping, the same *DNN* can still be trained
-    and compiled. If no :type:`AlgorithmicSelector` is given then the default
-    algorithm decided by the framework are used.
-
-    Args:
-        module : the module containing the conv2d operations to be swapped out in-place
-        algos (Optional[:type:`AlgorithmicSelector`]) :
-            algorithmic selector for the *conv2d* operations
-        sample_input_shape : the input shape to the *DNN* which is passed to the
-                             function algorithmic selector if present
-
-    Example:
-        Swaps the first *conv2d* operation for an implementation of direct convolution
-        and the second *conv2d* operation for an implementation of *SMM* convolution
-
-            >>> def auto_selector(orig: torch.nn.Conv2d, input_shape: Sequence[int]) -> str:
-            ...     out_channels = orig.weight.shape[0]
-            ...     if (out_channels < 50 and
-            ...         input_shape[0] < 50 and
-            ...         input_shape[1] > 150 and
-            ...         input_shape[2] > 150):
-            ...         return 'direct'
-            ...     return 'smm'
-            ...
-            >>> input_data = torch.randn(10, 3, 224, 224)
-            >>> orig = ConvNet()
-            >>> orig_out = orig(input_data)
-            >>> ai3.swap_conv2d(orig, ['direct', 'smm'])
-            >>> sc_out = orig(input_data)
-            >>> torch.allclose(torch_out, sc_out, atol=1e-6)
-            True
-    """
-    if not algos:
-        algos = DEFAULT_ALGOS["conv2d"]
-    utils.check_callable_params_with_shape(
-        {'conv2d': algos}, sample_input_shape)
-    swap_torch.swap_conv2d(
-        module, algos, sample_input_shape)

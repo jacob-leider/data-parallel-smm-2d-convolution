@@ -22,6 +22,9 @@ def run_command(command, cwd=None):
         print("Error:", e)
         exit(1)
 
+def run_sphinx(builder, out):
+    run_command(f"sphinx-build -b {builder} docs docs/_build/{out}")
+
 
 def gen_clangd(file_path):
     import pybind11
@@ -86,11 +89,11 @@ if __name__ == "__main__":
             gen_clangd('.clangd')
         elif cmd == "install":
             build()
-        elif cmd == "install_e":
+        elif cmd == "install.e":
             build(editable=True)
-        elif cmd == "install_ev":
+        elif cmd == "install.ev":
             build(editable=True, verbose=True)
-        elif cmd == "install_d":
+        elif cmd == "install.d":
             build(dev=True)
         elif cmd.startswith("example"):
             run_command(f"{PY} {cmd}")
@@ -98,8 +101,11 @@ if __name__ == "__main__":
             run_command(f"{PY} {cmd}")
         elif cmd.startswith("bench"):
             run_command(f"{PY} {cmd}")
+        elif cmd == "doctest":
+            run_sphinx("doctest", "doctest")
         elif cmd == "docs":
-            run_command("sphinx-build -M html docs docs/_build")
+            run_sphinx("doctest", "doctest")
+            run_command("html", "")
             run_command("make html", cwd="docs")
         elif cmd == "readme":
             run_command(f"{PY} docs.gen_readme")

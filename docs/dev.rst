@@ -15,9 +15,9 @@ Installing
 ~~~~~~~~~~
 
 * *install*: Runs ``pip3 install .``
-* *install_e*: Runs ``pip3 install --editable .``
-* *install_ev*: Runs ``pip3 install --editable --verbose .``
-* *install_ev*: Runs ``pip3 install .[dev,doc]``
+* *install.e*: Runs ``pip3 install --editable .``
+* *install.ev*: Runs ``pip3 install --editable --verbose .``
+* *install.ev*: Runs ``pip3 install .[dev,doc]``
 
 Testing
 ~~~~~~~

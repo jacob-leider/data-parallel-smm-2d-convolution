@@ -132,7 +132,7 @@ template <typename dtype> class Tensor {
     }
 
     /**
-     * @param data_dim The number of dimensions required per sample, see
+     * @param input_dims The number of dimensions required per sample, see
      * `sample_dims`
      *
      * @return the number of samples in a batched Tensor

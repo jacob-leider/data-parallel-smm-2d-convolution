@@ -195,7 +195,7 @@ class Conv2D(nn.Module):
             self.bias_data_ptr = None
 
     def forward(self, x: torch.Tensor):
-        return torch.ops.ai3.conv2d(
+        return torch.ops.ai3.conv2d( # type: ignore
             x, self.weight, self.bias, self.padding[0],
             self.padding[1],
             self.stride[0],
@@ -203,7 +203,7 @@ class Conv2D(nn.Module):
             self.dilation[0],
             self.dilation[1],
             int(self.padding_mode),
-            self.groups, self.algorithm)  # type: ignore
+            self.groups, self.algorithm)
 
 
 def get_algo_inc_counter(orig: Union[nn.Module, str],

@@ -44,6 +44,7 @@ release = '0.0.1'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
+    'sphinx.ext.doctest',
     'breathe',
 ]
 
@@ -65,6 +66,13 @@ breathe_projects = {
 }
 breathe_default_project = "ai3"
 
+doctest_global_setup = '''
+import ai3
+import torch
+import torchvision
+from example.manual_conv2d import ConvNet
+'''
 
 def setup(app):
     app.add_directive('pprint', PrettyPrintIterable)
+
