@@ -184,5 +184,3 @@ def swap_backend(module: torch.nn.Module,
         algos, sample_input_shape)
     return Model(dtype, swap_torch.swap_backend_layers(
         module, dtype, algos, sample_input_shape))
-
-

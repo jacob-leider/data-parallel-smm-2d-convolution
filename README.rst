@@ -38,22 +38,13 @@ Example:
     Swaps the first *conv2d* operation for an implementation of direct convolution
     and the second *conv2d* operation for an implementation of *SMM* convolution
 
-        >>> def auto_selector(orig: torch.nn.Conv2d, input_shape: Sequence[int]) -> str:
-        ...     out_channels = orig.weight.shape[0]
-        ...     if (out_channels < 50 and
-        ...         input_shape[0] < 50 and
-        ...         input_shape[1] > 150 and
-        ...         input_shape[2] > 150):
-        ...         return 'direct'
-        ...     return 'smm'
-        ...
-        >>> input_data = torch.randn(10, 3, 224, 224)
-        >>> orig = ConvNet()
-        >>> orig_out = orig(input_data)
-        >>> ai3.swap_conv2d(orig, ['direct', 'smm'])
-        >>> sc_out = orig(input_data)
-        >>> torch.allclose(torch_out, sc_out, atol=1e-6)
-        True
+    >>> input_data = torch.randn(10, 3, 224, 224)
+    >>> orig = ConvNet()
+    >>> orig_out = orig(input_data)
+    >>> ai3.swap_conv2d(orig, ['direct', 'smm'])
+    >>> sc_out = orig(input_data)
+    >>> torch.allclose(orig_out, sc_out, atol=1e-6)
+    True
 
 *swap_backend*
 ~~~~~~~~~~~~~
@@ -66,22 +57,13 @@ Example:
     Swaps the first *conv2d* operation for an implementation of direct convolution
     and the second *conv2d* operation for an implementation of *SMM* convolution
 
-        >>> def auto_selector(orig: torch.nn.Conv2d, input_shape: Sequence[int]) -> str:
-        ...     out_channels = orig.weight.shape[0]
-        ...     if (out_channels < 50 and
-        ...         input_shape[0] < 50 and
-        ...         input_shape[1] > 150 and
-        ...         input_shape[2] > 150):
-        ...         return 'direct'
-        ...     return 'smm'
-        ...
-        >>> input_data = torch.randn(10, 3, 224, 224)
-        >>> orig = ConvNet()
-        >>> orig_out = orig(input_data)
-        >>> ai3.swap_conv2d(orig, ['direct', 'smm'])
-        >>> sc_out = orig(input_data)
-        >>> torch.allclose(torch_out, sc_out, atol=1e-6)
-        True
+    >>> input_data = torch.randn(10, 3, 224, 224)
+    >>> orig = ConvNet()
+    >>> orig_out = orig(input_data)
+    >>> ai3.swap_conv2d(orig, ['direct', 'smm'])
+    >>> sc_out = orig(input_data)
+    >>> torch.allclose(orig_out, sc_out, atol=1e-6)
+    True
 
 Supported Operations, their Algorithms, and Acceleration Platform Compatibility
 -------------------------------------------------------------------------------
@@ -150,7 +132,7 @@ Linear
    :align: left
 
    * - Algorithm
-     - gemm
+     - *gemm*
    * - *none*
      - |y|
    * - *sycl*

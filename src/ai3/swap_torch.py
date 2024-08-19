@@ -195,7 +195,7 @@ class Conv2D(nn.Module):
             self.bias_data_ptr = None
 
     def forward(self, x: torch.Tensor):
-        return torch.ops.ai3.conv2d( # type: ignore
+        return torch.ops.ai3.conv2d(  # type: ignore
             x, self.weight, self.bias, self.padding[0],
             self.padding[1],
             self.stride[0],
