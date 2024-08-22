@@ -2,6 +2,13 @@ from collections.abc import Buffer
 from typing import Sequence, Optional
 from enum import Enum
 
+def using_metal() -> bool:
+    ...
+def using_cuda_tools() -> bool:
+    ...
+def using_sycl() -> bool:
+    ...
+
 class PaddingMode(Enum):
     zeros: int
     reflect: int

@@ -24,7 +24,7 @@ Tensor<dtype> smm_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
     const uint kernel_height = kernel.height();
     const uint kernel_width = kernel.width();
 
-    const uint output_channels = kernel.out_channels();
+    const uint output_channels = kernel.output_channels();
 
     const uint output_height = output_hw_for_2d<dtype>(
         input_height, kernel_height, padding_h, dilation_h, stride_h, false);

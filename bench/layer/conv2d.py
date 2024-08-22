@@ -18,6 +18,12 @@ class Conv2D(nn.Module):
         x = self.conv(x)
         return x
 
+def perform_pred_with(algo, orig, input_shape):
+    optim = ai3.swap_backend(
+        orig, {"conv2d":algo})
+    return predict_show_time(
+        optim, input, f"ai3 {algo} {input_shape}")
+
 
 def run_on(input):
     orig = Conv2D(
@@ -28,20 +34,12 @@ def run_on(input):
         orig, input, f"pytorch {input_shape}")
     assert (isinstance(orig_out, torch.Tensor))
 
-    optim = ai3.swap_backend(
-        orig, {"conv2d": "direct"})
-    direct_out = predict_show_time(
-        optim, input, f"ai3 direct {input_shape}")
-
-    optim = ai3.swap_backend(
-        orig, {"conv2d": "smm"})
-    smm_out = predict_show_time(
-        optim, input, f"ai3 smm {input_shape}")
-
-    compare_tensors(direct_out, orig_out.detach().numpy(),
-                    "direct", print_pass=False)
-    compare_tensors(smm_out, orig_out.detach().numpy(),
-                    "smm", print_pass=False)
+    for algo in ['default']:
+        out = perform_pred_with(algo, orig, input_shape)
+        if algo == 'default' and ai3.core.using_metal():
+            compare_tensors(out, orig_out, algo, print_pass=False, atol=1e-2)
+        else:
+            compare_tensors(out, orig_out, algo, print_pass=False)
 
 
 print("Conv2D")

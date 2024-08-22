@@ -115,6 +115,10 @@ template <typename... Args> [[noreturn]] void bail(Args... args) {
     bail("invalid ", op, " algorithm: ", algo);
 }
 
+inline void warning(const std::string msg) {
+    std::cerr << "warning: " << msg << std::endl;
+}
+
 template <typename... Args> void bail_if(bool check, Args... args) {
     if (check) {
         bail(args...);

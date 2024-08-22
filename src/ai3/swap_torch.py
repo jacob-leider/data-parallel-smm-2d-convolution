@@ -95,7 +95,6 @@ def conv2d_abstract(
         s = (out_c, height, width)
     return torch.empty(s, dtype=input.dtype, device='cpu')
 
-
 def conv2d_backward(ctx, out_grad):
     input, weight = ctx.saved_tensors
     padding_h, padding_w, stride_h, stride_w, dilation_h, dilation_w, padding_mode, groups = ctx.hparams

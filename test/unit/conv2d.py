@@ -3,29 +3,29 @@ import torch.nn.functional as F
 from ai3 import Model
 from ai3.layers import Conv2D
 from test import compare_tensors
-from typing import Union, Sequence
+from typing import Union, Tuple
 
 
 def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int,
          output_channels: int, kernel_height: int, kernel_width: int,
          with_bias: bool = False,
          padding: Union[str,
-                        Union[int, Sequence[int]]] = 1,
-         dilation: Union[int, Sequence[int]] = 1,
-         stride: Union[int, Sequence[int]] = 1,
+                        Union[int, Tuple[int, int]]] = 1,
+         dilation: Union[int, Tuple[int, int]] = 1,
+         stride: Union[int, Tuple[int, int]] = 1,
          groups: int = 1,
          test_name: str) -> None:
     if num_samples:
         input = torch.randn(num_samples, input_channels, in_height,
-                            in_width, dtype=torch.float64)
+                            in_width, dtype=torch.float32)
     else:
         input = torch.randn(input_channels, in_height,
-                            in_width, dtype=torch.float64)
+                            in_width, dtype=torch.float32)
     kernel = torch.randn(output_channels, input_channels // groups,
-                         kernel_height, kernel_width, dtype=torch.float64)
+                         kernel_height, kernel_width, dtype=torch.float32)
     if with_bias:
         bias = torch.randn(
-            output_channels, dtype=torch.float64)
+            output_channels, dtype=torch.float32)
     else:
         bias = None
 
@@ -48,21 +48,45 @@ def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int
 print('CONV2D')
 
 test(input_channels=1,
+     in_height=5,
+     in_width=5,
+     output_channels=1,
+     num_samples=1,
+     padding=0,
+     kernel_height=4,
+     kernel_width=4,
+     test_name='bias no bias no padding')
+
+test(input_channels=1,
      in_height=100,
      in_width=150,
      output_channels=1,
      kernel_height=15,
      kernel_width=12,
      with_bias=True,
+     padding=5,
      test_name='with bias')
 
 test(input_channels=1,
-     in_height=5,
-     in_width=5,
+     in_height=7,
+     in_width=7,
      output_channels=1,
      kernel_height=3,
      kernel_width=3,
-     test_name='basic no bias')
+     padding=0,
+     with_bias=False,
+     dilation=2,
+     test_name='1d dilation')
+
+test(input_channels=4,
+     in_height=30,
+     in_width=40,
+     output_channels=6,
+     kernel_height=7,
+     kernel_width=5,
+     with_bias=True,
+     dilation=(1, 2),
+     test_name='2d dilation')
 
 test(input_channels=4,
      in_height=30,
@@ -107,26 +131,6 @@ test(input_channels=4,
      padding='valid',
      dilation=(1, 2),
      test_name='valid odd kernel')
-
-test(input_channels=4,
-     in_height=30,
-     in_width=40,
-     output_channels=6,
-     kernel_height=7,
-     kernel_width=5,
-     with_bias=True,
-     dilation=(1, 2),
-     test_name='2d dilation')
-
-test(input_channels=4,
-     in_height=30,
-     in_width=40,
-     output_channels=6,
-     kernel_height=7,
-     kernel_width=5,
-     with_bias=True,
-     dilation=3,
-     test_name='1d dilation')
 
 test(input_channels=4,
      in_height=30,

@@ -21,5 +21,5 @@ gemm_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
     (void)padding_mode;
     (void)groups;
     (void)ctx;
-    errs::bail("gemm not implemented outside of cuDNN");
+    errs::bail("gemm conv2d not implemented outside of cuDNN");
 }

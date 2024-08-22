@@ -1,4 +1,4 @@
-// see if can do call once instead of static members
+// TODO see if can do call once instead of static members
 #include "ai3.hpp"
 #include "algo_paths.hpp"
 #include "pybind11/detail/common.h"

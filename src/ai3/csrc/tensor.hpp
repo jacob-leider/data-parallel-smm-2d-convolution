@@ -31,7 +31,7 @@ template <typename dtype> class Tensor {
      * @brief Allocates and copies data to construct a Tensor with the given
      * shape and data
      *
-     * @param data_address Address of the data copied to the Tensor
+     * @param data_address Address of the data to be copied to the Tensor
      * @param s Shape of the tensor
      */
     Tensor(const intptr_t data_address, const std::vector<uint> &s)
@@ -40,6 +40,17 @@ template <typename dtype> class Tensor {
         std::memcpy(data, reinterpret_cast<const dtype *>(data_address),
                     _count(s) * sizeof(dtype));
     }
+
+    /**
+     * @brief Creates a tensor with the given values
+     *
+     * @param data Address of the data
+     * @param s Shape of the tensor
+     * @param own Whether the Tensor owns this data
+     */
+    Tensor(dtype *data, const std::vector<uint> &s, bool own)
+        : data(data), shape(s), owned(own) {}
+
     /**
      * @brief Wraps existing data with a Tensor without allocating or copying
      *
@@ -80,6 +91,21 @@ template <typename dtype> class Tensor {
         } else {
             return std::nullopt;
         }
+    }
+
+    /**
+     * @brief Creates a new tensor from the exsiting with data of specified type
+     *
+     * @tparam target_type The type to which the data should be converted.
+     *
+     * @return Tensor containing the converted data
+     */
+    template <typename target_type> Tensor<target_type> to_type() const {
+        target_type *new_data = new target_type[count()];
+        for (uint i = 0; i < count(); ++i) {
+            new_data[i] = data[i];
+        }
+        return Tensor<target_type>(new_data, shape, true);
     }
 
     Tensor() = default;
@@ -144,7 +170,7 @@ template <typename dtype> class Tensor {
     /**
      * @return Number of output channels of the Tensor
      */
-    inline uint out_channels() const { return shape[shape.size() - 4]; }
+    inline uint output_channels() const { return shape[shape.size() - 4]; }
     /**
      * @return Number of input channels of the Tensor
      */
@@ -181,7 +207,4 @@ template <typename dtype> class Tensor {
         }
         return count;
     }
-
-    Tensor(dtype *data, const std::vector<uint> &s, bool own)
-        : data(data), shape(s), owned(own) {}
 };

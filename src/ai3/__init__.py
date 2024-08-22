@@ -92,13 +92,13 @@ def swap_conv2d(
         algos: Optional[AlgorithmicSelector] = None,
         sample_input_shape: Optional[Sequence[int]] = None):
     """
-    Swaps, in-place, conv2d operations out of the existing *DNN* for an implementation of
+    Swaps, in-place, *conv2d* operations out of the existing *DNN* for an implementation of
     the user specified algorithm. After swapping, the same *DNN* can still be trained
     and compiled. If no :type:`AlgorithmicSelector` is given then the default
     algorithm decided by the framework are used.
 
     Args:
-        module : the module containing the conv2d operations to be swapped out in-place
+        module : the module containing the *conv2d* operations to be swapped out in-place
         algos (Optional[:type:`AlgorithmicSelector`]) :
             algorithmic selector for the *conv2d* operations
         sample_input_shape : the input shape to the *DNN* which is passed to the

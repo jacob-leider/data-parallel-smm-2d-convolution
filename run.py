@@ -42,10 +42,12 @@ def gen_clangd(file_path):
             ['python3-config', '--include']).decode().strip().split()
     ]
     with open(file_path, 'w') as f:
-        f.write('CompileFlags:\n')
-        f.write('  Add:\n')
+        def writeln(mes):
+            f.write(f'{mes}\n')
+        writeln('CompileFlags:')
+        writeln('  Add:')
         for flag in flags:
-            f.write(f'    - \'{flag}\'\n')
+            writeln(f'    - \'{flag}\'')
 
 
 def build(editable: bool = False, verbose: bool = False, dev: bool = False):
@@ -100,13 +102,11 @@ if __name__ == '__main__':
             run_command(f'{PY} {cmd}')
         elif cmd == 'test':
             run_command(f'{PY} {cmd}')
-        elif cmd.startswith('bench'):
-            run_command(f'{PY} {cmd}')
         elif cmd == 'doctest':
             run_sphinx('doctest', 'doctest')
         elif cmd == 'docs':
             run_sphinx('doctest', 'doctest')
-            run_command('html', '')
+            run_sphinx('html', '')
             run_command('make html', cwd='docs')
         elif cmd == 'readme':
             run_command(f'{PY} docs.gen_readme')
