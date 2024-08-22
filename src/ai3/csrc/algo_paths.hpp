@@ -2,8 +2,9 @@
 
 #define STRINGIFY(x) #x
 // clang-format off
-#define CUST(file) STRINGIFY(../custom/file.hpp)
+#define CUSTOM(file) STRINGIFY(../custom/file.hpp)
 #define CONV2D(file) STRINGIFY(conv2d/file.hpp)
+#define OBJC_CONV2D(file) STRINGIFY(conv2d/file.h)
 #define MAXPOOL2D(file) STRINGIFY(maxpool2d/file.hpp)
 #define LINEAR(file) STRINGIFY(linear/file.hpp)
 #define RELU(file) STRINGIFY(relu/file.hpp)
@@ -12,8 +13,8 @@
 #define FLATTEN(file) STRINGIFY(flatten/file.hpp)
 // clang-format on
 
-#include CUST(conv2d)
-#ifdef USE_CUDA_TOOLS
+#include CUSTOM(conv2d)
+#if defined USE_CUDA_TOOLS
 #include CONV2D(gemm_cudnn)
 #include CONV2D(guess_cudnn)
 #include CONV2D(implicit_gemm_cudnn)
@@ -26,31 +27,66 @@
 #include CONV2D(implicit_precomp_gemm_plain)
 #include CONV2D(winograd_plain)
 #endif
-#ifdef USE_SYCL
+#if defined USE_SYCL
 #include CONV2D(direct_sycl)
 #include CONV2D(smm_sycl)
 #else
 #include CONV2D(direct_plain)
 #include CONV2D(smm_plain)
 #endif
+#if defined USE_MPS
+#include OBJC_CONV2D(mps)
+#else
+#include CONV2D(mps)
+#endif
 
-#include CUST(linear)
-#ifdef USE_CUDA_TOOLS
+#include CUSTOM(linear)
+#if defined USE_CUDA_TOOLS
 #include LINEAR(cublas)
 #endif
 #include LINEAR(plain)
 
-#include CUST(maxpool2d)
+#include CUSTOM(maxpool2d)
 #include MAXPOOL2D(plain)
 
-#include CUST(avgpool2d)
+#include CUSTOM(avgpool2d)
 #include AVGPOOL2D(plain)
 
-#include CUST(adaptiveavgpool2d)
+#include CUSTOM(adaptiveavgpool2d)
 #include ADAPTIVEAVGPOOL2D(plain)
 
-#include CUST(relu)
+#include CUSTOM(relu)
 #include RELU(plain)
 
-#include CUST(flatten)
+#include CUSTOM(flatten)
 #include FLATTEN(plain)
+
+#if defined USE_CUDA_TOOLS
+const bool USING_CUDA_TOOLS = true;
+#else
+const bool USING_CUDA_TOOLS = false;
+#endif
+#if defined USE_MPS
+const bool USING_MPS = true;
+#else
+const bool USING_MPS = false;
+#endif
+#if defined USE_SYCL
+const bool USING_SYCL = true;
+#else
+const bool USING_SYCL = false;
+#endif
+
+#undef USE_CUDA_TOOLS
+#undef USE_MPS
+#undef USE_SYCL
+
+#undef STRINGIFY
+#undef CUSTOM
+#undef CONV2D
+#undef MAXPOOL2D
+#undef LINEAR
+#undef RELU
+#undef AVGPOOL2D
+#undef ADAPTIVEAVGPOOL2D
+#undef FLATTEN
