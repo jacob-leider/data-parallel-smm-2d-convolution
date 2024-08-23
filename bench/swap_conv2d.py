@@ -1,6 +1,7 @@
 import torch
 import ai3
 from bench import predict_show_time
+from run import CONV2D_ALGOS_TO_USE
 from test import compare_tensors
 import models
 import sys
@@ -11,7 +12,7 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
         module, input_data, name + " torch")
     assert (isinstance(torch_out, torch.Tensor))
 
-    for algo in ['default', 'direct', 'smm']:
+    for algo in CONV2D_ALGOS_TO_USE:
         ai3.swap_conv2d(module, algo)
         ai3_out = predict_show_time(
             module, input_data, f"{name} ai3 {algo}")

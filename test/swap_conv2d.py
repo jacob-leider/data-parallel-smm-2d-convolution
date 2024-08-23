@@ -3,16 +3,13 @@ import ai3
 import models
 import sys
 from test import compare_tensors
+from run import CONV2D_ALGOS_TO_USE
 
 
 def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
     target = module(input_data)
-    algos = ['default', 'direct', 'smm']
-    if torch.backends.cudnn.is_available():
-        algos.extend(["implicit precomp gemm",
-                     "implicit gemm", "gemm", "guess"])
     with torch.inference_mode():
-        for algo in algos:
+        for algo in CONV2D_ALGOS_TO_USE:
             ai3.swap_conv2d(module, algo)
             output = module(input_data)
             compare_tensors(

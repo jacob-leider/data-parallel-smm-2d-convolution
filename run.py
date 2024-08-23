@@ -13,6 +13,23 @@ CSRC_FILES = [
     if f.suffix in ['.cpp', '.hpp'] and 'venv' not in f.parts]
 PY_FILES = [str(f) for f in Path('.').rglob('*.py') if 'venv' not in f.parts]
 
+CONV2D_ALGOS_TO_USE = ['metal']
+"""The *conv2d* algorithms to use"""
+USE_ALL_POSSIBLE_CONV = False
+"""
+Whether to automatically generate :data:`CONV2D_ALGOS_TO_USE` to contain all
+possible algorithms
+"""
+if USE_ALL_POSSIBLE_CONV:
+    assert len(CONV2D_ALGOS_TO_USE) == 0
+    import ai3.core
+    CONV2D_ALGOS_TO_USE.extend(['direct', 'smm'])
+    if ai3.core.using_metal():
+        CONV2D_ALGOS_TO_USE.append('metal')
+    if ai3.core.using_cuda_tools():
+        CONV2D_ALGOS_TO_USE.extend(['winograd', 'gemm',
+                                  'implicit gemm', 'implicit precomp gemm',
+                                  'guess'])
 
 def run_command(command, cwd=None):
     print(f'Running: {command}')
@@ -105,7 +122,6 @@ if __name__ == '__main__':
         elif cmd == 'doctest':
             run_sphinx('doctest', 'doctest')
         elif cmd == 'docs':
-            run_sphinx('doctest', 'doctest')
             run_sphinx('html', '')
             run_command('make html', cwd='docs')
         elif cmd == 'readme':

@@ -3,6 +3,7 @@ import torch.nn.functional as F
 from ai3 import Model
 from ai3.layers import Conv2D
 from test import compare_tensors
+from run import CONV2D_ALGOS_TO_USE
 from typing import Union, Tuple
 
 
@@ -31,12 +32,8 @@ def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int
 
     torch_output = F.conv2d(input, kernel, bias=bias, dilation=dilation,
                             padding=padding, stride=stride, groups=groups)
-    algos = ['default', 'direct', 'smm']
-    if torch.backends.cudnn.is_available():
-        algos.extend(["implicit precomp gemm",
-                     "implicit gemm", "gemm", "guess"])
 
-    for algo in algos:
+    for algo in CONV2D_ALGOS_TO_USE:
         model = Model(input.dtype, [Conv2D(
             input.dtype, kernel, bias, stride, padding, dilation, 'zeros', 1, algo)])
         out = model.predict(
