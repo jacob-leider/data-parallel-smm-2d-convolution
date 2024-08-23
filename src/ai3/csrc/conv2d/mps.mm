@@ -1,6 +1,5 @@
-#import "mps.h"
-#include "utils.hpp"
-#include <Foundation/Foundation.h>
+// TODO check what is happening on large models
+#import "ai3.hpp"
 #include <MetalPerformanceShadersGraph/MetalPerformanceShadersGraph.h>
 #include <mutex>
 
@@ -9,6 +8,12 @@ const uint MPSTENSOR_RANK = 4;
 inline uint computeMPSAlignOffset(const uint kernel, const uint padding,
                                   const uint dilation = 1) {
     return (((kernel - 1) * dilation + 1) / 2) - padding;
+}
+
+void *gen_mps_graph_device(void) {
+    MPSGraphDevice *device =
+        [MPSGraphDevice deviceWithMTLDevice:MTLCreateSystemDefaultDevice()];
+    return device;
 }
 
 MPSShape *mps_shape(const std::vector<uint> &shape, const bool bias) {
@@ -101,8 +106,7 @@ Tensor<float> metal_conv2d(Tensor<float> input, const Tensor<float> &kernel,
         output = Tensor<float>({output_channels, output_h, output_w});
     }
 
-    MPSGraphDevice *device =
-        [MPSGraphDevice deviceWithMTLDevice:MTLCreateSystemDefaultDevice()];
+    MPSGraphDevice *device = (MPSGraphDevice *)Context::mps_graph_device();
 
     MPSGraph *graph = [MPSGraph new];
     MPSGraphConvolution2DOpDescriptor *conv_desc =

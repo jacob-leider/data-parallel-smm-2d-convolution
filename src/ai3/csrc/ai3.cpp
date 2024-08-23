@@ -1,4 +1,3 @@
-// TODO see if can do call once instead of static members
 #include "ai3.hpp"
 #include "algo_paths.hpp"
 #include "pybind11/detail/common.h"
@@ -187,12 +186,12 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
             if constexpr (DEFAULT_TO_CUSTOM_LINEAR) {
                 return linear<dtype>(std::move(input), weight, bias);
             } else {
-                return _linear<dtype>(std::move(input), weight, bias, ctx);
+                return _linear<dtype>(std::move(input), weight, bias);
             }
         } else if (is_custom(algorithm)) {
             return linear<dtype>(std::move(input), weight, bias);
         } else if (algorithm == "gemm") {
-            return _linear<dtype>(std::move(input), weight, bias, ctx);
+            return _linear<dtype>(std::move(input), weight, bias);
         }
 
         errs::invalid_algo("linear", algorithm);
@@ -201,12 +200,10 @@ template <typename dtype> class Linear : virtual public Layer<dtype> {
     ~Linear() = default;
 
   private:
-    static Context ctx;
     const Tensor<dtype> weight;
     const std::optional<const Tensor<dtype>> bias;
     const std::string algorithm;
 };
-template <typename dtype> Context Linear<dtype>::ctx = Context();
 
 template <typename dtype> class Flatten : virtual public Layer<dtype> {
   public:
@@ -264,7 +261,7 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
                 return implicit_precomp_gemm_conv2d<dtype>(
                     std::move(input), weight, bias, padding_h, padding_w,
                     stride_h, stride_w, dilation_h, dilation_w, padding_mode,
-                    groups, ctx);
+                    groups);
             } else if constexpr (USING_MPS) {
                 return metal_conv2d(std::move(input), weight, bias, padding_h,
                                     padding_w, stride_h, stride_w, dilation_h,
@@ -294,23 +291,23 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
         } else if (algorithm == "implicit precomp gemm") {
             return implicit_precomp_gemm_conv2d<dtype>(
                 std::move(input), weight, bias, padding_h, padding_w, stride_h,
-                stride_w, dilation_h, dilation_w, padding_mode, groups, ctx);
+                stride_w, dilation_h, dilation_w, padding_mode, groups);
         } else if (algorithm == "implicit gemm") {
             return implicit_gemm_conv2d<dtype>(
                 std::move(input), weight, bias, padding_h, padding_w, stride_h,
-                stride_w, dilation_h, dilation_w, padding_mode, groups, ctx);
+                stride_w, dilation_h, dilation_w, padding_mode, groups);
         } else if (algorithm == "gemm") {
             return gemm_conv2d<dtype>(std::move(input), weight, bias, padding_h,
                                       padding_w, stride_h, stride_w, dilation_h,
-                                      dilation_w, padding_mode, groups, ctx);
+                                      dilation_w, padding_mode, groups);
         } else if (algorithm == "winograd") {
             return winograd_conv2d<dtype>(
                 std::move(input), weight, bias, padding_h, padding_w, stride_h,
-                stride_w, dilation_h, dilation_w, padding_mode, groups, ctx);
+                stride_w, dilation_h, dilation_w, padding_mode, groups);
         } else if (algorithm == "guess") {
             return guess_conv2d<dtype>(
                 std::move(input), weight, bias, padding_h, padding_w, stride_h,
-                stride_w, dilation_h, dilation_w, padding_mode, groups, ctx);
+                stride_w, dilation_h, dilation_w, padding_mode, groups);
         }
         errs::invalid_algo("conv2d", algorithm);
     }
@@ -323,7 +320,6 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
     ~Conv2D() = default;
 
   private:
-    static Context ctx;
     const Tensor<dtype> weight;
     const std::optional<const Tensor<dtype>> bias;
     const uint padding_h;
@@ -336,8 +332,6 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
     const uint groups;
     const std::string algorithm;
 };
-
-template <typename dtype> Context Conv2D<dtype>::ctx = Context();
 
 template <typename dtype>
 Tensor<dtype> conv2d_with_algo(
@@ -436,7 +430,7 @@ void define_layer_classes(py::module &m, std::string type_str) {
         .def(py::init<const uint, const int, const std::string>());
 }
 
-PYBIND11_MODULE(core, m) {
+PYBIND11_MODULE(_core, m) {
     define_layer_classes<float>(m, "float");
     define_layer_classes<double>(m, "double");
     py::enum_<PaddingMode>(m, "PaddingMode")
@@ -446,7 +440,7 @@ PYBIND11_MODULE(core, m) {
         .value("circular", PaddingMode::Circular)
         .export_values();
     m.def("output_hw_for_2d", &output_hw_for_2d_no_ceil);
-    m.def("using_metal", [] { return USING_MPS; });
+    m.def("using_mps", [] { return USING_MPS; });
     m.def("using_sycl", [] { return USING_SYCL; });
     m.def("using_cuda_tools", [] { return USING_CUDA_TOOLS; });
 }

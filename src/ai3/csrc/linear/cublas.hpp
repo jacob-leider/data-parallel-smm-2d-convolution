@@ -6,8 +6,7 @@
 
 template <typename dtype>
 Tensor<dtype> _linear(Tensor<dtype> input, const Tensor<dtype> &weight,
-                      const std::optional<const Tensor<dtype>> &bias,
-                      Context &ctx) {
+                      const std::optional<const Tensor<dtype>> &bias) {
     errs::bail_if(input.width() != weight.width(),
                   "Invalid matrix multiplication: input width=", input.width(),
                   " weight width=", weight.width());
@@ -51,7 +50,8 @@ Tensor<dtype> _linear(Tensor<dtype> input, const Tensor<dtype> &weight,
                                    cudaMemcpyHostToDevice, cpy_stream));
     }
 
-    cublasHandle_t handle = ctx.cublas_handle;
+    cublasHandle_t handle = (cublasHandle_t)Context::cublas_handle_t();
+
     const dtype alpha = 1.0, beta = 0.0;
     cudaDataType cublas_dtype = cublas_data_type<dtype>();
 

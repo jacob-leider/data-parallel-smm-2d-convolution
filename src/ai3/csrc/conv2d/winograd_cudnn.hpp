@@ -9,8 +9,7 @@ Tensor<dtype> winograd_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
                               const uint padding_h, const uint padding_w,
                               const uint stride_h, const uint stride_w,
                               const uint dilation_h, const uint dilation_w,
-                              const PaddingMode padding_mode, uint groups,
-                              Context &ctx) {
+                              const PaddingMode padding_mode, uint groups) {
     errs::bail_if(stride_h != 1 || stride_w != 1,
                   "winograd not implemented for stride not equal to 1 "
                   "see `Supported Algorithms for cudnnConvolutionForward() 2D "
@@ -29,5 +28,5 @@ Tensor<dtype> winograd_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
     return conv_bias_forward_with_algo(
         std::move(input), kernel, bias, padding_h, padding_w, stride_h,
         stride_w, dilation_h, dilation_w, padding_mode, groups,
-        CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM, ctx);
+        CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM);
 }

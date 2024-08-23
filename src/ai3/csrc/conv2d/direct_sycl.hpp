@@ -42,7 +42,10 @@ Tensor<dtype> direct_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
         output = Tensor<dtype>({output_channels, output_height, output_width});
     }
 
-    sycl::queue queue(sycl::default_selector_v);
+    // Assuming Context::sycl_queue() returns a void* that actually points to a
+    // sycl::queue
+    sycl::queue *queue_ptr = static_cast<sycl::queue *>(Context::sycl_queue());
+    sycl::queue queue = *queue_ptr;
 
     sycl::buffer<dtype> buf_input(input.data, input.count());
     sycl::buffer<dtype> buf_ker(kernel.data, kernel.count());

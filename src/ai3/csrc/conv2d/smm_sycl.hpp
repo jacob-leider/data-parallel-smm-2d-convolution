@@ -43,7 +43,9 @@ Tensor<dtype> smm_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
 
     uint col_height = input_channels * kernel_height * kernel_width;
     uint col_width = output_height * output_width;
-    sycl::queue queue(sycl::default_selector_v);
+    void *queue_ptr = Context::sycl_queue();
+    sycl::queue *queue_ptr = static_cast<sycl::queue *>(Context::sycl_queue());
+    sycl::queue queue = *queue_ptr;
 
     const bool has_bias = bias.has_value();
     sycl::buffer<dtype> bias_buf =

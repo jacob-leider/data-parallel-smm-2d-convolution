@@ -8,8 +8,8 @@ Tensor<dtype> winograd_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
                               const uint padding_h, const uint padding_w,
                               const uint stride_h, const uint stride_w,
                               const uint dilation_h, const uint dilation_w,
-                              const PaddingMode padding_mode, const uint groups,
-                              Context &ctx) {
+                              const PaddingMode padding_mode,
+                              const uint groups) {
     (void)input;
     (void)kernel;
     (void)bias;
@@ -21,6 +21,5 @@ Tensor<dtype> winograd_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
     (void)dilation_w;
     (void)padding_mode;
     (void)groups;
-    (void)ctx;
     errs::bail("winograd not implemented outside of cuDNN");
 }

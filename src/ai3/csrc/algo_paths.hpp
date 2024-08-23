@@ -43,8 +43,9 @@
 #include CUSTOM(linear)
 #if defined USE_CUDA_TOOLS
 #include LINEAR(cublas)
-#endif
+#else
 #include LINEAR(plain)
+#endif
 
 #include CUSTOM(maxpool2d)
 #include MAXPOOL2D(plain)
@@ -76,10 +77,6 @@ const bool USING_SYCL = true;
 #else
 const bool USING_SYCL = false;
 #endif
-
-#undef USE_CUDA_TOOLS
-#undef USE_MPS
-#undef USE_SYCL
 
 #undef STRINGIFY
 #undef CUSTOM

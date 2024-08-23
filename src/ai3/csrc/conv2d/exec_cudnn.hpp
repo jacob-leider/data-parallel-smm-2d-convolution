@@ -10,12 +10,12 @@ Tensor<dtype> conv_bias_forward_with_algo(
     const uint padding_w, const uint stride_h, const uint stride_w,
     const uint dilation_h, const uint dilation_w,
     const PaddingMode padding_mode, uint groups, cudnnConvolutionFwdAlgo_t algo,
-    Context &ctx, const bool guess = false) {
+    const bool guess = false) {
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
 
-    cudnnHandle_t handle = ctx.cudnn_handle;
+    cudnnHandle_t handle = (cudnnHandle_t)Context::cudnn_handle_t();
     cudaStream_t cpy_stream;
     CUDA_CHECK(cudaStreamCreate(&cpy_stream));
 

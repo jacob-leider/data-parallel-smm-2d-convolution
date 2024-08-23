@@ -115,6 +115,11 @@ template <typename... Args> [[noreturn]] void bail(Args... args) {
     bail("invalid ", op, " algorithm: ", algo);
 }
 
+[[noreturn]] inline void invalid_context_access(const std::string &thing,
+                                                const std::string &platform) {
+    bail("trying to get ", thing, " when ", platform, " is not supported");
+}
+
 inline void warning(const std::string msg) {
     std::cerr << "warning: " << msg << std::endl;
 }
