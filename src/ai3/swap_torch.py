@@ -1,4 +1,4 @@
-from ai3 import core, layers, errors, utils
+from ai3 import _core, layers, errors, utils
 from typing import Mapping, Optional, List, Sequence, Union, DefaultDict, Tuple
 from collections import defaultdict
 import torch
@@ -61,7 +61,7 @@ def conv2d(input: torch.Tensor,
     if input.requires_grad or weight.requires_grad or (
             bias is not None and bias.requires_grad):
         requires_grad = True
-    out = utils.get_item(input.dtype, core.conv2d_float, core.conv2d_double)(
+    out = utils.get_item(input.dtype, _core.conv2d_float, _core.conv2d_double)(
         input.data_ptr(),
         input.shape, weight.data_ptr(),
         weight.shape, bias_ptr, padding_h, padding_w, stride_h, stride_w,
@@ -85,9 +85,9 @@ def conv2d_abstract(
         _, h, w = input.shape
     del bias, padding_mode, groups, algorithm
     out_c = weight.shape[0]
-    height = core.output_hw_for_2d(
+    height = _core.output_hw_for_2d(
         h, weight.shape[2], padding_h, dilation_h, stride_h)
-    width = core.output_hw_for_2d(
+    width = _core.output_hw_for_2d(
         w, weight.shape[3], padding_w, dilation_w, stride_w)
     if n:
         s = (n, out_c, height, width)
@@ -181,10 +181,10 @@ class Conv2D(nn.Module):
             f"invalid padding mode: {orig.padding_mode}")
         self.groups = orig.groups
         self.padding_mode = {
-            'zeros': core.PaddingMode.zeros,
-            'reflect': core.PaddingMode.reflect,
-            'replicate': core.PaddingMode.replicate,
-            'circular': core.PaddingMode.circular
+            'zeros': _core.PaddingMode.zeros,
+            'reflect': _core.PaddingMode.reflect,
+            'replicate': _core.PaddingMode.replicate,
+            'circular': _core.PaddingMode.circular
         }[orig.padding_mode]
         self.weight = orig.weight
         self.bias = orig.bias

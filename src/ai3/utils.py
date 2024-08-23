@@ -20,7 +20,7 @@ AlgorithmicSelector: TypeAlias = Union[str, Sequence[str], Callable]
 SUPPORTED_ALGORITHMS = {
         'conv2d': ['direct', 'smm', 'winograd', 'gemm',
                    'implicit gemm', 'implicit precomp gemm',
-                   'guess', 'metal'],
+                   'guess', 'mps'],
         'linear': ['gemm'],
         'maxpool2d': ['direct'],
         'avgpool2d': ['direct'],

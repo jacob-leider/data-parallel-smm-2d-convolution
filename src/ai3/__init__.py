@@ -8,7 +8,7 @@ existing *DNN*.
 
 import torch
 from typing import Mapping, Optional, Sequence, TypeAlias
-from ai3 import core, utils, layers, swap_torch
+from ai3 import _core, utils, layers, swap_torch
 from ai3.tensor import Tensor
 
 AlgorithmicSelector: TypeAlias = utils.AlgorithmicSelector
@@ -57,7 +57,6 @@ SUPPORTED_ALGORITHMS = utils.SUPPORTED_ALGORITHMS
 See :ref:`supported-operations` for supported acceleration platform by algorithm.
 """
 
-
 class Model():
     """The model which performs the operations using the user specified
     algorithms."""
@@ -65,7 +64,7 @@ class Model():
     def __init__(self, dtype, layers: Sequence[layers.Layer]):
         cores = [layer.core for layer in layers]
         model = utils.get_item(
-            dtype, core.Model_float, core.Model_double)
+            dtype, _core.Model_float, _core.Model_double)
         self.core = model(cores)
 
     def __call__(self, input):
@@ -184,3 +183,13 @@ def swap_backend(module: torch.nn.Module,
         algos, sample_input_shape)
     return Model(dtype, swap_torch.swap_backend_layers(
         module, dtype, algos, sample_input_shape))
+
+def using_mps () -> bool:
+    """Whether the implementations can use *MPS*"""
+    return _core.using_mps()
+def using_sycl() -> bool:
+    """Whether the implementations can use *SYCL*"""
+    return _core.using_sycl()
+def using_cuda_tools() -> bool:
+    """Whether the implementations can use *cuda* toolkit"""
+    return _core.using_cuda_tools()

@@ -9,6 +9,9 @@
 .. doxygenclass:: Tensor
     :members:
 
+.. doxygenclass:: Context
+    :members:
+
 Available Customization With *C++*
 ----------------------------------
 

@@ -1,4 +1,4 @@
-from ai3 import core, utils, errors
+from ai3 import _core, utils, errors
 from typing import Union
 
 
@@ -6,9 +6,9 @@ class Tensor():
     """Simple type which implements the
     `Python Buffer Protocol <https://docs.python.org/3/c-api/buffer.html>`_"""
 
-    def __init__(self, tens: Union[core.Tensor_float, core.Tensor_double]):
+    def __init__(self, tens: Union[_core.Tensor_float, _core.Tensor_double]):
         self.core = tens
-        if isinstance(tens, core.Tensor_float):
+        if isinstance(tens, _core.Tensor_float):
             self.typestr = utils.FLOAT32_STR
         else:
             self.typestr = utils.FLOAT64_STR

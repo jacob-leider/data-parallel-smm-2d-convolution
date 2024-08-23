@@ -78,12 +78,12 @@ MPSTensor feed_tensor(MPSGraph *graph, MPSGraphDevice *device,
     };
 }
 
-Tensor<float> metal_conv2d(Tensor<float> input, const Tensor<float> &kernel,
-                           const std::optional<const Tensor<float>> &bias,
-                           const uint padding_h, const uint padding_w,
-                           const uint stride_h, const uint stride_w,
-                           const uint dilation_h, const uint dilation_w,
-                           const PaddingMode padding_mode, uint groups) {
+Tensor<float> mps_conv2d(Tensor<float> input, const Tensor<float> &kernel,
+                         const std::optional<const Tensor<float>> &bias,
+                         const uint padding_h, const uint padding_w,
+                         const uint stride_h, const uint stride_w,
+                         const uint dilation_h, const uint dilation_w,
+                         const PaddingMode padding_mode, uint groups) {
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
@@ -168,12 +168,12 @@ Tensor<float> metal_conv2d(Tensor<float> input, const Tensor<float> &kernel,
     return output;
 }
 
-Tensor<double> metal_conv2d(Tensor<double> input, const Tensor<double> &kernel,
-                            const std::optional<const Tensor<double>> &bias,
-                            const uint padding_h, const uint padding_w,
-                            const uint stride_h, const uint stride_w,
-                            const uint dilation_h, const uint dilation_w,
-                            const PaddingMode padding_mode, uint groups) {
+Tensor<double> mps_conv2d(Tensor<double> input, const Tensor<double> &kernel,
+                          const std::optional<const Tensor<double>> &bias,
+                          const uint padding_h, const uint padding_w,
+                          const uint stride_h, const uint stride_w,
+                          const uint dilation_h, const uint dilation_w,
+                          const PaddingMode padding_mode, uint groups) {
     Tensor<float> input_float = input.template to_type<float>();
     Tensor<float> kernel_float = kernel.template to_type<float>();
     std::optional<const Tensor<float>> bias_float =
@@ -185,8 +185,8 @@ Tensor<double> metal_conv2d(Tensor<double> input, const Tensor<double> &kernel,
         "precision and back see: "
         "https://developer.apple.com/documentation/metalperformanceshaders/"
         "mpsdatatype");
-    return metal_conv2d(std::move(input_float), kernel_float, bias_float,
-                        padding_h, padding_w, stride_h, stride_w, dilation_h,
-                        dilation_w, padding_mode, groups)
+    return mps_conv2d(std::move(input_float), kernel_float, bias_float,
+                      padding_h, padding_w, stride_h, stride_w, dilation_h,
+                      dilation_w, padding_mode, groups)
         .template to_type<double>();
 }

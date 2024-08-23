@@ -3,6 +3,7 @@ from bench import predict_show_time
 from torch import nn
 import ai3
 from test import compare_tensors
+from run import CONV2D_ALGOS_TO_USE
 
 N = 100
 
@@ -34,12 +35,9 @@ def run_on(input):
         orig, input, f"pytorch {input_shape}")
     assert (isinstance(orig_out, torch.Tensor))
 
-    for algo in ['default']:
+    for algo in CONV2D_ALGOS_TO_USE:
         out = perform_pred_with(algo, orig, input_shape)
-        if algo == 'default' and ai3.core.using_metal():
-            compare_tensors(out, orig_out, algo, print_pass=False, atol=1e-2)
-        else:
-            compare_tensors(out, orig_out, algo, print_pass=False)
+        compare_tensors(out, orig_out, algo, print_pass=False)
 
 
 print("Conv2D")

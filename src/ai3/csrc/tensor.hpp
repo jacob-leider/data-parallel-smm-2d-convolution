@@ -10,7 +10,8 @@
 namespace py = pybind11;
 
 /**
- * @brief Tensor class used for built-in and custom implementations
+ * @brief Used for built-in and custom implementations of common deep learning
+ * operations
  *
  * Represents a multi-dimensional tensor which can be initialized from raw data
  * or constructed from existing data with optional ownership semantics.

@@ -11,6 +11,12 @@ benchmarking and more.
 
 Below are the possible commands and what they do.
 
+To explicitly test a custom algorithm, add ``custom`` to the
+algorithms list.
+
+.. automodule:: run
+   :members:
+
 Installing
 ~~~~~~~~~~
 
@@ -21,11 +27,6 @@ Installing
 
 Testing
 ~~~~~~~
-Tests are ran with all algorithms available to ensure correctness of every
-algorithm. When not performing unit tests, all applicable models in
-:mod:`models` are used. To test a custom algorithm, add "custom" to the
-algorithms to test in the file performing the tests.
-
 * *test*:
   Runs all of the following tests
 
@@ -59,6 +60,9 @@ Integration
 
 Benchmarking
 ~~~~~~~~~~~~
+
+* *bench*:
+  Runs all of the following benchmarks
 
 By Layer
 ^^^^^^^^

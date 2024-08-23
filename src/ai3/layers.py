@@ -5,7 +5,7 @@ from typing import (
     Tuple
 )
 from abc import ABC
-from ai3 import core, errors, utils
+from ai3 import _core, errors, utils
 from ai3.tensor import Tensor
 
 
@@ -21,7 +21,7 @@ class Conv2D(Layer):
             self, dtype, weight, bias, _stride: Union[int, Tuple[int, ...]],
             padding: Union[str, Union[int, Tuple[int, ...]]],
             _dilation: Union[int, Tuple[int, ...]],
-            padding_mode: Union[str, int, core.PaddingMode],
+            padding_mode: Union[str, int, _core.PaddingMode],
             groups: int, algorithm: str):
         stride = utils.make_2d(_stride)
         dilation = utils.make_2d(_dilation)
@@ -32,11 +32,11 @@ class Conv2D(Layer):
                 padding_mode
                 not in ['zeros', 'reflect', 'replicate', 'circular'],
                 f"invalid padding mode: {padding_mode}")
-            padding_mode = core.PaddingMode({
-                'zeros': core.PaddingMode.zeros,
-                'reflect': core.PaddingMode.reflect,
-                'replicate': core.PaddingMode.replicate,
-                'circular': core.PaddingMode.circular
+            padding_mode = _core.PaddingMode({
+                'zeros': _core.PaddingMode.zeros,
+                'reflect': _core.PaddingMode.reflect,
+                'replicate': _core.PaddingMode.replicate,
+                'circular': _core.PaddingMode.circular
             }[padding_mode])
 
         weight_addr = utils.get_address(weight)
@@ -45,8 +45,8 @@ class Conv2D(Layer):
             bias_addr = utils.get_address(bias)
         else:
             bias_addr = None
-        self.core = utils.get_item(dtype, core.Conv2D_float,
-                                   core.Conv2D_double)(weight_addr,
+        self.core = utils.get_item(dtype, _core.Conv2D_float,
+                                   _core.Conv2D_double)(weight_addr,
                                                        weight_shape,
                                                        bias_addr,
                                                        padding[0],
@@ -55,7 +55,7 @@ class Conv2D(Layer):
                                                        stride[1],
                                                        dilation[0],
                                                        dilation[1],
-                                                       padding_mode,
+                                                       _core.PaddingMode(padding_mode),
                                                        groups,
                                                        algorithm)
 
@@ -78,14 +78,14 @@ class Linear(Layer):
         else:
             bias_addr = None
         self.core = utils.get_item(
-            dtype, core.Linear_float, core.Linear_double)(
+            dtype, _core.Linear_float, _core.Linear_double)(
             weight_addr, weight_shape, bias_addr, algorithm)
 
 
 class ReLU(Layer):
     def __init__(self, dtype, algorithm: str):
         layer = utils.get_item(
-            dtype, core.ReLU_float, core.ReLU_double)
+            dtype, _core.ReLU_float, _core.ReLU_double)
         self.core = layer(algorithm)
 
 
@@ -103,7 +103,7 @@ class MaxPool2D(Layer):
         ceil_mode = ceil_mode
 
         self.core = utils.get_item(
-            dtype, core.MaxPool2D_float, core.MaxPool2D_double)(
+            dtype, _core.MaxPool2D_float, _core.MaxPool2D_double)(
             kernel_shape[0],
             kernel_shape[1],
             padding[0],
@@ -128,7 +128,7 @@ class AvgPool2D(Layer):
         kernel_shape = utils.make_2d(kernel_shape)
 
         self.core = utils.get_item(
-            dtype, core.AvgPool2D_float, core.AvgPool2D_double)(
+            dtype, _core.AvgPool2D_float, _core.AvgPool2D_double)(
             kernel_shape[0],
             kernel_shape[1],
             padding_2d[0],
@@ -148,12 +148,12 @@ class AdaptiveAvgPool2D(Layer):
                 output_shape)
         elif output_shape is None:
             output_shape = [None, None]
-        self.core = utils.get_item(dtype, core.AdaptiveAvgPool2D_float, core.AdaptiveAvgPool2D_double)(
+        self.core = utils.get_item(dtype, _core.AdaptiveAvgPool2D_float, _core.AdaptiveAvgPool2D_double)(
             output_shape[0], output_shape[1], algorithm)
 
 
 class Flatten(Layer):
     def __init__(self, dtype, start_dim: int, end_dim: int, algorithm: str):
         self.core = utils.get_item(
-            dtype, core.Flatten_float, core.Flatten_double)(
+            dtype, _core.Flatten_float, _core.Flatten_double)(
             start_dim, end_dim, algorithm)

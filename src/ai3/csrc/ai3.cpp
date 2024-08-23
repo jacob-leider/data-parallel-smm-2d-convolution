@@ -263,9 +263,9 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
                     stride_h, stride_w, dilation_h, dilation_w, padding_mode,
                     groups);
             } else if constexpr (USING_MPS) {
-                return metal_conv2d(std::move(input), weight, bias, padding_h,
-                                    padding_w, stride_h, stride_w, dilation_h,
-                                    dilation_w, padding_mode, groups);
+                return mps_conv2d(std::move(input), weight, bias, padding_h,
+                                  padding_w, stride_h, stride_w, dilation_h,
+                                  dilation_w, padding_mode, groups);
             } else {
                 return direct_conv2d<dtype>(std::move(input), weight, bias,
                                             padding_h, padding_w, stride_h,
@@ -276,10 +276,10 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
             return conv2d<dtype>(std::move(input), weight, bias, padding_h,
                                  padding_w, stride_h, stride_w, dilation_h,
                                  dilation_w, padding_mode, groups);
-        } else if (algorithm == "metal") {
-            return metal_conv2d(std::move(input), weight, bias, padding_h,
-                                padding_w, stride_h, stride_w, dilation_h,
-                                dilation_w, padding_mode, groups);
+        } else if (algorithm == "mps") {
+            return mps_conv2d(std::move(input), weight, bias, padding_h,
+                              padding_w, stride_h, stride_w, dilation_h,
+                              dilation_w, padding_mode, groups);
         } else if (algorithm == "direct") {
             return direct_conv2d<dtype>(
                 std::move(input), weight, bias, padding_h, padding_w, stride_h,
