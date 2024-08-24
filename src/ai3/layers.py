@@ -45,19 +45,16 @@ class Conv2D(Layer):
             bias_addr = utils.get_address(bias)
         else:
             bias_addr = None
-        self.core = utils.get_item(dtype, _core.Conv2D_float,
-                                   _core.Conv2D_double)(weight_addr,
-                                                       weight_shape,
-                                                       bias_addr,
-                                                       padding[0],
-                                                       padding[1],
-                                                       stride[0],
-                                                       stride[1],
-                                                       dilation[0],
-                                                       dilation[1],
-                                                       _core.PaddingMode(padding_mode),
-                                                       groups,
-                                                       algorithm)
+        self.core = utils.get_item(
+            dtype, _core.Conv2D_float, _core.Conv2D_double)(
+            weight_addr, weight_shape, bias_addr, padding[0],
+            padding[1],
+            stride[0],
+            stride[1],
+            dilation[0],
+            dilation[1],
+            _core.PaddingMode(padding_mode),
+            groups, algorithm)
 
     def set_algo(self, algo: str):
         self.core.algorithm = algo
@@ -148,8 +145,12 @@ class AdaptiveAvgPool2D(Layer):
                 output_shape)
         elif output_shape is None:
             output_shape = [None, None]
-        self.core = utils.get_item(dtype, _core.AdaptiveAvgPool2D_float, _core.AdaptiveAvgPool2D_double)(
-            output_shape[0], output_shape[1], algorithm)
+        self.core = utils.get_item(
+            dtype, _core.AdaptiveAvgPool2D_float, _core.
+            AdaptiveAvgPool2D_double)(
+            output_shape[0],
+            output_shape[1],
+            algorithm)
 
 
 class Flatten(Layer):

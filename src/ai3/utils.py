@@ -18,17 +18,17 @@ FLOAT64_STR = 'float64'
 AlgorithmicSelector: TypeAlias = Union[str, Sequence[str], Callable]
 
 SUPPORTED_ALGORITHMS = {
-        'conv2d': ['direct', 'smm', 'winograd', 'gemm',
-                   'implicit gemm', 'implicit precomp gemm',
-                   'guess', 'mps'],
-        'linear': ['gemm'],
-        'maxpool2d': ['direct'],
-        'avgpool2d': ['direct'],
-        'adaptiveavgpool2d': ['direct'],
-        'linear': ['direct'],
-        'relu': ['direct'],
-        'flatten': ['direct'],
-        }
+    'conv2d': ['direct', 'smm', 'winograd', 'gemm',
+               'implicit gemm', 'implicit precomp gemm',
+               'guess', 'mps', 'metal'],
+    'linear': ['gemm'],
+    'maxpool2d': ['direct'],
+    'avgpool2d': ['direct'],
+    'adaptiveavgpool2d': ['direct'],
+    'linear': ['direct'],
+    'relu': ['direct'],
+    'flatten': ['direct'],
+}
 DEFAULT_OPTION = 'default'
 for key in SUPPORTED_ALGORITHMS:
     SUPPORTED_ALGORITHMS[key].append(DEFAULT_OPTION)

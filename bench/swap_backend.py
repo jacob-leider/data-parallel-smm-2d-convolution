@@ -13,7 +13,7 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
         module, input_data, name + " torch")
     for algo in CONV2D_ALGOS_TO_USE:
         try:
-            ai3_model = ai3.swap_backend(module, {'conv2d':algo})
+            ai3_model = ai3.swap_backend(module, {'conv2d': algo})
         except UnsupportedCallableError as e:
             print(f"  {e} so skipping")
             return

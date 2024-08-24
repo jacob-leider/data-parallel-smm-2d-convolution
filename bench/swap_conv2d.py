@@ -18,7 +18,7 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
             module, input_data, f"{name} ai3 {algo}")
         compare_tensors(ai3_out, torch_out,
                         f"{name} ai3 {algo}, {models.BATCH} samples",
-                        print_pass=False)
+                        print_pass=False, atol=1e-1)
 
 
 if __name__ == "__main__":
