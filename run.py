@@ -13,7 +13,7 @@ CSRC_FILES = [
     if f.suffix in ['.cpp', '.hpp'] and 'venv' not in f.parts]
 PY_FILES = [str(f) for f in Path('.').rglob('*.py') if 'venv' not in f.parts]
 
-CONV2D_ALGOS_TO_USE = ['mps']
+CONV2D_ALGOS_TO_USE = ['mps', 'metal']
 """The *conv2d* algorithms to use"""
 USE_ALL_POSSIBLE_CONV = False
 """
@@ -28,8 +28,9 @@ if USE_ALL_POSSIBLE_CONV:
         CONV2D_ALGOS_TO_USE.append('mps')
     if ai3.using_cuda_tools():
         CONV2D_ALGOS_TO_USE.extend(['winograd', 'gemm',
-                                  'implicit gemm', 'implicit precomp gemm',
-                                  'guess'])
+                                    'implicit gemm', 'implicit precomp gemm',
+                                    'guess'])
+
 
 def run_command(command, cwd=None):
     print(f'Running: {command}')

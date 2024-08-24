@@ -36,8 +36,10 @@
 #endif
 #if defined USE_MPS
 #include OBJC_CONV2D(mps)
+#include OBJC_CONV2D(metal)
 #else
 #include CONV2D(mps)
+#include CONV2D(metal)
 #endif
 
 #include CUSTOM(linear)

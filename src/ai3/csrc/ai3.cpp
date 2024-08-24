@@ -280,6 +280,10 @@ template <typename dtype> class Conv2D : virtual public Layer<dtype> {
             return mps_conv2d(std::move(input), weight, bias, padding_h,
                               padding_w, stride_h, stride_w, dilation_h,
                               dilation_w, padding_mode, groups);
+        } else if (algorithm == "metal") {
+            return metal_conv2d(std::move(input), weight, bias, padding_h,
+                                padding_w, stride_h, stride_w, dilation_h,
+                                dilation_w, padding_mode, groups);
         } else if (algorithm == "direct") {
             return direct_conv2d<dtype>(
                 std::move(input), weight, bias, padding_h, padding_w, stride_h,

@@ -20,5 +20,5 @@ Tensor<dtype> mps_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
     (void)dilation_w;
     (void)padding_mode;
     (void)groups;
-    errs::bail("metal support required to use the metal algorithm");
+    errs::bail("mps support required to use the mps algorithm");
 }

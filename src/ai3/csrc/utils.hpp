@@ -124,6 +124,15 @@ inline void warning(const std::string msg) {
     std::cerr << "warning: " << msg << std::endl;
 }
 
+inline void mps_metal_unsupported_double() {
+    errs::warning(
+        "MPS/metal does not support double precision, transforming tensors to "
+        "float "
+        "precision and back see: "
+        "https://developer.apple.com/documentation/metalperformanceshaders/"
+        "mpsdatatype");
+}
+
 template <typename... Args> void bail_if(bool check, Args... args) {
     if (check) {
         bail(args...);

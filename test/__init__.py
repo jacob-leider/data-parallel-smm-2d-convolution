@@ -24,7 +24,9 @@ def add_fail(mes):
 
 def compare_tensors(
         out_tensor, tar_tensor, mes: Optional[str] = None,
-        atol=1e-4, print_pass=True) -> None:
+        atol: Optional[float] = 1e-4, print_pass=True) -> None:
+    if atol is None:
+        atol = 1e-4
     assert (isinstance(tar_tensor, torch.Tensor))
     if isinstance(out_tensor, np.ndarray):
         out = out_tensor

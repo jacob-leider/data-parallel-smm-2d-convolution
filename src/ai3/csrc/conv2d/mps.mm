@@ -1,7 +1,10 @@
-// TODO check what is happening on large models
 #import "ai3.hpp"
+#include "utils.hpp"
 #include <MetalPerformanceShadersGraph/MetalPerformanceShadersGraph.h>
 #include <mutex>
+
+uint count = 0;
+double total = 0;
 
 const uint MPSTENSOR_RANK = 4;
 
@@ -16,8 +19,19 @@ void *gen_mps_graph_device(void) {
     return device;
 }
 
+void *gen_mps_graph(void) {
+    MPSGraph *graph = [MPSGraph new];
+    return graph;
+}
+
+void release_mps_graph(void *g) {
+    MPSGraph *graph = (MPSGraph *)g;
+    [graph release];
+}
+
 MPSShape *mps_shape(const std::vector<uint> &shape, const bool bias) {
-    NSMutableArray *ret = [NSMutableArray arrayWithCapacity:MPSTENSOR_RANK];
+    NSMutableArray *ret =
+        [[[NSMutableArray alloc] initWithCapacity:MPSTENSOR_RANK] autorelease];
     uint i = 0;
     uint shift = 0;
     if (bias) {
@@ -52,30 +66,28 @@ MPSGraphTensorData *output_tensor_data(MPSGraphDevice *device,
                           length:sizeof(float) * tens.count()
                          options:MTLResourceStorageModeShared
                      deallocator:nil];
-    MPSGraphTensorData *output_data =
-        [[MPSGraphTensorData alloc] initWithMTLBuffer:output_buffer
-                                                shape:[placeholder shape]
-                                             dataType:MPSDataTypeFloat32];
+    MPSGraphTensorData *output_data = [[[MPSGraphTensorData alloc]
+        initWithMTLBuffer:output_buffer
+                    shape:[placeholder shape]
+                 dataType:MPSDataTypeFloat32] autorelease];
     return output_data;
 }
 
+// oihw -> nchw
+// hwio -> nhwc
 MPSTensor feed_tensor(MPSGraph *graph, MPSGraphDevice *device,
                       const Tensor<float> &tens, const bool bias = false) {
     MPSGraphTensor *placeholder =
         [graph placeholderWithShape:mps_shape(tens.shape, bias)
                            dataType:MPSDataTypeFloat32
                                name:nil];
-    MPSGraphTensorData *data = [[MPSGraphTensorData alloc]
+    MPSGraphTensorData *data = [[[MPSGraphTensorData alloc]
         initWithDevice:device
-                  data:[NSData dataWithBytesNoCopy:tens.data
-                                            length:sizeof(float) * tens.count()]
-
+                  data:[NSData dataWithBytes:tens.data
+                                      length:sizeof(float) * tens.count()]
                  shape:[placeholder shape]
-              dataType:MPSDataTypeFloat32];
-    return MPSTensor{
-        placeholder,
-        data,
-    };
+              dataType:MPSDataTypeFloat32] autorelease];
+    return MPSTensor{placeholder, data};
 }
 
 Tensor<float> mps_conv2d(Tensor<float> input, const Tensor<float> &kernel,
@@ -106,65 +118,68 @@ Tensor<float> mps_conv2d(Tensor<float> input, const Tensor<float> &kernel,
         output = Tensor<float>({output_channels, output_h, output_w});
     }
 
-    MPSGraphDevice *device = (MPSGraphDevice *)Context::mps_graph_device();
+    @autoreleasepool {
+        MPSGraphDevice *device = (MPSGraphDevice *)gen_mps_graph_device();
+        // MPSGraph *graph = (MPSGraph *)Context::mps_graph();
+        MPSGraph *graph = [[MPSGraph new] autorelease];
+        MPSGraphConvolution2DOpDescriptor *conv_desc =
+            [[MPSGraphConvolution2DOpDescriptor alloc] autorelease];
+        conv_desc.strideInY = stride_h;
+        conv_desc.strideInX = stride_w;
+        conv_desc.dilationRateInY = dilation_h;
+        conv_desc.dilationRateInX = dilation_w;
+        conv_desc.paddingTop = padding_h;
+        conv_desc.paddingBottom = padding_h;
+        conv_desc.paddingLeft = padding_w;
+        conv_desc.paddingRight = padding_w;
+        conv_desc.dataLayout = MPSGraphTensorNamedDataLayoutNCHW;
+        conv_desc.weightsLayout = MPSGraphTensorNamedDataLayoutOIHW;
+        conv_desc.groups = 1;
 
-    MPSGraph *graph = [MPSGraph new];
-    MPSGraphConvolution2DOpDescriptor *conv_desc =
-        [MPSGraphConvolution2DOpDescriptor new];
-    conv_desc.strideInY = stride_h;
-    conv_desc.strideInX = stride_w;
-    conv_desc.dilationRateInY = dilation_h;
-    conv_desc.dilationRateInX = dilation_w;
-    conv_desc.paddingTop = padding_h;
-    conv_desc.paddingBottom = padding_h;
-    conv_desc.paddingLeft = padding_w;
-    conv_desc.paddingRight = padding_w;
-    conv_desc.dataLayout = MPSGraphTensorNamedDataLayoutNCHW;
-    conv_desc.weightsLayout = MPSGraphTensorNamedDataLayoutOIHW;
-    conv_desc.groups = 1;
+        MPSTensor in_tens = feed_tensor(graph, device, input);
 
-    MPSTensor in_tens = feed_tensor(graph, device, input);
+        MPSTensor kern_tens = feed_tensor(graph, device, kernel);
+        MPSGraphTensor *output_tensor =
+            [graph convolution2DWithSourceTensor:in_tens.placeholder
+                                   weightsTensor:kern_tens.placeholder
+                                      descriptor:conv_desc
+                                            name:nil];
 
-    MPSTensor kern_tens = feed_tensor(graph, device, kernel);
+        std::optional<MPSTensor> bias_tens = std::nullopt;
+        const bool has_bias = bias.has_value();
+        if (has_bias) {
+            bias_tens = feed_tensor(graph, device, *bias, true);
+            output_tensor =
+                [graph additionWithPrimaryTensor:output_tensor
+                                 secondaryTensor:bias_tens->placeholder
+                                            name:nil];
+        }
+        MPSGraphTensorData *output_data =
+            output_tensor_data(device, output_tensor, output);
 
-    MPSGraphTensor *output_tensor =
-        [graph convolution2DWithSourceTensor:in_tens.placeholder
-                               weightsTensor:kern_tens.placeholder
-                                  descriptor:conv_desc
-                                        name:nil];
+        NSMutableDictionary *feeds =
+            [[[NSMutableDictionary alloc] initWithCapacity:3] autorelease];
+        feeds[in_tens.placeholder] = in_tens.data;
+        feeds[kern_tens.placeholder] = kern_tens.data;
 
-    std::optional<MPSTensor> bias_tens = std::nullopt;
-    const bool has_bias = bias.has_value();
-    if (has_bias) {
-        bias_tens = feed_tensor(graph, device, *bias, true);
-        output_tensor = [graph additionWithPrimaryTensor:output_tensor
-                                         secondaryTensor:bias_tens->placeholder
-                                                    name:nil];
+        if (has_bias) {
+            feeds[bias_tens->placeholder] = bias_tens->data;
+        }
+
+        id<MTLCommandQueue> command_queue =
+            [[[device metalDevice] newCommandQueue] autorelease];
+        MPSCommandBuffer *command_buffer =
+            [MPSCommandBuffer commandBufferFromCommandQueue:command_queue];
+
+        [graph encodeToCommandBuffer:command_buffer
+                               feeds:feeds
+                    targetOperations:nil
+                   resultsDictionary:@{output_tensor : output_data}
+                 executionDescriptor:
+                     [[MPSGraphExecutionDescriptor new] autorelease]];
+        [command_buffer commit];
+        [command_buffer waitUntilCompleted];
     }
-    MPSGraphTensorData *output_data =
-        output_tensor_data(device, output_tensor, output);
-
-    NSMutableDictionary *feeds =
-        [[[NSMutableDictionary alloc] initWithCapacity:3] autorelease];
-    feeds[in_tens.placeholder] = in_tens.data;
-    feeds[kern_tens.placeholder] = kern_tens.data;
-
-    if (has_bias) {
-        feeds[bias_tens->placeholder] = bias_tens->data;
-    }
-
-    id<MTLCommandQueue> command_queue = [[device metalDevice] newCommandQueue];
-    MPSCommandBuffer *command_buffer =
-        [MPSCommandBuffer commandBufferFromCommandQueue:command_queue];
-
-    [graph encodeToCommandBuffer:command_buffer
-                           feeds:feeds
-                targetOperations:nil
-               resultsDictionary:@{output_tensor : output_data}
-             executionDescriptor:[MPSGraphExecutionDescriptor new]];
-    [command_buffer commit];
-    [command_buffer waitUntilCompleted];
-
     return output;
 }
 
@@ -174,17 +189,14 @@ Tensor<double> mps_conv2d(Tensor<double> input, const Tensor<double> &kernel,
                           const uint stride_h, const uint stride_w,
                           const uint dilation_h, const uint dilation_w,
                           const PaddingMode padding_mode, uint groups) {
+    errs::mps_metal_unsupported_double();
+
     Tensor<float> input_float = input.template to_type<float>();
     Tensor<float> kernel_float = kernel.template to_type<float>();
     std::optional<const Tensor<float>> bias_float =
         bias.has_value()
             ? std::optional<Tensor<float>>(bias->template to_type<float>())
             : std::nullopt;
-    errs::warning(
-        "MPS does not support double precision, transforming tensors to float "
-        "precision and back see: "
-        "https://developer.apple.com/documentation/metalperformanceshaders/"
-        "mpsdatatype");
     return mps_conv2d(std::move(input_float), kernel_float, bias_float,
                       padding_h, padding_w, stride_h, stride_w, dilation_h,
                       dilation_w, padding_mode, groups)

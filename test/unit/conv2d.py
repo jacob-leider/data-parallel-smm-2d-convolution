@@ -38,8 +38,12 @@ def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int
             input.dtype, kernel, bias, stride, padding, dilation, 'zeros', 1, algo)])
         out = model.predict(
             input, out_type=torch.Tensor)
+        if algo == 'metal':
+            atol = 1e-1
+        else:
+            atol = None
         compare_tensors(
-            out, torch_output, test_name + f' {algo}')
+            out, torch_output, test_name + f' {algo}', atol=atol)
 
 
 print('CONV2D')

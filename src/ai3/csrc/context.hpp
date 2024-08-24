@@ -13,6 +13,10 @@ using namespace cl;
 
 #if defined USE_MPS
 void *gen_mps_graph_device(void);
+void *gen_mps_graph(void);
+void *gen_mtl_device(void);
+void release_mtl_device(void *dev);
+void release_mps_graph(void *g);
 #endif
 
 /**
@@ -35,7 +39,45 @@ class Context {
     }
 #else
     inline static void *mps_graph_device() {
-        errs::bail("trying to get mps graph device when mps not supported");
+        errs::invalid_context_access("mps graph device", "mps");
+    }
+#endif
+
+    /**
+     * @brief Returns the cached `MPSGraph`, initializing it if
+     * necessary
+     */
+#if USE_MPS
+    inline static void *mps_graph() {
+        if (mps_g_init) {
+            return mps_g;
+        }
+        mps_g = gen_mps_graph();
+        mps_g_init = true;
+        return mps_g;
+    }
+#else
+    inline static void *mps_graph() {
+        errs::invalid_context_access("mps graph", "mps");
+    }
+#endif
+
+    /**
+     * @brief Returns the cached `MTLDevice`, initializing it if
+     * necessary
+     */
+#if USE_MPS
+    inline static void *mtl_device() {
+        if (mtl_d_init) {
+            return mtl_d;
+        }
+        mtl_d = gen_mtl_device();
+        mtl_d_init = true;
+        return mtl_d;
+    }
+#else
+    inline static void *mtl_device() {
+        errs::invalid_context_access("metal device", "metal");
     }
 #endif
 
@@ -105,12 +147,24 @@ class Context {
             CUBLAS_CHECK(cublasDestroy(cublas_handle));
         }
 #endif
+#if defined USE_MPS
+        if (mps_g_init) {
+            release_mps_graph(mps_g);
+        }
+        if (mtl_d_init) {
+            release_mtl_device(mtl_d);
+        }
+#endif
     }
 
   private:
 #if defined USE_MPS
     inline static void *mps_g_device = nullptr;
     inline static bool mps_device_init = false;
+    inline static void *mps_g = nullptr;
+    inline static bool mps_g_init = false;
+    inline static void *mtl_d = nullptr;
+    inline static bool mtl_d_init = false;
 #endif
 
 #if defined USE_CUDA_TOOLS
