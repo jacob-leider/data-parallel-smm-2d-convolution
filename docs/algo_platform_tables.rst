@@ -23,6 +23,7 @@ The *guess* algorithm uses the algorithm returned by `cudnnGetConvolutionForward
      - *implicit gemm*
      - *winograd*
      - *guess*
+     - some
    * - *none*
      - |y|
      - |y|
@@ -31,6 +32,7 @@ The *guess* algorithm uses the algorithm returned by `cudnnGetConvolutionForward
      - |n|
      - |n|
      - |n|
+     - |y|
    * - *sycl*
      - |y|
      - |y|
@@ -39,6 +41,7 @@ The *guess* algorithm uses the algorithm returned by `cudnnGetConvolutionForward
      - |n|
      - |n|
      - |n|
+     - |y|
    * - *cudnn*
      - |n|
      - |n|
@@ -47,13 +50,33 @@ The *guess* algorithm uses the algorithm returned by `cudnnGetConvolutionForward
      - |y|
      - |y|
      - |y|
+     - |y|
    * - *cublas*
      - |n|
      - |n|
+     - |n|
+     - |n|
+     - |n|
+     - |n|
+     - |n|
+     - |n|
+   * - *mps*
+     - |n|
+     - |n|
+     - |n|
+     - |n|
+     - |n|
+     - |n|
+     - |n|
      - |y|
-     - |y|
-     - |y|
-     - |y|
+   * - *metal*
+     - |n|
+     - |n|
+     - |n|
+     - |n|
+     - |n|
+     - |n|
+     - |n|
      - |y|
 
 Linear
@@ -74,6 +97,10 @@ Linear
      - |n|
    * - *cublas*
      - |y|
+   * - *mps*
+     - |n|
+   * - *metal*
+     - |n|
 
 
 *2D* MaxPool
@@ -94,6 +121,10 @@ Linear
      - |n|
    * - *cublas*
      - |n|
+   * - *mps*
+     - |n|
+   * - *metal*
+     - |n|
 
 *2D* AvgPool
 ~~~~~~~~~~~~
@@ -112,6 +143,10 @@ Linear
    * - *cudnn*
      - |n|
    * - *cublas*
+     - |n|
+   * - *mps*
+     - |n|
+   * - *metal*
      - |n|
 
 *2D* AdaptiveAvgPool
@@ -132,6 +167,10 @@ Linear
      - |n|
    * - *cublas*
      - |n|
+   * - *mps*
+     - |n|
+   * - *metal*
+     - |n|
 
 *ReLU*
 ~~~~~~
@@ -150,6 +189,10 @@ Linear
    * - *cudnn*
      - |n|
    * - *cublas*
+     - |n|
+   * - *mps*
+     - |n|
+   * - *metal*
      - |n|
 
 
@@ -170,4 +213,8 @@ Flatten
    * - *cudnn*
      - |n|
    * - *cublas*
+     - |n|
+   * - *mps*
+     - |n|
+   * - *metal*
      - |n|
