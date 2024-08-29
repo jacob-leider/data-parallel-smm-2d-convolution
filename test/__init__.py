@@ -1,6 +1,7 @@
 from typing import Optional
 import torch
 import numpy as np
+import ai3
 import atexit
 import torch
 
@@ -30,10 +31,14 @@ def compare_tensors(
     assert (isinstance(tar_tensor, torch.Tensor))
     if isinstance(out_tensor, np.ndarray):
         out = out_tensor
-    else:
-        if isinstance(out_tensor, torch.Tensor) and out_tensor.requires_grad:
+    elif isinstance(out_tensor, torch.Tensor):
+        if out_tensor.requires_grad:
             out_tensor = out_tensor.detach()
         out = out_tensor.numpy()
+    else:
+        assert isinstance(out_tensor, ai3.Tensor)
+        out = out_tensor.to(np.ndarray)
+    assert isinstance(out, np.ndarray)
 
     tar = np.array(tar_tensor.detach())
 

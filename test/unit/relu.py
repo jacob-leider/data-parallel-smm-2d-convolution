@@ -1,18 +1,25 @@
 import torch
-import torch.nn.functional as F
-from ai3 import Model
-from ai3.layers import ReLU
+import ai3
+from torch import nn
 from test import compare_tensors
+
+
+class ReLU(nn.Module):
+    def __init__(self):
+        super(ReLU, self).__init__()
+
+    def forward(self, input):
+        return torch.relu(input)
 
 
 def test(*, input_shape,
          test_name: str) -> None:
     input = torch.randn(
         input_shape, dtype=torch.float32)
-    model = Model(
-        input.dtype, [ReLU(input.dtype, "default")])
+    orig = ReLU()
+    torch_output = orig(input)
+    model = ai3.swap_backend(orig)
     ai3_output = model.predict(input)
-    torch_output = F.relu(input)
     compare_tensors(
         ai3_output, torch_output, test_name)
 

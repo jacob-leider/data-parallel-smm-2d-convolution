@@ -5,8 +5,8 @@ from typing import (
     Tuple
 )
 from abc import ABC
-from ai3 import _core, errors, utils
-from ai3.tensor import Tensor
+from . import _core, errors, utils
+from .tensor import Tensor
 
 
 class Layer(ABC):

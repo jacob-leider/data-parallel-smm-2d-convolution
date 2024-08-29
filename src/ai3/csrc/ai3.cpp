@@ -7,8 +7,10 @@
 #include <string>
 #include <vector>
 
-inline bool is_default(std::string algo) { return algo == "default"; }
-inline bool is_custom(std::string algo) { return algo == "default"; }
+const std::string DEFAULT_OPT_STR = "default";
+
+inline bool is_default(std::string algo) { return algo == DEFAULT_OPT_STR; }
+inline bool is_custom(std::string algo) { return algo == "custom"; }
 
 template <typename dtype> class Layer {
   public:
@@ -447,4 +449,5 @@ PYBIND11_MODULE(_core, m) {
     m.def("using_mps", [] { return USING_MPS; });
     m.def("using_sycl", [] { return USING_SYCL; });
     m.def("using_cuda_tools", [] { return USING_CUDA_TOOLS; });
+    m.def("default_opt_str", [] { return DEFAULT_OPT_STR; });
 }

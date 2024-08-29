@@ -1,8 +1,16 @@
 import torch
-import torch.nn.functional as F
-from ai3 import Model
-from ai3.layers import Linear
+from torch import nn
+import ai3
 from test import compare_tensors
+
+
+class Linear(nn.Module):
+    def __init__(self, in_features, out_features, bias):
+        super(Linear, self).__init__()
+        self.linear = nn.Linear(in_features, out_features, bias)
+
+    def forward(self, input):
+        return self.linear(input)
 
 
 def test(*, num_samples, in_features: int, out_features: int,
@@ -14,18 +22,12 @@ def test(*, num_samples, in_features: int, out_features: int,
     else:
         input = torch.randn(
             in_features, dtype=torch.float32)
-    weight = torch.randn(
-        (out_features, in_features), dtype=torch.float32)
-    if with_bias:
-        bias = torch.randn(out_features)
-    else:
-        bias = None
 
-    model = Model(input.dtype, [Linear(
-        input.dtype, weight, bias, "default")])
+    orig = Linear(in_features, out_features, with_bias)
+    torch_output = orig(input)
+
+    model = ai3.swap_backend(orig)
     ai3_output = model.predict(input, torch.Tensor)
-    torch_output = F.linear(
-        input, weight, bias=bias)
     compare_tensors(
         ai3_output, torch_output, test_name)
 

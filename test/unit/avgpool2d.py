@@ -1,11 +1,23 @@
 import torch
 from test.unit import pooling_poss_output_size
 from torch import nn
-from ai3 import Model
-from ai3.layers import AvgPool2D
+import ai3
 from ai3 import utils
 from test import compare_tensors
 from typing import Union, Sequence, Optional
+
+
+class AvgPool2D(nn.Module):
+    def __init__(self, kernel_shape, stride, padding,
+                 ceil_mode,
+                 count_include_pad,
+                 divisor_override):
+        super(AvgPool2D, self).__init__()
+        self.avgpool2d = nn.AvgPool2d(kernel_shape, stride, padding, ceil_mode,
+                                      count_include_pad, divisor_override)
+
+    def forward(self, input):
+        return self.avgpool2d(input)
 
 
 def test(*, input_channels: int, in_height: int, in_width: int,
@@ -37,17 +49,11 @@ def test(*, input_channels: int, in_height: int, in_width: int,
         assert (((pos[1] - 1) * stride[1] >= in_width +
                 padding[1]) == ceil_mode_note_width)
 
-    model = Model(
-        input.dtype,
-        [
-            AvgPool2D(
-                input.dtype, kernel_shape, stride, padding, ceil_mode,
-                count_include_pad, divisor_override, "default")])
+    orig = AvgPool2D(kernel_shape, stride, padding, ceil_mode,
+                     count_include_pad, divisor_override)
+    torch_output = orig(input)
+    model = ai3.swap_backend(orig)
     ai3_output = model.predict(input)
-    torch_output = nn.AvgPool2d(kernel_shape, padding=padding, stride=stride,
-                                ceil_mode=ceil_mode,
-                                count_include_pad=count_include_pad,
-                                divisor_override=divisor_override)(input)
     compare_tensors(
         ai3_output, torch_output, test_name)
 

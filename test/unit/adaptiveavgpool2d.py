@@ -1,21 +1,33 @@
 import torch
 from torch import nn
-from ai3 import Model
-from ai3.layers import AdaptiveAvgPool2D
+import ai3
 from test import compare_tensors
+from typing import Optional
 
 
-def test(*, input_channels: int, in_height: int, in_width: int,
-         output_shape,
-         test_name: str) -> None:
-    input = torch.randn(input_channels, in_height,
-                        in_width, dtype=torch.float32)
+class AdaptiveAvgPool2D(nn.Module):
+    def __init__(self, output_shape):
+        super(AdaptiveAvgPool2D, self).__init__()
+        self.adapavgpool2d = nn.AdaptiveAvgPool2d(output_shape)
 
-    model = Model(input.dtype, [AdaptiveAvgPool2D(
-        input.dtype, output_shape, "default")])
+    def forward(self, input):
+        return self.adapavgpool2d(input)
+
+
+def test(
+    *, num_samples: Optional[int] = None, input_channels: int,
+        in_height: int, in_width: int, output_shape, test_name: str) -> None:
+    if num_samples is None:
+        input = torch.randn(input_channels, in_height,
+                            in_width, dtype=torch.float32)
+    else:
+        input = torch.randn(num_samples, input_channels, in_height,
+                            in_width, dtype=torch.float32)
+
+    orig = AdaptiveAvgPool2D(output_shape)
+    torch_output = orig(input)
+    model = ai3.swap_backend(orig)
     ai3_output = model.predict(input)
-    torch_output = nn.AdaptiveAvgPool2d(
-        output_shape)(input)
     compare_tensors(
         ai3_output, torch_output, test_name)
 
@@ -27,7 +39,8 @@ test(input_channels=3,
      in_width=30,
      output_shape=(6, 6),
      test_name="out is multiple of in")
-test(input_channels=3,
+test(num_samples=3,
+     input_channels=3,
      in_height=40,
      in_width=30,
      output_shape=(4, 3),
@@ -37,12 +50,14 @@ test(input_channels=10,
      in_width=15,
      output_shape=(None, 3),
      test_name="first None")
-test(input_channels=10,
+test(num_samples=5,
+     input_channels=10,
      in_height=15,
      in_width=15,
      output_shape=(5, None),
      test_name="second None")
-test(input_channels=10,
+test(num_samples=10,
+     input_channels=10,
      in_height=50,
      in_width=50,
      output_shape=(None, None),

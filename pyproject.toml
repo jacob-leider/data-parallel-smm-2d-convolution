@@ -3,7 +3,6 @@ name = "ai-3"
 version = "0.0.1"
 readme = "README.rst"
 description = "Algorithmic Innovations for Accelerated Implementations of Artificial Intelligence"
-dependencies = ["torch>=2.4"]
 authors = [
 {name = "Timothy Cronin", email = "tcroniniv@gmail.com"},
 ]
@@ -13,7 +12,7 @@ requires = ["scikit-build-core", "pybind11"]
 build-backend = "scikit_build_core.build"
 
 [project.optional-dependencies]
-dev = ["numpy", "torchvision"]
+dev = ["numpy", "torchvision", "torch"]
 format = ["autopep8"]
 doc = ["sphinx", "breathe", "furo"]
 

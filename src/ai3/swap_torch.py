@@ -1,4 +1,4 @@
-from ai3 import _core, layers, errors, utils
+from . import _core, layers, errors, utils
 from typing import Mapping, Optional, List, Sequence, Union, DefaultDict, Tuple
 from collections import defaultdict
 import torch
@@ -22,7 +22,7 @@ def mod_to_op(mod: nn.Module) -> str:
         return 'relu'
     elif isinstance(mod, nn.Flatten):
         return 'flatten'
-    errors.unsupported(mod)
+    errors.unsupported_mod(mod)
 
 
 def iscontainer(name: str) -> bool:
@@ -294,7 +294,7 @@ def swap_backend_layers(complete_module: nn.Module, dtype,
                 forwards.append(
                     layers.ReLU(dtype, algo))
             else:
-                errors.unsupported(node.target)
+                errors.unsupported_mod(node.target)
         elif node.op == 'call_module':
             mod = getmodule(
                 complete_module, node.target)
@@ -306,7 +306,7 @@ def swap_backend_layers(complete_module: nn.Module, dtype,
                 swapped = swap_layer(
                     mod, dtype, algo)
                 if not swapped:
-                    errors.unsupported(mod)
+                    errors.unsupported_mod(mod)
                 forwards.append(swapped)
         else:
             errors.bail(
@@ -321,6 +321,8 @@ class Tracer(fx.Tracer):
             return True
         return super().is_leaf_module(m, module_qualified_name)
 
+def default_dtype():
+    return torch.get_default_dtype()
 
 def swap_conv2d(
         module: nn.Module, selector: utils.AlgorithmicSelector,

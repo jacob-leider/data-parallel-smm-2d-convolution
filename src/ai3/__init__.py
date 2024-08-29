@@ -1,4 +1,4 @@
-"""Provides the easy-to-use fine-grain algorithmic control over a `PyTorch <https://pytorch.org/>`_ *DNN*
+"""Provides the easy-to-use fine-grain algorithmic control over an existing *DNN*
 
 The framework currently features two methods for algorithmic swapping. :func:`swap_backend`
 which swaps every module type of a *DNN* returning an object completely managed
@@ -6,13 +6,21 @@ by the framework and :func:`swap_conv2d` which swaps convolution operations out 
 existing *DNN*.
 """
 
-import torch
 from typing import Mapping, Optional, Sequence, TypeAlias
-from ai3 import _core, utils, layers, swap_torch
-from ai3.tensor import Tensor
+from . import _core, utils, layers, errors
+from .tensor import Tensor
+
+FROM_BACKEND: str = 'torch'
+"""The backend of the existing *DNN*"""
+
+SUPPORTED_FROM_BACKENDS: Sequence[str] = ['torch']
+"""Algorithmic selection over a *DNN* is supported for these backends
+
+* `torch <https://pytorch.org/>`_
+"""
 
 AlgorithmicSelector: TypeAlias = utils.AlgorithmicSelector
-"""The object that performs the algorithmic selection for an associated operation.
+"""The object that performs the algorithmic selection for an associated operation
 
 There are three different types of algorithmic selectors.
 
@@ -48,8 +56,8 @@ Example:
 """
 
 
-DEFAULT_ALGOS: Mapping[str, str] = {key: "default" for key in [
-    "conv2d", "linear", "relu", "maxpool2d", "avgpool2d", "adaptiveavgpool2d", "flatten"]}
+DEFAULT_ALGOS: Mapping[str, str] = {key: utils.DEFAULT_OPTION for key in [
+    'conv2d', 'linear', 'relu', 'maxpool2d', 'avgpool2d', 'adaptiveavgpool2d', 'flatten']}
 
 SUPPORTED_ALGORITHMS = utils.SUPPORTED_ALGORITHMS
 """The supported operations and their supported algorithms.
@@ -86,9 +94,19 @@ class Model():
         out = Tensor(out)
         return out.to(out_type)
 
+def get_swapper():
+    try:
+        if FROM_BACKEND == 'torch':
+            from . import swap_torch
+            return swap_torch
+    except ModuleNotFoundError as e:
+        errors.print_error(f'Using backend {FROM_BACKEND}, but it was not found')
+        raise e
+    errors.bail(f"Unsupported backend: {FROM_BACKEND}, supported backends are: {SUPPORTED_FROM_BACKENDS}")
+
 
 def swap_conv2d(
-        module: torch.nn.Module,
+        module,
         algos: Optional[AlgorithmicSelector] = None,
         sample_input_shape: Optional[Sequence[int]] = None):
     """
@@ -120,11 +138,12 @@ def swap_conv2d(
         algos = DEFAULT_ALGOS["conv2d"]
     utils.check_callable_params_with_shape(
         {'conv2d': algos}, sample_input_shape)
-    swap_torch.swap_conv2d(
+    swapper = get_swapper()
+    swapper.swap_conv2d(
         module, algos, sample_input_shape)
 
 
-def swap_backend(module: torch.nn.Module,
+def swap_backend(module,
                  algos: Optional[Mapping[str, AlgorithmicSelector]] = None,
                  sample_input_shape: Optional[Sequence[int]] = None, *,
                  dtype=None) -> Model:
@@ -178,11 +197,12 @@ def swap_backend(module: torch.nn.Module,
         algos = {**DEFAULT_ALGOS, **algos}
     else:
         algos = DEFAULT_ALGOS
+    swapper = get_swapper()
     if not dtype:
-        dtype = torch.get_default_dtype()
+        dtype = swapper.default_dtype()
     utils.check_callable_params_with_shape(
         algos, sample_input_shape)
-    return Model(dtype, swap_torch.swap_backend_layers(
+    return Model(dtype, swapper.swap_backend_layers(
         module, dtype, algos, sample_input_shape))
 
 

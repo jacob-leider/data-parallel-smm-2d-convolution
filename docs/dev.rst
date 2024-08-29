@@ -106,9 +106,9 @@ Develop
 Models
 ------
 
-.. automodule:: models
+.. automodule:: model_zoo
    :members:
 
-.. automodule:: models.models
+.. automodule:: model_zoo.models
    :members:
    :undoc-members:

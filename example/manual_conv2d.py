@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-import ai3  # the framework
+import ai3
 
 
 class ConvNet(nn.Module):

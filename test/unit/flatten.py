@@ -1,7 +1,17 @@
 import torch
-from ai3 import Model
-from ai3.layers import Flatten
+from torch import nn
+import ai3
 from test import compare_tensors
+
+
+class Flatten(nn.Module):
+    def __init__(self, start_dim, end_dim):
+        super(Flatten, self).__init__()
+        self.start_dim = start_dim
+        self.end_dim = end_dim
+
+    def forward(self, input):
+        return torch.flatten(input, self.start_dim, self.end_dim)
 
 
 def test(*, in_shape,
@@ -11,11 +21,12 @@ def test(*, in_shape,
     input = torch.randn(
         in_shape, dtype=torch.float32)
 
-    model = Model(input.dtype, [Flatten(
-        input.dtype, start_dim, end_dim, "default")])
+    orig = Flatten(start_dim, end_dim)
+
+    torch_output = orig(input)
+
+    model = ai3.swap_backend(orig)
     ai3_output = model.predict(input)
-    torch_output = torch.flatten(
-        input, start_dim=start_dim, end_dim=end_dim)
     compare_tensors(
         ai3_output, torch_output, test_name)
 

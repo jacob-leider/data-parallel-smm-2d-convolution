@@ -8,12 +8,13 @@ from typing import (
     Optional,
     TypeAlias
 )
-import torch
 import inspect
-from ai3 import errors
+from . import errors, _core
 
 FLOAT32_STR = 'float32'
 FLOAT64_STR = 'float64'
+
+TORCH_TENSOR_TYPE_STR = 'torch.Tensor'
 
 AlgorithmicSelector: TypeAlias = Union[str, Sequence[str], Callable]
 
@@ -29,7 +30,7 @@ SUPPORTED_ALGORITHMS = {
     'relu': ['direct'],
     'flatten': ['direct'],
 }
-DEFAULT_OPTION = 'default'
+DEFAULT_OPTION = _core.default_opt_str()
 for key in SUPPORTED_ALGORITHMS:
     SUPPORTED_ALGORITHMS[key].append(DEFAULT_OPTION)
 
@@ -57,15 +58,22 @@ def get_item(dtype, float_item, double_item):
         return double_item
     assert False, f'using bad dtype: {str(dtype)}'
 
+def get_full_type_str(orig_type) -> str:
+    if isinstance(orig_type, str):
+        return orig_type
+    if any(base.__module__ == 'torch' and base.__name__ == 'Tensor' for base in orig_type.__mro__):
+        return TORCH_TENSOR_TYPE_STR
+    errors.bail(f'bad type {orig_type}')
+
 
 def get_address(frontend_data) -> int:
-    if isinstance(frontend_data, torch.Tensor):
+    if get_full_type_str(type(frontend_data)) == TORCH_TENSOR_TYPE_STR:
         return frontend_data.data_ptr()
-    assert False and 'bad input type when getting data address'
+    errors.bail(f'bad input type {type(frontend_data)} when getting data address')
 
 
 def get_shape(frontend_data) -> tuple:
-    if isinstance(frontend_data, torch.Tensor):
+    if get_full_type_str(type(frontend_data)) == TORCH_TENSOR_TYPE_STR:
         return frontend_data.size()
     assert False and 'bad input type when getting shape'
 

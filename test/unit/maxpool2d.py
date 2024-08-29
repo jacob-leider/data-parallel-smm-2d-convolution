@@ -3,9 +3,19 @@ from torch import nn
 from test.unit import pooling_poss_output_size
 from ai3 import utils
 from test import compare_tensors
-from ai3 import Model
-from ai3.layers import MaxPool2D
+import ai3
 from typing import Union, Sequence, Optional
+
+
+class MaxPool2D(nn.Module):
+    def __init__(self, kernel_shape, stride, padding, dilation, ceil_mode):
+        super(MaxPool2D, self).__init__()
+        self.max2d = nn.MaxPool2d(
+            kernel_shape, dilation=dilation, padding=padding, stride=stride,
+            ceil_mode=ceil_mode)
+
+    def forward(self, input):
+        return self.max2d(input)
 
 
 def test(*, input_channels: int, in_height: int, in_width: int,
@@ -36,12 +46,11 @@ def test(*, input_channels: int, in_height: int, in_width: int,
         assert (((pos[1] - 1) * stride[1] >= in_width +
                 padding[1]) == ceil_mode_note_width)
 
-    model = Model(input.dtype, [MaxPool2D(
-        input.dtype, kernel_shape, stride, padding, dilation, ceil_mode, "default")])
+    orig = MaxPool2D(kernel_shape, stride, padding, dilation, ceil_mode)
+    torch_output = orig(input)
+
+    model = ai3.swap_backend(orig)
     ai3_output = model.predict(input)
-    torch_output = nn.MaxPool2d(
-        kernel_shape, dilation=dilation, padding=padding, stride=stride,
-        ceil_mode=ceil_mode)(input)
     compare_tensors(
         ai3_output, torch_output, test_name)
 

@@ -1,4 +1,4 @@
-from ai3 import _core, utils, errors
+from . import _core, utils, errors
 from typing import Union
 
 
@@ -26,15 +26,16 @@ class Tensor():
         """
         if out_type is None:
             return self
-        if not isinstance(out_type, str):
-            out_type = f"{out_type.__module__}.{out_type.__name__}"
 
-        if out_type == "torch.Tensor":
+        if not isinstance(out_type, str):
+            out_type = utils.get_full_type_str(out_type)
+
+        if out_type == utils.TORCH_TENSOR_TYPE_STR:
             return self.torch()
-        elif out_type == "numpy.ndarray":
+        elif out_type == 'numpy.ndarray':
             return self.numpy()
         errors.bail(
-            f"unsupported type to transfer tensor to {out_type}")
+            f'unsupported type to transfer tensor to {out_type}')
 
     def numpy(self):
         """
