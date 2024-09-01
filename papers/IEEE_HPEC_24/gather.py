@@ -90,7 +90,7 @@ def gather_conv2d_times(input):
         orig, input, True)
 
     ai3.swap_conv2d(orig, "gemm")
-    times_for_layer_module["gemm"] = time_forward(
+    times_for_layer_module["GEMM"] = time_forward(
         orig, input, True)
 
     ai3.swap_conv2d(orig, "guess")
@@ -158,7 +158,7 @@ def gather_model_times(model, input):
         model, input)
 
     ai3.swap_conv2d(model, "implicit gemm")
-    times_for_model["implicit gemm"] = time_forward(
+    times_for_model["implicit GEMM"] = time_forward(
         model, input)
 
     ai3.swap_conv2d(
@@ -184,8 +184,6 @@ def save_model_data_table(models_data):
     _, ax = plt.subplots()
     ax.axis('tight')
     ax.axis('off')
-    ax.set_title('Model Execution Times Relative to PyTorch',
-                 fontsize=18, loc='center', pad=0)
 
     table = ax.table(cellText=df.values, colLabels=df.columns,
                      rowLabels=df.index, cellLoc='center', loc='center')
