@@ -1,7 +1,7 @@
+#include "mps.h"
 #import "ai3.hpp"
 #include "utils.hpp"
 #include <MetalPerformanceShadersGraph/MetalPerformanceShadersGraph.h>
-#include <mutex>
 
 uint count = 0;
 double total = 0;
@@ -60,7 +60,7 @@ struct MPSTensor {
 
 MPSGraphTensorData *output_tensor_data(MPSGraphDevice *device,
                                        MPSGraphTensor *placeholder,
-                                       const Tensor<float> &tens) {
+                                       const Tensor &tens) {
     id<MTLBuffer> output_buffer = [[device metalDevice]
         newBufferWithBytesNoCopy:tens.data
                           length:sizeof(float) * tens.count()
@@ -76,7 +76,7 @@ MPSGraphTensorData *output_tensor_data(MPSGraphDevice *device,
 // oihw -> nchw
 // hwio -> nhwc
 MPSTensor feed_tensor(MPSGraph *graph, MPSGraphDevice *device,
-                      const Tensor<float> &tens, const bool bias = false) {
+                      const Tensor &tens, const bool bias = false) {
     MPSGraphTensor *placeholder =
         [graph placeholderWithShape:mps_shape(tens.shape, bias)
                            dataType:MPSDataTypeFloat32
@@ -90,8 +90,9 @@ MPSTensor feed_tensor(MPSGraph *graph, MPSGraphDevice *device,
     return MPSTensor{placeholder, data};
 }
 
-Tensor<float> mps_conv2d(Tensor<float> input, const Tensor<float> &kernel,
-                         const std::optional<const Tensor<float>> &bias,
+template <>
+Tensor mps_conv2d<float>(Tensor input, const Tensor &kernel,
+                         const std::optional<const Tensor> &bias,
                          const uint padding_h, const uint padding_w,
                          const uint stride_h, const uint stride_w,
                          const uint dilation_h, const uint dilation_w,
@@ -108,14 +109,15 @@ Tensor<float> mps_conv2d(Tensor<float> input, const Tensor<float> &kernel,
         input.width(), kernel.width(), padding_w, dilation_w, stride_w, false);
 
     uint num_samples;
-    Tensor<float> output;
+    Tensor output;
     if (input.batched(sample_dims::CONV2D)) {
         num_samples = input.batch_size(sample_dims::CONV2D);
-        output =
-            Tensor<float>({num_samples, output_channels, output_h, output_w});
+        output = Tensor({num_samples, output_channels, output_h, output_w},
+                        input.scalar_type);
     } else {
         num_samples = 1;
-        output = Tensor<float>({output_channels, output_h, output_w});
+        output =
+            Tensor({output_channels, output_h, output_w}, input.scalar_type);
     }
 
     @autoreleasepool {
@@ -183,22 +185,23 @@ Tensor<float> mps_conv2d(Tensor<float> input, const Tensor<float> &kernel,
     return output;
 }
 
-Tensor<double> mps_conv2d(Tensor<double> input, const Tensor<double> &kernel,
-                          const std::optional<const Tensor<double>> &bias,
+template <>
+Tensor mps_conv2d<double>(Tensor input, const Tensor &kernel,
+                          const std::optional<const Tensor> &bias,
                           const uint padding_h, const uint padding_w,
                           const uint stride_h, const uint stride_w,
                           const uint dilation_h, const uint dilation_w,
                           const PaddingMode padding_mode, uint groups) {
     errs::mps_metal_unsupported_double();
 
-    Tensor<float> input_float = input.template to_type<float>();
-    Tensor<float> kernel_float = kernel.template to_type<float>();
-    std::optional<const Tensor<float>> bias_float =
-        bias.has_value()
-            ? std::optional<Tensor<float>>(bias->template to_type<float>())
-            : std::nullopt;
-    return mps_conv2d(std::move(input_float), kernel_float, bias_float,
-                      padding_h, padding_w, stride_h, stride_w, dilation_h,
-                      dilation_w, padding_mode, groups)
-        .template to_type<double>();
+    Tensor input_float = input.template to_type<float>(ScalarType::Float32);
+    Tensor kernel_float = kernel.template to_type<float>(ScalarType::Float32);
+    std::optional<const Tensor> bias_float =
+        bias.has_value() ? std::optional<Tensor>(bias->template to_type<float>(
+                               ScalarType::Float32))
+                         : std::nullopt;
+    return mps_conv2d<float>(std::move(input_float), kernel_float, bias_float,
+                             padding_h, padding_w, stride_h, stride_w,
+                             dilation_h, dilation_w, padding_mode, groups)
+        .template to_type<double>(ScalarType::Float64);
 }

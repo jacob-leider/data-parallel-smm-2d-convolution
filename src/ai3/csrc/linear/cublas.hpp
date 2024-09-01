@@ -5,8 +5,8 @@
 #include <optional>
 
 template <typename dtype>
-Tensor<dtype> _linear(Tensor<dtype> input, const Tensor<dtype> &weight,
-                      const std::optional<const Tensor<dtype>> &bias) {
+Tensor _linear(Tensor input, const Tensor &weight,
+               const std::optional<const Tensor> &bias) {
     errs::bail_if(input.width() != weight.width(),
                   "Invalid matrix multiplication: input width=", input.width(),
                   " weight width=", weight.width());
@@ -15,14 +15,14 @@ Tensor<dtype> _linear(Tensor<dtype> input, const Tensor<dtype> &weight,
     const uint out_features = weight.height();
     const bool has_bias = bias.has_value();
 
-    Tensor<dtype> output;
+    Tensor output;
     uint num_samples;
     if (input.batched(sample_dims::LINEAR)) {
         num_samples = input.batch_size(sample_dims::LINEAR);
-        output = Tensor<dtype>({num_samples, out_features});
+        output = Tensor({num_samples, out_features}, input.scalar_type);
     } else {
         num_samples = 1;
-        output = Tensor<dtype>({out_features});
+        output = Tensor({out_features}, input.scalar_type);
     }
 
     dtype *d_input, *d_weight, *d_bias, *d_output;

@@ -6,12 +6,12 @@
 using namespace cl;
 
 template <typename dtype>
-Tensor<dtype> smm_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
-                         const std::optional<const Tensor<dtype>> &bias,
-                         const uint padding_h, const uint padding_w,
-                         const uint stride_h, const uint stride_w,
-                         const uint dilation_h, const uint dilation_w,
-                         const PaddingMode padding_mode, uint groups) {
+Tensor smm_conv2d(Tensor input, const Tensor &kernel,
+                  const std::optional<const Tensor> &bias, const uint padding_h,
+                  const uint padding_w, const uint stride_h,
+                  const uint stride_w, const uint dilation_h,
+                  const uint dilation_w, const PaddingMode padding_mode,
+                  uint groups) {
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
@@ -31,33 +31,35 @@ Tensor<dtype> smm_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
         input_width, kernel_width, padding_w, dilation_w, stride_w, false);
 
     uint num_samples;
-    Tensor<dtype> output;
+    Tensor output;
     if (input.batched(sample_dims::CONV2D)) {
         num_samples = input.batch_size(sample_dims::CONV2D);
-        output = Tensor<dtype>(
-            {num_samples, output_channels, output_height, output_width});
+        output =
+            Tensor({num_samples, output_channels, output_height, output_width},
+                   input.scalar_type);
     } else {
         num_samples = 1;
-        output = Tensor<dtype>({output_channels, output_height, output_width});
+        output = Tensor({output_channels, output_height, output_width},
+                        input.scalar_type);
     }
 
     uint col_height = input_channels * kernel_height * kernel_width;
     uint col_width = output_height * output_width;
-    void *queue_ptr = Context::sycl_queue();
     sycl::queue *queue_ptr = static_cast<sycl::queue *>(Context::sycl_queue());
     sycl::queue queue = *queue_ptr;
 
     const bool has_bias = bias.has_value();
     sycl::buffer<dtype> bias_buf =
-        has_bias ? sycl::buffer<dtype>(bias->data, bias->count())
-                 : sycl::buffer<dtype>(sycl::range<1>(0));
+        has_bias
+            ? sycl::buffer<dtype>(data_as<dtype>(bias->data), bias->count())
+            : sycl::buffer<dtype>(sycl::range<1>(0));
 
     sycl::buffer<dtype> buf_cols(num_samples * col_height * col_width);
 
-    sycl::buffer<dtype> buf_input(input.data, input.count());
-    sycl::buffer<dtype> buf_kernel(kernel.data, kernel.count());
+    sycl::buffer<dtype> buf_input(data_as<dtype>(input.data), input.count());
+    sycl::buffer<dtype> buf_kernel(data_as<dtype>(kernel.data), kernel.count());
 
-    sycl::buffer<dtype> buf_output(output.data, output.count());
+    sycl::buffer<dtype> buf_output(data_as<dtype>(output.data), output.count());
 
     const uint max_work_group_size =
         queue.get_device().get_info<sycl::info::device::max_work_group_size>();

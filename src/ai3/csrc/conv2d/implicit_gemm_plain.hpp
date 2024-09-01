@@ -3,13 +3,12 @@
 #include "ai3.hpp"
 
 template <typename dtype>
-Tensor<dtype>
-implicit_gemm_conv2d(Tensor<dtype> input, const Tensor<dtype> &kernel,
-                     const std::optional<const Tensor<dtype>> &bias,
-                     const uint padding_h, const uint padding_w,
-                     const uint stride_h, const uint stride_w,
-                     const uint dilation_h, const uint dilation_w,
-                     const PaddingMode padding_mode, uint groups) {
+Tensor implicit_gemm_conv2d(Tensor input, const Tensor &kernel,
+                            const std::optional<const Tensor> &bias,
+                            const uint padding_h, const uint padding_w,
+                            const uint stride_h, const uint stride_w,
+                            const uint dilation_h, const uint dilation_w,
+                            const PaddingMode padding_mode, uint groups) {
     (void)input;
     (void)kernel;
     (void)bias;

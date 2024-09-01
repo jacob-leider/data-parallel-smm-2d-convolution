@@ -14,8 +14,7 @@ void *gen_mtl_device() {
 
 void release_mtl_device(id<MTLDevice> *dev) { delete dev; }
 
-template <typename dtype>
-Tensor<dtype> kernel_to_ohwi(const Tensor<dtype> &orig) {
+template <typename dtype> Tensor kernel_to_ohwi(const Tensor &orig) {
     const uint out_channels = orig.output_channels();
     const uint in_channels = orig.input_channels();
     const uint kern_w = orig.width();
@@ -25,7 +24,9 @@ Tensor<dtype> kernel_to_ohwi(const Tensor<dtype> &orig) {
     new_shape[1] = kern_h;
     new_shape[2] = kern_w;
     new_shape[3] = in_channels;
-    Tensor<dtype> kern(new_shape);
+    Tensor kern(new_shape, orig.scalar_type);
+    dtype *kern_data = data_as<dtype>(kern.data);
+    const dtype *orig_data = data_as<dtype>(orig.data);
     for (size_t o = 0; o < out_channels; ++o) {
         for (size_t i = 0; i < in_channels; ++i) {
             for (size_t h = 0; h < kern_h; ++h) {
@@ -34,7 +35,7 @@ Tensor<dtype> kernel_to_ohwi(const Tensor<dtype> &orig) {
                         ((o * in_channels + i) * kern_h + h) * kern_w + w;
                     uint new_id =
                         ((o * kern_h + h) * kern_w + w) * in_channels + i;
-                    kern.data[new_id] = orig.data[orig_id];
+                    kern_data[new_id] = orig_data[orig_id];
                 }
             }
         }
@@ -42,8 +43,7 @@ Tensor<dtype> kernel_to_ohwi(const Tensor<dtype> &orig) {
     return kern;
 }
 
-template <typename dtype>
-Tensor<dtype> kernel_to_hwio(const Tensor<dtype> &orig) {
+template <typename dtype> Tensor kernel_to_hwio(const Tensor &orig) {
     const uint out_channels = orig.output_channels();
     const uint in_channels = orig.input_channels();
     const uint kern_w = orig.width();
@@ -53,7 +53,9 @@ Tensor<dtype> kernel_to_hwio(const Tensor<dtype> &orig) {
     new_shape[1] = kern_w;
     new_shape[2] = in_channels;
     new_shape[3] = out_channels;
-    Tensor<dtype> kern = Tensor<dtype>(new_shape);
+    Tensor kern = Tensor(new_shape, orig.scalar_type);
+    const dtype *orig_data = data_as<dtype>(orig.data);
+    dtype *new_data = data_as<dtype>(kern.data);
     for (size_t o = 0; o < out_channels; ++o) {
         for (size_t i = 0; i < in_channels; ++i) {
             for (size_t h = 0; h < kern_h; ++h) {
@@ -63,7 +65,7 @@ Tensor<dtype> kernel_to_hwio(const Tensor<dtype> &orig) {
                     uint new_id =
                         ((h * kern_w + w) * in_channels + i) * out_channels + o;
 
-                    kern.data[new_id] = orig.data[orig_id];
+                    new_data[new_id] = orig_data[orig_id];
                 }
             }
         }
@@ -71,8 +73,9 @@ Tensor<dtype> kernel_to_hwio(const Tensor<dtype> &orig) {
     return kern;
 }
 
-Tensor<float> metal_conv2d(Tensor<float> input, const Tensor<float> &kernel,
-                           const std::optional<const Tensor<float>> &bias,
+template <>
+Tensor metal_conv2d<float>(Tensor input, const Tensor &kernel,
+                           const std::optional<const Tensor> &bias,
                            const uint padding_h, const uint padding_w,
                            const uint stride_h, const uint stride_w,
                            const uint dilation_h, const uint dilation_w,
@@ -94,17 +97,18 @@ Tensor<float> metal_conv2d(Tensor<float> input, const Tensor<float> &kernel,
     const uint input_h = input.height();
     const uint input_w = input.width();
 
-    Tensor<float> kernel_ohwi = kernel_to_ohwi(kernel);
+    Tensor kernel_ohwi = kernel_to_ohwi<float>(kernel);
 
     uint num_samples;
-    Tensor<float> output;
+    Tensor output;
     if (input.batched(sample_dims::CONV2D)) {
         num_samples = input.batch_size(sample_dims::CONV2D);
-        output =
-            Tensor<float>({num_samples, output_channels, output_h, output_w});
+        output = Tensor({num_samples, output_channels, output_h, output_w},
+                        input.scalar_type);
     } else {
         num_samples = 1;
-        output = Tensor<float>({output_channels, output_h, output_w});
+        output =
+            Tensor({output_channels, output_h, output_w}, input.scalar_type);
     }
 
     @autoreleasepool {
@@ -123,10 +127,10 @@ Tensor<float> metal_conv2d(Tensor<float> input, const Tensor<float> &kernel,
             MPSImage *input_im =
                 [[[MPSImage alloc] initWithDevice:device
                                   imageDescriptor:input_desc] autorelease];
-            [input_im
-                writeBytes:input.data + i * input_channels * input_h * input_w
-                dataLayout:MPSDataLayoutFeatureChannelsxHeightxWidth
-                imageIndex:0];
+            [input_im writeBytes:(float *)input.data +
+                                 i * input_channels * input_h * input_w
+                      dataLayout:MPSDataLayoutFeatureChannelsxHeightxWidth
+                      imageIndex:0];
             [input_ims addObject:input_im];
         }
 
@@ -162,8 +166,9 @@ Tensor<float> metal_conv2d(Tensor<float> input, const Tensor<float> &kernel,
         MPSCNNConvolution *conv = [[[MPSCNNConvolution alloc]
                    initWithDevice:device
             convolutionDescriptor:conv_desc
-                    kernelWeights:kernel_ohwi.data
-                        biasTerms:bias.has_value() ? bias->data : nullptr
+                    kernelWeights:(float *)kernel_ohwi.data
+                        biasTerms:bias.has_value() ? (float *)bias->data
+                                                   : nullptr
                             flags:MPSCNNConvolutionFlagsNone] autorelease];
         [conv setEdgeMode:MPSImageEdgeModeZero];
         [conv setOffset:offset];
@@ -180,7 +185,7 @@ Tensor<float> metal_conv2d(Tensor<float> input, const Tensor<float> &kernel,
         [command_buffer waitUntilCompleted];
 
         for (uint i = 0; i < num_samples; i++) {
-            [output_ims[i] readBytes:output.data +
+            [output_ims[i] readBytes:(float *)output.data +
                                      i * output_channels * output_h * output_w
                           dataLayout:MPSDataLayoutFeatureChannelsxHeightxWidth
                           imageIndex:0];
@@ -189,22 +194,23 @@ Tensor<float> metal_conv2d(Tensor<float> input, const Tensor<float> &kernel,
     return output;
 }
 
-Tensor<double> metal_conv2d(Tensor<double> input, const Tensor<double> &kernel,
-                            const std::optional<const Tensor<double>> &bias,
+template <>
+Tensor metal_conv2d<double>(Tensor input, const Tensor &kernel,
+                            const std::optional<const Tensor> &bias,
                             const uint padding_h, const uint padding_w,
                             const uint stride_h, const uint stride_w,
                             const uint dilation_h, const uint dilation_w,
                             const PaddingMode padding_mode, uint groups) {
     errs::mps_metal_unsupported_double();
 
-    Tensor<float> input_float = input.template to_type<float>();
-    Tensor<float> kernel_float = kernel.template to_type<float>();
-    std::optional<const Tensor<float>> bias_float =
-        bias.has_value()
-            ? std::optional<Tensor<float>>(bias->template to_type<float>())
-            : std::nullopt;
-    return metal_conv2d(std::move(input_float), kernel_float, bias_float,
-                        padding_h, padding_w, stride_h, stride_w, dilation_h,
-                        dilation_w, padding_mode, groups)
-        .template to_type<double>();
+    Tensor input_float = input.template to_type<float>(ScalarType::Float32);
+    Tensor kernel_float = kernel.template to_type<float>(ScalarType::Float32);
+    std::optional<const Tensor> bias_float =
+        bias.has_value() ? std::optional<Tensor>(bias->template to_type<float>(
+                               ScalarType::Float32))
+                         : std::nullopt;
+    return metal_conv2d<float>(std::move(input_float), kernel_float, bias_float,
+                               padding_h, padding_w, stride_h, stride_w,
+                               dilation_h, dilation_w, padding_mode, groups)
+        .template to_type<double>(ScalarType::Float64);
 }

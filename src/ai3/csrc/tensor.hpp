@@ -18,15 +18,17 @@ namespace py = pybind11;
  *
  * @tparam dtype The data type of the tensor elements
  */
-template <typename dtype> class Tensor {
+class Tensor {
   public:
     /**
      * @brief Allocates data to construct a Tensor with the given shape
      *
      * @param s Shape of the tensor
+     * @param scalar_type type of data to store
      */
-    Tensor(const std::vector<uint> &s)
-        : data(new dtype[_count(s)]), shape(s), owned(true) {}
+    Tensor(const std::vector<uint> &s, ScalarType scalar_type)
+        : data(new_data_with_type(scalar_type, _count(s))), shape(s),
+          owned(true), scalar_type(scalar_type) {}
 
     /**
      * @brief Allocates and copies data to construct a Tensor with the given
@@ -34,12 +36,14 @@ template <typename dtype> class Tensor {
      *
      * @param data_address Address of the data to be copied to the Tensor
      * @param s Shape of the tensor
+     * @param scalar_type type of the `data_address`
      */
-    Tensor(const intptr_t data_address, const std::vector<uint> &s)
-        : shape(s), owned(true) {
-        data = new dtype[_count(s)];
-        std::memcpy(data, reinterpret_cast<const dtype *>(data_address),
-                    _count(s) * sizeof(dtype));
+    Tensor(const intptr_t data_address, const std::vector<uint> &s,
+           ScalarType scalar_type)
+        : shape(s), owned(true), scalar_type(scalar_type) {
+        data = new_data_with_type(scalar_type, _count(s));
+        std::memcpy(data, reinterpret_cast<const void *>(data_address),
+                    _count(s) * size_of_scalar_type(scalar_type));
     }
 
     /**
@@ -48,21 +52,26 @@ template <typename dtype> class Tensor {
      * @param data Address of the data
      * @param s Shape of the tensor
      * @param own Whether the Tensor owns this data
+     * @param scalar_type type of the `data`
      */
-    Tensor(dtype *data, const std::vector<uint> &s, bool own)
-        : data(data), shape(s), owned(own) {}
+    Tensor(void *data, const std::vector<uint> &s, bool own,
+           ScalarType scalar_type)
+        : data(data), shape(s), owned(own), scalar_type(scalar_type) {}
 
     /**
      * @brief Wraps existing data with a Tensor without allocating or copying
      *
      * @param data_address Address of the data
      * @param s Shape of the tensor
+     * @param scalar_type type of the `data_address`
      *
      * @return A Tensor object around the provided data
      */
-    static Tensor<dtype> form_tensor(const intptr_t data_address,
-                                     const std::vector<uint> &s) {
-        return Tensor(reinterpret_cast<dtype *>(data_address), s, false);
+    static Tensor form_tensor(const intptr_t data_address,
+                              const std::vector<uint> &s,
+                              ScalarType scalar_type) {
+        return Tensor(reinterpret_cast<void *>(data_address), s, false,
+                      scalar_type);
     }
 
     /**
@@ -75,6 +84,7 @@ template <typename dtype> class Tensor {
      *
      * @param data_address Optional address of the raw data.
      * @param s Shape of the tensor.
+     * @param scalar_type type of the `data_address`
      * @param own Whether to take ownership of the data.
      *
      * @return Tensor object if data_address has a value; otherwise,
@@ -82,12 +92,13 @@ template <typename dtype> class Tensor {
      */
     static std::optional<Tensor>
     from_optional(const std::optional<intptr_t> &data_address,
-                  const std::vector<uint> &s, bool own = true) {
+                  const std::vector<uint> &s, ScalarType scalar_type,
+                  bool own = true) {
         if (data_address.has_value()) {
             if (own) {
-                return Tensor<dtype>(*data_address, s);
+                return Tensor(*data_address, s, scalar_type);
             } else {
-                return form_tensor(*data_address, s);
+                return form_tensor(*data_address, s, scalar_type);
             }
         } else {
             return std::nullopt;
@@ -101,19 +112,34 @@ template <typename dtype> class Tensor {
      *
      * @return Tensor containing the converted data
      */
-    template <typename target_type> Tensor<target_type> to_type() const {
+    template <typename target_type> Tensor to_type(ScalarType to_type) const {
         target_type *new_data = new target_type[count()];
-        for (uint i = 0; i < count(); ++i) {
-            new_data[i] = data[i];
+        if (scalar_type == ScalarType::Float32) {
+            copy_with_types<target_type, float>(new_data, data, count());
+        } else {
+            copy_with_types<target_type, double>(new_data, data, count());
         }
-        return Tensor<target_type>(new_data, shape, true);
+        return Tensor(new_data, shape, true, to_type);
+    }
+
+    template <typename target_type, typename orig_type>
+    void copy_with_types(target_type *new_data, void *_orig_data,
+                         uint count) const {
+        orig_type *orig_data = (orig_type *)_orig_data;
+        for (uint i = 0; i < count; ++i) {
+            new_data[i] = orig_data[i];
+        }
     }
 
     Tensor() = default;
 
     ~Tensor() {
         if (owned) {
-            delete[] data;
+            if (scalar_type == ScalarType::Float32) {
+                delete[] (float *)data;
+            } else {
+                delete[] (double *)data;
+            }
         }
     };
 
@@ -124,6 +150,7 @@ template <typename dtype> class Tensor {
             shape = std::move(other.shape);
             data = other.data;
             owned = other.owned;
+            scalar_type = other.scalar_type;
             other.data = nullptr;
             other.owned = false;
         }
@@ -140,11 +167,18 @@ template <typename dtype> class Tensor {
      */
     py::buffer_info buffer() {
         std::vector<uint> stride(shape.size());
-        stride[shape.size() - 1] = sizeof(dtype);
+        stride[shape.size() - 1] = size_of_scalar_type(scalar_type);
         for (int i = shape.size() - 2; i >= 0; --i) {
             stride[i] = stride[i + 1] * shape[i + 1];
         }
-        return py::buffer_info(data, shape, stride);
+        std::string format;
+        if (scalar_type == ScalarType::Float32) {
+            format = py::format_descriptor<float>::format();
+        } else {
+            format = py::format_descriptor<double>::format();
+        }
+        return py::buffer_info(data, size_of_scalar_type(scalar_type), format,
+                               shape.size(), shape, stride);
     }
 
     /**
@@ -193,9 +227,10 @@ template <typename dtype> class Tensor {
     Tensor(const Tensor &) = delete;
     Tensor &operator=(const Tensor &) = delete;
 
-    dtype *data;             ///< Pointer to the tensor data.
-    std::vector<uint> shape; ///< Shape of the tensor.
-    bool owned;              ///< Indicates whether the tensor owns the data.
+    void *data;              ///< Pointer to the tensor data
+    std::vector<uint> shape; ///< Shape of the tensor
+    bool owned;              ///< Indicates whether the tensor owns @ref data
+    ScalarType scalar_type;  ///< The type stored in @ref data
 
   private:
     static uint _count(const std::vector<uint> &s) {

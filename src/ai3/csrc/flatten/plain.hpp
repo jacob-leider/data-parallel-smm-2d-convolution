@@ -4,8 +4,7 @@
 #include <vector>
 
 template <typename dtype>
-Tensor<dtype> _flatten(Tensor<dtype> input, const uint start_dim,
-                       int end_dim_orig) {
+Tensor _flatten(Tensor input, const uint start_dim, int end_dim_orig) {
     errs::bail_if(end_dim_orig != -1 && int(start_dim) > end_dim_orig,
                   "start dimension > end dimension in flattening function");
     uint end_dim;
@@ -22,7 +21,7 @@ Tensor<dtype> _flatten(Tensor<dtype> input, const uint start_dim,
     std::vector<uint> new_shape(new_num_dim);
     int flat = 1;
     int shift = 0;
-    for (uint dim = 0; dim < int(input.shape.size()); dim++) {
+    for (uint dim = 0; dim < input.shape.size(); dim++) {
         if (dim < start_dim || dim > end_dim) {
             new_shape[dim - shift] = input.shape[dim];
         } else {

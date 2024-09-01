@@ -4,13 +4,14 @@
 #include "ai3.hpp"
 
 template <typename dtype>
-Tensor<dtype> conv_bias_forward_with_algo(
-    Tensor<dtype> input, const Tensor<dtype> &kernel,
-    const std::optional<const Tensor<dtype>> &bias, const uint padding_h,
-    const uint padding_w, const uint stride_h, const uint stride_w,
-    const uint dilation_h, const uint dilation_w,
-    const PaddingMode padding_mode, uint groups, cudnnConvolutionFwdAlgo_t algo,
-    const bool guess = false) {
+Tensor conv_bias_forward_with_algo(Tensor input, const Tensor &kernel,
+                                   const std::optional<const Tensor> &bias,
+                                   const uint padding_h, const uint padding_w,
+                                   const uint stride_h, const uint stride_w,
+                                   const uint dilation_h, const uint dilation_w,
+                                   const PaddingMode padding_mode, uint groups,
+                                   cudnnConvolutionFwdAlgo_t algo,
+                                   const bool guess = false) {
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
@@ -36,14 +37,16 @@ Tensor<dtype> conv_bias_forward_with_algo(
         input_width, kernel_width, padding_w, dilation_w, stride_w, false);
 
     uint num_samples;
-    Tensor<dtype> output;
+    Tensor output;
     if (input.batched(sample_dims::CONV2D)) {
         num_samples = input.batch_size(sample_dims::CONV2D);
-        output = Tensor<dtype>(
-            {num_samples, output_channels, output_height, output_width});
+        output =
+            Tensor({num_samples, output_channels, output_height, output_width},
+                   input.scalar_type);
     } else {
         num_samples = 1;
-        output = Tensor<dtype>({output_channels, output_height, output_width});
+        output = Tensor({output_channels, output_height, output_width},
+                        input.scalar_type);
     }
 
     cudnnDataType_t cudnn_dtype = cudnn_data_type<dtype>();

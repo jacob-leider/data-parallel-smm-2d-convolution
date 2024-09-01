@@ -1,14 +1,15 @@
 #pragma once
 
 #include "ai3.hpp"
+#include "utils.hpp"
 #include <optional>
 
 template <typename dtype>
-Tensor<dtype> _maxpool2d(Tensor<dtype> input, const uint kernel_h,
-                         const uint kernel_w, const uint padding_h,
-                         const uint padding_w, const uint stride_h,
-                         const uint stride_w, const uint dilation_h,
-                         const uint dilation_w, const bool ceil_mode) {
+Tensor _maxpool2d(Tensor input, const uint kernel_h, const uint kernel_w,
+                  const uint padding_h, const uint padding_w,
+                  const uint stride_h, const uint stride_w,
+                  const uint dilation_h, const uint dilation_w,
+                  const bool ceil_mode) {
     const uint input_channels = input.input_channels();
     const uint input_height = input.height();
     const uint input_width = input.width();
@@ -20,17 +21,21 @@ Tensor<dtype> _maxpool2d(Tensor<dtype> input, const uint kernel_h,
     const uint output_width = output_hw_for_2d<dtype>(
         input_width, kernel_w, padding_w, dilation_w, stride_w, ceil_mode);
 
-    Tensor<dtype> output;
+    Tensor output;
     uint num_samples;
     if (input.batched(sample_dims::POOL2D)) {
         num_samples = input.batch_size(sample_dims::POOL2D);
-        output = Tensor<dtype>(
-            {num_samples, output_channels, output_height, output_width});
+        output =
+            Tensor({num_samples, output_channels, output_height, output_width},
+                   input.scalar_type);
     } else {
         num_samples = 1;
-        output = Tensor<dtype>({output_channels, output_height, output_width});
+        output = Tensor({output_channels, output_height, output_width},
+                        input.scalar_type);
     }
 
+    const dtype *in_data = data_as<dtype>(input.data);
+    dtype *out_data = data_as<dtype>(output.data);
     const dtype lowest = std::numeric_limits<dtype>::lowest();
     for (uint samp = 0; samp < num_samples; samp++) {
         for (uint out_c = 0; out_c < output_channels; out_c++) {
@@ -46,7 +51,7 @@ Tensor<dtype> _maxpool2d(Tensor<dtype> input, const uint kernel_h,
 
                             if (h_offset >= 0 && h_offset < input_height &&
                                 w_offset >= 0 && w_offset < input_width) {
-                                dtype cur = input.data[to_linear(
+                                dtype cur = in_data[to_linear(
                                     samp, out_c, h_offset, w_offset,
                                     output_channels, input_height,
                                     input_width)];
@@ -56,9 +61,9 @@ Tensor<dtype> _maxpool2d(Tensor<dtype> input, const uint kernel_h,
                             }
                         }
                     }
-                    output.data[to_linear(samp, out_c, out_h, out_w,
-                                          output_channels, output_height,
-                                          output_width)] = cur_max;
+                    out_data[to_linear(samp, out_c, out_h, out_w,
+                                       output_channels, output_height,
+                                       output_width)] = cur_max;
                 }
             }
         }

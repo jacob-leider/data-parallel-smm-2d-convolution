@@ -11,6 +11,26 @@
 
 enum class PaddingMode { Zeros, Reflect, Replicate, Circular };
 
+enum class ScalarType {
+    Float32,
+    Float64,
+};
+
+template <typename dtype> inline dtype *data_as(void *data) {
+    return reinterpret_cast<dtype *>(data);
+}
+
+inline std::ostream &operator<<(std::ostream &os, ScalarType type) {
+    std::string rep;
+    switch (type) {
+    case ScalarType::Float32:
+        rep = "Float";
+    case ScalarType::Float64:
+        rep = "Double";
+    }
+    return os << rep;
+}
+
 struct GroupSplit2D {
     uint each_a;
     uint each_b;
@@ -79,10 +99,9 @@ inline uint output_hw_for_2d_no_ceil(const uint input, const uint kernel,
 }
 
 template <typename dtype>
-inline uint output_hw_for_2d(const uint input, const uint kernel,
-                             const uint padding,
-                             const std::optional<uint> dilation,
-                             const uint stride, const bool ceil_mode) {
+uint output_hw_for_2d(const uint input, const uint kernel, const uint padding,
+                      const std::optional<uint> dilation, const uint stride,
+                      const bool ceil_mode) {
     const uint top =
         output_hw_for_2d_numerator(input, kernel, padding, dilation);
     const uint bot = stride;
@@ -106,6 +125,10 @@ template <typename... Args> [[noreturn]] void bail(Args... args) {
     throw std::runtime_error(ss.str());
 }
 
+[[noreturn]] inline void invalid_dtype(const ScalarType type) {
+    errs::bail("invalid dtype: ", type);
+}
+
 [[noreturn]] inline void no_user_def(const std::string &name) {
     bail("trying to use custom ", name, " when no implementation exists");
 }
@@ -126,7 +149,8 @@ inline void warning(const std::string msg) {
 
 inline void mps_metal_unsupported_double() {
     errs::warning(
-        "MPS/metal does not support double precision, transforming tensors to "
+        "MPS/metal does not support double precision, transforming tensors "
+        "to "
         "float "
         "precision and back see: "
         "https://developer.apple.com/documentation/metalperformanceshaders/"
@@ -138,8 +162,29 @@ template <typename... Args> void bail_if(bool check, Args... args) {
         bail(args...);
     }
 }
-
 } // namespace errs
+
+inline void *new_data_with_type(const ScalarType type, const uint count) {
+    switch (type) {
+    case ScalarType::Float32:
+        return new float[count];
+    case ScalarType::Float64:
+        return new double[count];
+    default:
+        errs::invalid_dtype(type);
+    }
+}
+
+inline uint size_of_scalar_type(ScalarType type) {
+    switch (type) {
+    case ScalarType::Float32:
+        return sizeof(float);
+    case ScalarType::Float64:
+        return sizeof(double);
+    default:
+        errs::invalid_dtype(type);
+    }
+}
 
 /**
  * @brief Number of dimensions per sample of common deep learning operations.

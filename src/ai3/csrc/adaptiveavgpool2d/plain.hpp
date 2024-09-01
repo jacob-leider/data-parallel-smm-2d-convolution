@@ -5,9 +5,8 @@
 #include <optional>
 
 template <typename dtype>
-Tensor<dtype> _adaptiveavgpool2d(Tensor<dtype> input,
-                                 const std::optional<uint> output_h,
-                                 const std::optional<uint> output_w) {
+Tensor _adaptiveavgpool2d(Tensor input, const std::optional<uint> output_h,
+                          const std::optional<uint> output_w) {
     uint input_height = input.height();
     uint input_width = input.width();
     const uint output_height = output_h.value_or(input_height);
