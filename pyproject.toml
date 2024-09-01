@@ -20,4 +20,4 @@ doc = ["sphinx", "breathe", "furo"]
 cmake.build-type = "Release"
 wheel.packages = ["src/ai3"]
 sdist.cmake = false
-cmake.define = {"FIND_ACPP"="OFF", SKBUILD_PROJECT_NAME="ai3"}
+cmake.define = {SKBUILD_PROJECT_NAME="ai3"}
