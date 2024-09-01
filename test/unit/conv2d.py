@@ -5,6 +5,7 @@ from test import compare_tensors
 from run import CONV2D_ALGOS_TO_USE
 from typing import Union, Tuple
 
+
 class Conv2D(nn.Module):
     def __init__(
         self, in_channels, out_channels, kernel_size, bias, stride,
