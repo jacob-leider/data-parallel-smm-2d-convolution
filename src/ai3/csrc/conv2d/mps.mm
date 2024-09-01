@@ -97,6 +97,7 @@ Tensor mps_conv2d<float>(Tensor input, const Tensor &kernel,
                          const uint stride_h, const uint stride_w,
                          const uint dilation_h, const uint dilation_w,
                          const PaddingMode padding_mode, uint groups) {
+    ensure_same_type(input, kernel, bias);
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");

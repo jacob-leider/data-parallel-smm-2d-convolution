@@ -244,3 +244,15 @@ class Tensor {
         return count;
     }
 };
+
+inline void ensure_same_type(const Tensor &a, const Tensor &b) {
+    errs::bail_if(a.scalar_type != b.scalar_type,
+                  "tensors have different data types");
+}
+inline void ensure_same_type(const Tensor &a, const Tensor &b,
+                             const std::optional<const Tensor> &c) {
+    ensure_same_type(a, b);
+    if (c.has_value()) {
+        ensure_same_type(a, *c);
+    }
+}

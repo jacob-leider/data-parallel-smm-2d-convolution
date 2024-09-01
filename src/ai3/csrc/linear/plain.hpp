@@ -1,12 +1,14 @@
 #pragma once
 
 #include "ai3.hpp"
+#include "tensor.hpp"
 #include "utils.hpp"
 #include <optional>
 
 template <typename dtype>
 inline Tensor _linear(Tensor input, const Tensor &weight,
                       const std::optional<const Tensor> &bias) {
+    ensure_same_type(input, weight);
     errs::bail_if(input.width() != weight.width(),
                   "Invalid matrix multiplication: input width=", input.width(),
                   " weight width=", weight.width());

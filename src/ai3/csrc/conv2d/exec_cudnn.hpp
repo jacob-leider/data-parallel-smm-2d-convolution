@@ -12,6 +12,7 @@ Tensor conv_bias_forward_with_algo(Tensor input, const Tensor &kernel,
                                    const PaddingMode padding_mode, uint groups,
                                    cudnnConvolutionFwdAlgo_t algo,
                                    const bool guess = false) {
+    ensure_same_type(input, kernel, bias);
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
