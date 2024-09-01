@@ -2,7 +2,7 @@ from . import _core, layers, errors, utils
 from typing import Mapping, Optional, List, Sequence, Union, DefaultDict, Tuple
 from collections import defaultdict
 import torch
-from torch import nn, fx
+from torch import func, nn, fx, relu
 from torch.nn import grad
 from torch.fx import passes
 
@@ -61,11 +61,11 @@ def conv2d(input: torch.Tensor,
     if input.requires_grad or weight.requires_grad or (
             bias is not None and bias.requires_grad):
         requires_grad = True
-    out = utils.get_item(input.dtype, _core.conv2d_float, _core.conv2d_double)(
-        input.data_ptr(),
-        input.shape, weight.data_ptr(),
-        weight.shape, bias_ptr, padding_h, padding_w, stride_h, stride_w,
-        dilation_h, dilation_w, padding_mode, groups, algorithm)
+    out = _core.conv2d(
+        input.data_ptr(), input.shape, utils.get_scalar_type(input.dtype),
+        weight.data_ptr(), weight.shape, bias_ptr, padding_h, padding_w,
+        stride_h, stride_w, dilation_h, dilation_w, padding_mode, groups,
+        algorithm)
     buffer = torch.frombuffer(
         out, dtype=input.dtype, requires_grad=requires_grad).view(
         out.shape)
@@ -285,14 +285,14 @@ def swap_backend_layers(complete_module: nn.Module, dtype,
                     start_dim, int))
                 assert (isinstance(end_dim, int))
                 forwards.append(layers.Flatten(
-                    dtype, start_dim, end_dim, algo))
+                    start_dim, end_dim, algo))
             elif node.target == torch.relu:
                 algo = get_algo_inc_counter(
                     'relu', algos, layer_counters, node_input_shape)
                 errors.bail_if(algo == "torch",
                                "can't use torch backend when in swap_backend")
                 forwards.append(
-                    layers.ReLU(dtype, algo))
+                    layers.ReLU(algo))
             else:
                 errors.unsupported_mod(node.target)
         elif node.op == 'call_module':
@@ -321,8 +321,10 @@ class Tracer(fx.Tracer):
             return True
         return super().is_leaf_module(m, module_qualified_name)
 
+
 def default_dtype():
     return torch.get_default_dtype()
+
 
 def swap_conv2d(
         module: nn.Module, selector: utils.AlgorithmicSelector,
@@ -354,24 +356,26 @@ def swap_conv2d(
 
 def swap_layer(module: Union[nn.Module, layers.Layer],
                dtype, algo: str) -> Optional[layers.Layer]:
+    scalar_type = utils.get_scalar_type(dtype)
     if isinstance(module, (nn.Conv2d, Conv2D)):
         return layers.Conv2D(
-            dtype, module.weight, module.bias, module.stride, module.padding,
-            module.dilation, module.padding_mode, module.groups, algo)
+            module.weight, module.bias, module.stride, module.padding,
+            module.dilation, module.padding_mode, module.groups, algo, scalar_type)
     elif isinstance(module, nn.Linear):
-        return layers.Linear(dtype, module.weight, module.bias, algo)
+        return layers.Linear(module.weight, module.bias, algo, scalar_type)
     elif isinstance(module, nn.MaxPool2d):
-        return layers.MaxPool2D(dtype, module.kernel_size, module.stride,
-                                module.padding, module.dilation, module.ceil_mode, algo)
+        return layers.MaxPool2D(
+            module.kernel_size, module.stride, module.padding, module.dilation,
+            module.ceil_mode, algo)
     elif isinstance(module, nn.AvgPool2d):
-        return layers.AvgPool2D(dtype, module.kernel_size, module.stride,
+        return layers.AvgPool2D(module.kernel_size, module.stride,
                                 module.padding, module.ceil_mode,
                                 module.count_include_pad,
                                 module.divisor_override, algo)
     elif isinstance(module, nn.AdaptiveAvgPool2d):
-        return layers.AdaptiveAvgPool2D(dtype, module.output_size, algo)
+        return layers.AdaptiveAvgPool2D(module.output_size, algo)
     elif isinstance(module, nn.ReLU):
-        return layers.ReLU(dtype, algo)
+        return layers.ReLU(algo)
     elif isinstance(module, nn.Flatten):
-        return layers.Flatten(dtype, module.start_dim, module.end_dim, algo)
+        return layers.Flatten(module.start_dim, module.end_dim, algo)
     return None

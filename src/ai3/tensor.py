@@ -1,17 +1,12 @@
 from . import _core, utils, errors
-from typing import Union
 
 
 class Tensor():
     """Simple type which implements the
     `Python Buffer Protocol <https://docs.python.org/3/c-api/buffer.html>`_"""
 
-    def __init__(self, tens: Union[_core.Tensor_float, _core.Tensor_double]):
+    def __init__(self, tens: _core.Tensor):
         self.core = tens
-        if isinstance(tens, _core.Tensor_float):
-            self.typestr = utils.FLOAT32_STR
-        else:
-            self.typestr = utils.FLOAT64_STR
 
     def to(self, out_type):
         """
@@ -28,7 +23,7 @@ class Tensor():
             return self
 
         if not isinstance(out_type, str):
-            out_type = utils.get_full_type_str(out_type)
+            out_type = utils.smart_type_str(out_type)
 
         if out_type == utils.TORCH_TENSOR_TYPE_STR:
             return self.torch()
@@ -47,11 +42,12 @@ class Tensor():
         """
         import numpy
         dtype = {
-            utils.FLOAT32_STR: numpy.float32,
-            utils.FLOAT64_STR: numpy.float64
-        }[self.typestr]
-        errors.bail_if(dtype is None,
-                       f"type, {self.typestr} is neither float32 or float64")
+            _core.ScalarType(_core.ScalarType.Float32): numpy.float32,
+            _core.ScalarType(_core.ScalarType.Float64): numpy.float64
+        }[self.core.scalar_type]
+        errors.bail_if(
+            dtype is None,
+            f"tensor type, {self.core.scalar_type} is neither float32 or float64")
         data: numpy.ndarray = numpy.frombuffer(
             self.core, dtype=dtype)
         return data.reshape(self.core.shape)
@@ -66,6 +62,9 @@ class Tensor():
             `torch.Tensor <https://pytorch.org/docs/stable/tensors.html>`_ with the shape and contents of the original
         """
         import torch
+        dtype = {
+            _core.ScalarType(_core.ScalarType.Float32): torch.float32,
+            _core.ScalarType(_core.ScalarType.Float64): torch.float64
+        }[self.core.scalar_type]
         return torch.frombuffer(
-            self.core, dtype=torch.__dict__[self.typestr]).view(
-            self.core.shape)
+            self.core, dtype=dtype).view(self.core.shape)

@@ -6,7 +6,6 @@ from typing import (
 )
 from abc import ABC
 from . import _core, errors, utils
-from .tensor import Tensor
 
 
 class Layer(ABC):
@@ -18,11 +17,11 @@ class Layer(ABC):
 
 class Conv2D(Layer):
     def __init__(
-            self, dtype, weight, bias, _stride: Union[int, Tuple[int, ...]],
+            self,  weight, bias, _stride: Union[int, Tuple[int, ...]],
             padding: Union[str, Union[int, Tuple[int, ...]]],
             _dilation: Union[int, Tuple[int, ...]],
             padding_mode: Union[str, int, _core.PaddingMode],
-            groups: int, algorithm: str):
+            groups: int, algorithm: str, scalar_type: _core.ScalarType):
         stride = utils.make_2d(_stride)
         dilation = utils.make_2d(_dilation)
         padding = utils.make_padding_2d(
@@ -45,8 +44,7 @@ class Conv2D(Layer):
             bias_addr = utils.get_address(bias)
         else:
             bias_addr = None
-        self.core = utils.get_item(
-            dtype, _core.Conv2D_float, _core.Conv2D_double)(
+        self.core = _core.Conv2D(
             weight_addr, weight_shape, bias_addr, padding[0],
             padding[1],
             stride[0],
@@ -54,40 +52,32 @@ class Conv2D(Layer):
             dilation[0],
             dilation[1],
             _core.PaddingMode(padding_mode),
-            groups, algorithm)
+            groups, algorithm, scalar_type)
 
     def set_algo(self, algo: str):
         self.core.algorithm = algo
 
-    def forward(self, input) -> Tensor:
-        return Tensor(
-            self.core.forward(
-                utils.get_address(input),
-                utils.get_shape(input)))
-
 
 class Linear(Layer):
-    def __init__(self, dtype, weight, bias, algorithm: str):
+    def __init__(self, weight, bias, algorithm: str,
+                 scalar_type: _core.ScalarType):
         weight_addr = utils.get_address(weight)
         weight_shape = utils.get_shape(weight)
         if bias is not None:
             bias_addr = utils.get_address(bias)
         else:
             bias_addr = None
-        self.core = utils.get_item(
-            dtype, _core.Linear_float, _core.Linear_double)(
-            weight_addr, weight_shape, bias_addr, algorithm)
+        self.core = _core.Linear(
+            weight_addr, weight_shape, bias_addr, algorithm, scalar_type)
 
 
 class ReLU(Layer):
-    def __init__(self, dtype, algorithm: str):
-        layer = utils.get_item(
-            dtype, _core.ReLU_float, _core.ReLU_double)
-        self.core = layer(algorithm)
+    def __init__(self, algorithm: str):
+        self.core = _core.ReLU(algorithm)
 
 
 class MaxPool2D(Layer):
-    def __init__(self, dtype, kernel_shape: Union[int, Tuple[int, int]],
+    def __init__(self, kernel_shape: Union[int, Tuple[int, int]],
                  stride: Union[int, Tuple[int, int]],
                  padding: Union[int, Tuple[int, int]],
                  dilation: Union[int, Tuple[int, int]],
@@ -99,8 +89,7 @@ class MaxPool2D(Layer):
         padding = utils.make_2d(padding)
         ceil_mode = ceil_mode
 
-        self.core = utils.get_item(
-            dtype, _core.MaxPool2D_float, _core.MaxPool2D_double)(
+        self.core = _core.MaxPool2D(
             kernel_shape[0],
             kernel_shape[1],
             padding[0],
@@ -113,7 +102,7 @@ class MaxPool2D(Layer):
 
 
 class AvgPool2D(Layer):
-    def __init__(self, dtype, kernel_shape: Union[int, Tuple[int, int]],
+    def __init__(self, kernel_shape: Union[int, Tuple[int, int]],
                  stride: Union[int, Tuple[int, int]],
                  padding: Union[int, Tuple[int, int]],
                  ceil_mode: bool,
@@ -124,8 +113,7 @@ class AvgPool2D(Layer):
         stride_2d = utils.make_2d(stride)
         kernel_shape = utils.make_2d(kernel_shape)
 
-        self.core = utils.get_item(
-            dtype, _core.AvgPool2D_float, _core.AvgPool2D_double)(
+        self.core = _core.AvgPool2D(
             kernel_shape[0],
             kernel_shape[1],
             padding_2d[0],
@@ -137,7 +125,7 @@ class AvgPool2D(Layer):
 
 class AdaptiveAvgPool2D(Layer):
     def __init__(
-            self, dtype,
+            self,
             output_shape: Optional[Union[int, Sequence[Optional[int]]]],
             algorithm: str):
         if isinstance(output_shape, int):
@@ -145,16 +133,13 @@ class AdaptiveAvgPool2D(Layer):
                 output_shape)
         elif output_shape is None:
             output_shape = [None, None]
-        self.core = utils.get_item(
-            dtype, _core.AdaptiveAvgPool2D_float, _core.
-            AdaptiveAvgPool2D_double)(
+        self.core = _core.AdaptiveAvgPool2D(
             output_shape[0],
             output_shape[1],
             algorithm)
 
 
 class Flatten(Layer):
-    def __init__(self, dtype, start_dim: int, end_dim: int, algorithm: str):
-        self.core = utils.get_item(
-            dtype, _core.Flatten_float, _core.Flatten_double)(
+    def __init__(self, start_dim: int, end_dim: int, algorithm: str):
+        self.core = _core.Flatten(
             start_dim, end_dim, algorithm)

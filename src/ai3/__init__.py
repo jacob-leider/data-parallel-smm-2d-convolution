@@ -10,8 +10,12 @@ from typing import Mapping, Optional, Sequence, TypeAlias
 from . import _core, utils, layers, errors
 from .tensor import Tensor
 
-FROM_BACKEND: str = 'torch'
-"""The backend of the existing *DNN*"""
+FROM_BACKEND: Optional[str] = None
+"""The backend of the existing *DNN*
+
+If `None`, the backend will be inferred from the type
+of the input to the swapping functions
+"""
 
 SUPPORTED_FROM_BACKENDS: Sequence[str] = ['torch']
 """Algorithmic selection over a *DNN* is supported for these backends
@@ -70,11 +74,9 @@ class Model():
     """The model which performs the operations using the user specified
     algorithms."""
 
-    def __init__(self, dtype, layers: Sequence[layers.Layer]):
+    def __init__(self, layers: Sequence[layers.Layer]):
         cores = [layer.core for layer in layers]
-        model = utils.get_item(
-            dtype, _core.Model_float, _core.Model_double)
-        self.core = model(cores)
+        self.core = _core.Model(cores)
 
     def __call__(self, input):
         """Perform a prediction on the input data."""
@@ -90,19 +92,9 @@ class Model():
             output after performing operations
         """
         out = self.core.predict(utils.get_address(
-            input), utils.get_shape(input))
+            input), utils.get_shape(input), utils.get_scalar_type(input.dtype))
         out = Tensor(out)
         return out.to(out_type)
-
-def get_swapper():
-    try:
-        if FROM_BACKEND == 'torch':
-            from . import swap_torch
-            return swap_torch
-    except ModuleNotFoundError as e:
-        errors.print_error(f'Using backend {FROM_BACKEND}, but it was not found')
-        raise e
-    errors.bail(f"Unsupported backend: {FROM_BACKEND}, supported backends are: {SUPPORTED_FROM_BACKENDS}")
 
 
 def swap_conv2d(
@@ -138,7 +130,7 @@ def swap_conv2d(
         algos = DEFAULT_ALGOS["conv2d"]
     utils.check_callable_params_with_shape(
         {'conv2d': algos}, sample_input_shape)
-    swapper = get_swapper()
+    swapper = utils.get_swapper(module, FROM_BACKEND, SUPPORTED_FROM_BACKENDS)
     swapper.swap_conv2d(
         module, algos, sample_input_shape)
 
@@ -197,12 +189,12 @@ def swap_backend(module,
         algos = {**DEFAULT_ALGOS, **algos}
     else:
         algos = DEFAULT_ALGOS
-    swapper = get_swapper()
+    swapper = utils.get_swapper(module, FROM_BACKEND, SUPPORTED_FROM_BACKENDS)
     if not dtype:
         dtype = swapper.default_dtype()
     utils.check_callable_params_with_shape(
         algos, sample_input_shape)
-    return Model(dtype, swapper.swap_backend_layers(
+    return Model(swapper.swap_backend_layers(
         module, dtype, algos, sample_input_shape))
 
 

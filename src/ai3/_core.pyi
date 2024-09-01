@@ -17,25 +17,20 @@ class PaddingMode(Enum):
     replicate: int
     circular: int
 
-class Tensor_float(Buffer):
-    data: Sequence[float]
-    shape: Sequence[int]
+class ScalarType(Enum):
+    Float32: int
+    Float64: int
 
-class Tensor_double(Buffer):
-    data: Sequence[float]
+class Tensor(Buffer):
     shape: Sequence[int]
+    scalar_type: ScalarType
 
 class Model():
     def __init__(self, layers: Sequence):
         ...
 
-    def predict(self, input_address: int, input_shape: Sequence[int]):
+    def predict(self, input_address: int, input_shape: Sequence[int], input_type: ScalarType):
         ...
-
-class Model_float(Model):
-    ...
-class Model_double(Model):
-    ...
 
 def output_hw_for_2d(input: int, kernel: int,
                                padding: int ,
@@ -43,18 +38,11 @@ def output_hw_for_2d(input: int, kernel: int,
     ...
 
 
-def conv2d_float(input_address: int, input_shape: Sequence[int],
+def conv2d(input_address: int, input_shape: Sequence[int], input_type: ScalarType,
                  weight_address: int, weight_shape: Sequence[int], bias_addr:
                  Optional[int], padding_h: int, padding_w: int, stride_h: int,
                  stride_w: int, dilation_h: int, dilation_w: int, padding_mode:
-                 int, groups: int, algorithm: str) -> Tensor_float:
-    ...
-
-def conv2d_double(input_address: int, input_shape: Sequence[int],
-                 weight_address: int, weight_shape: Sequence[int], bias_addr:
-                 Optional[int], padding_h: int, padding_w: int, stride_h: int,
-                 stride_w: int, dilation_h: int, dilation_w: int, padding_mode:
-                 int, groups: int, algorithm: str) -> Tensor_double:
+                 int, groups: int, algorithm: str) -> Tensor:
     ...
 
 class Conv2D():
@@ -71,16 +59,10 @@ class Conv2D():
                  dilation_w: int,
                  padding_mode: PaddingMode,
                  groups: int,
-                 algorithm: str):
+                 algorithm: str,
+                 scalar_type: ScalarType):
         ...
 
-    def forward(self, input_address: int, input_shape: Sequence[int]):
-        ...
-
-class Conv2D_double(Conv2D):
-    ...
-class Conv2D_float(Conv2D):
-    ...
 
 class MaxPool2D():
     def __init__(self,
@@ -96,11 +78,6 @@ class MaxPool2D():
                  algorithm: str):
         ...
 
-class MaxPool2D_float(MaxPool2D):
-    ...
-class MaxPool2D_double(MaxPool2D):
-    ...
-
 class AvgPool2D():
     def __init__(self,
                  kernel_h: int,
@@ -115,48 +92,23 @@ class AvgPool2D():
                  algorithm: str):
         ...
 
-class AvgPool2D_float(AvgPool2D):
-    ...
-class AvgPool2D_double(AvgPool2D):
-    ...
-
 class AdaptiveAvgPool2D():
     def __init__(self, output_h: Optional[int], output_w: Optional[int], algorithm:str):
         ...
-
-class AdaptiveAvgPool2D_float(AdaptiveAvgPool2D):
-    ...
-class AdaptiveAvgPool2D_double(AdaptiveAvgPool2D):
-    ...
 
 class Linear:
     def __init__(self,
                  weight_address: int,
                  weight_shape: Sequence[int],
                  bias_addr: Optional[int],
-                 algorithm: str):
+                 algorithm: str,
+                 scalar_type: ScalarType):
         ...
-
-class Linear_double(Linear):
-    ...
-
-class Linear_float(Linear):
-    ...
 
 class ReLU():
     def __init__(self, algorithm: str):
         ...
 
-class ReLU_float(ReLU):
-    ...
-class ReLU_double(ReLU):
-    ...
-
 class Flatten():
     def __init__(self, start_dim: int, end_dim: int, algorithm: str):
         ...
-
-class Flatten_double(Flatten):
-    ...
-class Flatten_float(Flatten):
-    ...

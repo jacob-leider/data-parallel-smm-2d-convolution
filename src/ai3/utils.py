@@ -15,6 +15,7 @@ FLOAT32_STR = 'float32'
 FLOAT64_STR = 'float64'
 
 TORCH_TENSOR_TYPE_STR = 'torch.Tensor'
+TORCH_MODULE_TYPE_STR = 'torch.nn.modules.module.Module'
 
 AlgorithmicSelector: TypeAlias = Union[str, Sequence[str], Callable]
 
@@ -51,29 +52,60 @@ def check_callable_params_with_shape(
                     f'provided sample input shape but function selector for {key} doesn\'t take an input shape')
 
 
-def get_item(dtype, float_item, double_item):
+def get_scalar_type(dtype) -> _core.ScalarType:
     if str(dtype) == 'torch.float32':
-        return float_item
+        return _core.ScalarType(_core.ScalarType.Float32)
     if str(dtype) == 'torch.float64':
-        return double_item
-    assert False, f'using bad dtype: {str(dtype)}'
+        return _core.ScalarType(_core.ScalarType.Float64)
+    errors.bail(f'using bad dtype: {str(dtype)}')
 
-def get_full_type_str(orig_type) -> str:
+
+def get_swapper(
+        orig, from_backend: Optional[str],
+        supported_backends: Sequence[str]):
+    if not from_backend:
+        type_str = smart_type_str(type(orig))
+        if type_str == TORCH_MODULE_TYPE_STR:
+            from_backend = 'torch'
+        else:
+            errors.bail(
+                f'Algorithmic selection is not suported for type {type_str}')
+    try:
+        if from_backend == 'torch':
+            from . import swap_torch
+            return swap_torch
+    except ModuleNotFoundError as e:
+        errors.print_error(
+            f'Using backend {from_backend}, but it was not found')
+        raise e
+    errors.bail(
+        f"Unsupported backend: {from_backend}, supported backends are: {supported_backends}")
+
+
+def smart_type_str(orig_type) -> str:
+    def is_subclass_of(orig_type, type_str):
+        return any(
+            base.__module__ + '.' + base.__name__ == type_str
+            for base in orig_type.__mro__)
+
     if isinstance(orig_type, str):
         return orig_type
-    if any(base.__module__ == 'torch' and base.__name__ == 'Tensor' for base in orig_type.__mro__):
+    if is_subclass_of(orig_type, TORCH_TENSOR_TYPE_STR):
         return TORCH_TENSOR_TYPE_STR
-    errors.bail(f'bad type {orig_type}')
+    if is_subclass_of(orig_type, TORCH_MODULE_TYPE_STR):
+        return TORCH_MODULE_TYPE_STR
+    return f"{orig_type.__module__}.{orig_type.__name__}"
 
 
 def get_address(frontend_data) -> int:
-    if get_full_type_str(type(frontend_data)) == TORCH_TENSOR_TYPE_STR:
+    if smart_type_str(type(frontend_data)) == TORCH_TENSOR_TYPE_STR:
         return frontend_data.data_ptr()
-    errors.bail(f'bad input type {type(frontend_data)} when getting data address')
+    errors.bail(
+        f'bad input type {type(frontend_data)} when getting data address')
 
 
 def get_shape(frontend_data) -> tuple:
-    if get_full_type_str(type(frontend_data)) == TORCH_TENSOR_TYPE_STR:
+    if smart_type_str(type(frontend_data)) == TORCH_TENSOR_TYPE_STR:
         return frontend_data.size()
     assert False and 'bad input type when getting shape'
 
