@@ -1,10 +1,8 @@
-#pragma once
-
-#include "ai3.hpp"
-#include <vector>
+#include <ai3.hpp>
+#include <algos.hpp>
 
 template <typename dtype>
-Tensor _flatten(Tensor input, const uint start_dim, int end_dim_orig) {
+Tensor flatten::direct(Tensor input, const uint start_dim, int end_dim_orig) {
     errs::bail_if(end_dim_orig != -1 && int(start_dim) > end_dim_orig,
                   "start dimension > end dimension in flattening function");
     uint end_dim;
@@ -35,3 +33,6 @@ Tensor _flatten(Tensor input, const uint start_dim, int end_dim_orig) {
     input.shape = new_shape;
     return input;
 }
+
+template Tensor flatten::direct<float>(FLATTEN_PARAMS);
+template Tensor flatten::direct<double>(FLATTEN_PARAMS);

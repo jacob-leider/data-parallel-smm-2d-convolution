@@ -1,12 +1,11 @@
-#pragma once
-
-#include "../avgpool2d/plain.hpp"
-#include "ai3.hpp"
+#include <ai3.hpp>
+#include <algos.hpp>
 #include <optional>
 
 template <typename dtype>
-Tensor _adaptiveavgpool2d(Tensor input, const std::optional<uint> output_h,
-                          const std::optional<uint> output_w) {
+Tensor adaptiveavgpool2d::direct(Tensor input,
+                                 const std::optional<uint> output_h,
+                                 const std::optional<uint> output_w) {
     uint input_height = input.height();
     uint input_width = input.width();
     const uint output_height = output_h.value_or(input_height);
@@ -23,6 +22,10 @@ Tensor _adaptiveavgpool2d(Tensor input, const std::optional<uint> output_h,
     const uint kernel_h = input_height - ((output_height - 1) * stride_h);
     const uint kernel_w = input_width - ((output_width - 1) * stride_w);
 
-    return _avgpool2d<dtype>(std::move(input), kernel_h, kernel_w, 0, 0,
-                             stride_h, stride_w, false, false, std::nullopt);
+    return avgpool2d::direct<dtype>(std::move(input), kernel_h, kernel_w, 0, 0,
+                                    stride_h, stride_w, false, false,
+                                    std::nullopt);
 }
+
+template Tensor adaptiveavgpool2d::direct<float>(ADAPTIVEAVGPOOL2D_PARAMS);
+template Tensor adaptiveavgpool2d::direct<double>(ADAPTIVEAVGPOOL2D_PARAMS);

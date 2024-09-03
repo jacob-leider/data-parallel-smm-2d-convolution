@@ -1,9 +1,8 @@
-#pragma once
-
-#include "ai3.hpp"
+#include <ai3.hpp>
+#include <algos.hpp>
 
 template <typename dtype>
-Tensor implicit_precomp_gemm_conv2d(
+Tensor conv2d::implicit_precomp_gemm(
     Tensor input, const Tensor &kernel, const std::optional<const Tensor> &bias,
     const uint padding_h, const uint padding_w, const uint stride_h,
     const uint stride_w, const uint dilation_h, const uint dilation_w,
@@ -21,3 +20,6 @@ Tensor implicit_precomp_gemm_conv2d(
     (void)groups;
     errs::bail("implicit precomp gemm not implemented outside of cuDNN");
 }
+
+template Tensor conv2d::implicit_precomp_gemm<float>(CONV2D_PARAMS);
+template Tensor conv2d::implicit_precomp_gemm<double>(CONV2D_PARAMS);

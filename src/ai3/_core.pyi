@@ -2,7 +2,7 @@ from collections.abc import Buffer
 from typing import Sequence, Optional
 from enum import Enum
 
-def using_mps() -> bool:
+def using_mps_and_metal() -> bool:
     ...
 def using_cuda_tools() -> bool:
     ...

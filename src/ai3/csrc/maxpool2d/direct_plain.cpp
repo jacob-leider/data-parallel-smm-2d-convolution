@@ -1,15 +1,13 @@
-#pragma once
-
-#include "ai3.hpp"
-#include "utils.hpp"
+#include <ai3.hpp>
+#include <algos.hpp>
 #include <optional>
 
 template <typename dtype>
-Tensor _maxpool2d(Tensor input, const uint kernel_h, const uint kernel_w,
-                  const uint padding_h, const uint padding_w,
-                  const uint stride_h, const uint stride_w,
-                  const uint dilation_h, const uint dilation_w,
-                  const bool ceil_mode) {
+Tensor maxpool2d::direct(Tensor input, const uint kernel_h, const uint kernel_w,
+                         const uint padding_h, const uint padding_w,
+                         const uint stride_h, const uint stride_w,
+                         const uint dilation_h, const uint dilation_w,
+                         const bool ceil_mode) {
     const uint input_channels = input.input_channels();
     const uint input_height = input.height();
     const uint input_width = input.width();
@@ -71,3 +69,6 @@ Tensor _maxpool2d(Tensor input, const uint kernel_h, const uint kernel_w,
 
     return output;
 }
+
+template Tensor maxpool2d::direct<float>(MAXPOOL2D_PARAMS);
+template Tensor maxpool2d::direct<double>(MAXPOOL2D_PARAMS);

@@ -1,9 +1,8 @@
-#pragma once
-
-#include "ai3.hpp"
+#include <ai3.hpp>
+#include <algos.hpp>
 
 template <typename dtype>
-Tensor metal_conv2d(Tensor input, const Tensor &kernel,
+Tensor conv2d::gemm(Tensor input, const Tensor &kernel,
                     const std::optional<const Tensor> &bias,
                     const uint padding_h, const uint padding_w,
                     const uint stride_h, const uint stride_w,
@@ -20,5 +19,8 @@ Tensor metal_conv2d(Tensor input, const Tensor &kernel,
     (void)dilation_w;
     (void)padding_mode;
     (void)groups;
-    errs::bail("metal support required to use the metal algorithm");
+    errs::bail("gemm conv2d not implemented outside of cuDNN");
 }
+
+template Tensor conv2d::gemm<float>(CONV2D_PARAMS);
+template Tensor conv2d::gemm<double>(CONV2D_PARAMS);

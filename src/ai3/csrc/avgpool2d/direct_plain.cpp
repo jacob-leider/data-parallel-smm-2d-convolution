@@ -1,11 +1,9 @@
-#pragma once
-
-#include "ai3.hpp"
-#include "utils.hpp"
+#include <ai3.hpp>
+#include <algos.hpp>
 #include <optional>
 
 template <typename dtype>
-inline Tensor _avgpool2d(Tensor input, const uint kernel_h, const uint kernel_w,
+Tensor avgpool2d::direct(Tensor input, const uint kernel_h, const uint kernel_w,
                          const uint padding_h, const uint padding_w,
                          const uint stride_h, const uint stride_w,
                          const bool ceil_mode, const bool count_include_pad,
@@ -93,3 +91,6 @@ inline Tensor _avgpool2d(Tensor input, const uint kernel_h, const uint kernel_w,
 
     return output;
 }
+
+template Tensor avgpool2d::direct<float>(AVGPOOL2D_PARAMS);
+template Tensor avgpool2d::direct<double>(AVGPOOL2D_PARAMS);

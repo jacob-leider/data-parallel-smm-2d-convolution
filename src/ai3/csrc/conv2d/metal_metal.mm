@@ -1,5 +1,5 @@
-#import "metal.h"
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
+#include <algos.hpp>
 
 inline uint computeMPSAlignOffset(const uint kernel, const uint padding,
                                   const uint dilation = 1) {
@@ -74,12 +74,12 @@ template <typename dtype> Tensor kernel_to_hwio(const Tensor &orig) {
 }
 
 template <>
-Tensor metal_conv2d<float>(Tensor input, const Tensor &kernel,
-                           const std::optional<const Tensor> &bias,
-                           const uint padding_h, const uint padding_w,
-                           const uint stride_h, const uint stride_w,
-                           const uint dilation_h, const uint dilation_w,
-                           const PaddingMode padding_mode, uint groups) {
+Tensor conv2d::metal<float>(Tensor input, const Tensor &kernel,
+                            const std::optional<const Tensor> &bias,
+                            const uint padding_h, const uint padding_w,
+                            const uint stride_h, const uint stride_w,
+                            const uint dilation_h, const uint dilation_w,
+                            const PaddingMode padding_mode, uint groups) {
     ensure_same_type(input, kernel, bias);
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
@@ -196,12 +196,12 @@ Tensor metal_conv2d<float>(Tensor input, const Tensor &kernel,
 }
 
 template <>
-Tensor metal_conv2d<double>(Tensor input, const Tensor &kernel,
-                            const std::optional<const Tensor> &bias,
-                            const uint padding_h, const uint padding_w,
-                            const uint stride_h, const uint stride_w,
-                            const uint dilation_h, const uint dilation_w,
-                            const PaddingMode padding_mode, uint groups) {
+Tensor conv2d::metal<double>(Tensor input, const Tensor &kernel,
+                             const std::optional<const Tensor> &bias,
+                             const uint padding_h, const uint padding_w,
+                             const uint stride_h, const uint stride_w,
+                             const uint dilation_h, const uint dilation_w,
+                             const PaddingMode padding_mode, uint groups) {
     errs::mps_metal_unsupported_double();
 
     Tensor input_float = input.template to_type<float>(ScalarType::Float32);
@@ -210,8 +210,9 @@ Tensor metal_conv2d<double>(Tensor input, const Tensor &kernel,
         bias.has_value() ? std::optional<Tensor>(bias->template to_type<float>(
                                ScalarType::Float32))
                          : std::nullopt;
-    return metal_conv2d<float>(std::move(input_float), kernel_float, bias_float,
-                               padding_h, padding_w, stride_h, stride_w,
-                               dilation_h, dilation_w, padding_mode, groups)
+    return conv2d::metal<float>(std::move(input_float), kernel_float,
+                                bias_float, padding_h, padding_w, stride_h,
+                                stride_w, dilation_h, dilation_w, padding_mode,
+                                groups)
         .template to_type<double>(ScalarType::Float64);
 }

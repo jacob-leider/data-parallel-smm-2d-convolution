@@ -1,9 +1,8 @@
-#pragma once
-
-#include "ai3.hpp"
+#include <ai3.hpp>
+#include <algos.hpp>
 #include <optional>
 
-template <typename dtype> Tensor _relu(Tensor input) {
+template <typename dtype> Tensor relu::direct(Tensor input) {
     int total_elements = input.count();
     dtype *in_data = data_as<dtype>(input.data);
     for (int i = 0; i < total_elements; i++) {
@@ -11,3 +10,6 @@ template <typename dtype> Tensor _relu(Tensor input) {
     }
     return input;
 }
+
+template Tensor relu::direct<float>(RELU_PARAMS);
+template Tensor relu::direct<double>(RELU_PARAMS);

@@ -198,9 +198,9 @@ def swap_backend(module,
         module, dtype, algos, sample_input_shape))
 
 
-def using_mps() -> bool:
-    """Whether the implementations can use *MPS*"""
-    return _core.using_mps()
+def using_mps_and_metal() -> bool:
+    """Whether the implementations can use *MPS* and *Metal*"""
+    return _core.using_mps_and_metal()
 
 
 def using_sycl() -> bool:

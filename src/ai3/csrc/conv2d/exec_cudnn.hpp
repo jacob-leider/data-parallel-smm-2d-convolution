@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../cuda_utils.hpp"
-#include "ai3.hpp"
+#include <ai3.hpp>
+#include <cuda_utils.hpp>
 
 template <typename dtype>
 Tensor conv_bias_forward_with_algo(Tensor input, const Tensor &kernel,

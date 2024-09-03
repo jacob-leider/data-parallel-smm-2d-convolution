@@ -24,10 +24,10 @@ if USE_ALL_POSSIBLE_CONV:
     assert len(CONV2D_ALGOS_TO_USE) == 0
     import ai3
     CONV2D_ALGOS_TO_USE.extend(['direct', 'smm'])
-    if ai3.using_mps():
+    if ai3.using_mps_and_metal():
         CONV2D_ALGOS_TO_USE.append('mps')
     if ai3.using_cuda_tools():
-        CONV2D_ALGOS_TO_USE.extend(['winograd', 'gemm',
+        CONV2D_ALGOS_TO_USE.extend(['gemm',
                                     'implicit gemm', 'implicit precomp gemm',
                                     'guess'])
 
@@ -87,13 +87,6 @@ def starts_with_any(cmd, starts):
     return any(cmd.startswith(s) for s in starts)
 
 
-def clean_start(cmd, starts):
-    for s in starts:
-        if cmd.startswith(s):
-            return cmd[len(s) + 1:]
-    assert False and 'cleaning with unmatched start'
-
-
 def fix_cmd_run(cmd, starter):
     cmd = cmd.replace(f'{starter}.', f'{starter} ')
     run_command(f'{PY} {cmd}')
@@ -130,6 +123,14 @@ if __name__ == '__main__':
         elif cmd == 'format':
             run_command(f'{C_FORMAT} -i {' '.join(CSRC_FILES)}')
             run_command(f'{PY_FORMAT} {' '.join(PY_FILES)}')
+        elif cmd == 'joss':
+            run_command(f'docker run --rm '
+                        '--volume $PWD/papers/JOSS/:/data '
+                        '--user $(id -u):$(id -g) '
+                        '--env JOURNAL=joss '
+                        'openjournals/inara')
+            run_command(f'{PY} papers.JOSS.function')
+            run_command(f'{PY} papers.JOSS.name_and_list')
         else:
             cmd_found = False
             for start in [

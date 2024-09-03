@@ -1,9 +1,8 @@
-#pragma once
-
-#include "ai3.hpp"
+#include <ai3.hpp>
+#include <algos.hpp>
 
 template <typename dtype>
-Tensor gemm_conv2d(Tensor input, const Tensor &kernel,
+Tensor conv2d::mps(Tensor input, const Tensor &kernel,
                    const std::optional<const Tensor> &bias,
                    const uint padding_h, const uint padding_w,
                    const uint stride_h, const uint stride_w,
@@ -20,5 +19,7 @@ Tensor gemm_conv2d(Tensor input, const Tensor &kernel,
     (void)dilation_w;
     (void)padding_mode;
     (void)groups;
-    errs::bail("gemm conv2d not implemented outside of cuDNN");
+    errs::bail("mps support required to use the mps algorithm");
 }
+template Tensor conv2d::mps<float>(CONV2D_PARAMS);
+template Tensor conv2d::mps<double>(CONV2D_PARAMS);

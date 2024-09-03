@@ -1,17 +1,16 @@
-#pragma once
-
-#include "ai3.hpp"
 #include <CL/sycl.hpp>
+#include <ai3.hpp>
+#include <algos.hpp>
 #include <optional>
 using namespace cl;
 
 template <typename dtype>
-Tensor smm_conv2d(Tensor input, const Tensor &kernel,
-                  const std::optional<const Tensor> &bias, const uint padding_h,
-                  const uint padding_w, const uint stride_h,
-                  const uint stride_w, const uint dilation_h,
-                  const uint dilation_w, const PaddingMode padding_mode,
-                  uint groups) {
+Tensor conv2d::smm(Tensor input, const Tensor &kernel,
+                   const std::optional<const Tensor> &bias,
+                   const uint padding_h, const uint padding_w,
+                   const uint stride_h, const uint stride_w,
+                   const uint dilation_h, const uint dilation_w,
+                   const PaddingMode padding_mode, uint groups) {
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
     errs::bail_if(groups != 1, "groups must be 1");
@@ -168,3 +167,6 @@ Tensor smm_conv2d(Tensor input, const Tensor &kernel,
 
     return output;
 }
+
+template Tensor conv2d::smm<float>(CONV2D_PARAMS);
+template Tensor conv2d::smm<double>(CONV2D_PARAMS);

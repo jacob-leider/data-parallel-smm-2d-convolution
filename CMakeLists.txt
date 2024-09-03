@@ -24,7 +24,7 @@ set(CSRC_FILES
     ${CSRC_DIR}/ai3.cpp
 )
 
-set(USE_MPS NO)
+set(USE_MPS_METAL NO)
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     find_library(metal NAMES Metal)
     find_library(mps NAMES MetalPerformanceShaders)
@@ -32,10 +32,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     find_library(coreml NAMES CoreML)
     if(metal AND mps AND foundation AND coreml)
         message(STATUS "Using Metal, Foundation, MetalPerformanceShaders, CoreML")
-        list(APPEND CSRC_FILES ${CSRC_DIR}/conv2d/mps.mm
-            ${CSRC_DIR}/conv2d/metal.mm)
         list(APPEND LIBRARIES ${metal} ${mps} ${foundation} ${coreml})
-        set(USE_MPS YES)
+        set(USE_MPS_METAL YES)
     endif()
 endif()
 
@@ -73,6 +71,59 @@ if(SYCL_FOUND)
     list(APPEND LINK_OPTIONS ${SYCL_LFLAGS})
 endif()
 
+function(check_and_add_impl file platform_label platform_ext)
+    get_filename_component(FILENAME_WE ${file} NAME_WE)
+    get_filename_component(FILE_DIR ${file} DIRECTORY)
+
+    string(REPLACE "_plain" "_${platform_label}" NEW_FILENAME "${FILENAME_WE}.${platform_ext}")
+    set(NEW_FILE "${FILE_DIR}/${NEW_FILENAME}")
+
+    if(EXISTS "${NEW_FILE}")
+        list(REMOVE_ITEM IMPLS "${file}")
+        list(APPEND IMPLS "${NEW_FILE}")
+        set(IMPLS ${IMPLS} PARENT_SCOPE)
+    endif()
+endfunction()
+
+function(use_supported_platform_impls op)
+    file(GLOB IMPLS "${CSRC_DIR}/${op}/*_plain.cpp")
+
+    if(USE_CUDA_TOOLS)
+        foreach(FILE ${IMPLS})
+            check_and_add_impl(${FILE} "cudnn" "cpp")
+        endforeach()
+        foreach(FILE ${IMPLS})
+            check_and_add_impl(${FILE} "cublas" "cpp")
+        endforeach()
+    endif()
+
+    if(USE_MPS_METAL)
+        foreach(FILE ${IMPLS})
+            check_and_add_impl(${FILE} "mps" "mm")
+        endforeach()
+        foreach(FILE ${IMPLS})
+            check_and_add_impl(${FILE} "metal" "mm")
+        endforeach()
+    endif()
+
+    if(USE_SYCL)
+        foreach(FILE ${IMPLS})
+            check_and_add_impl(${FILE} "sycl" "cpp")
+        endforeach()
+    endif()
+
+    list(APPEND CSRC_FILES ${IMPLS})
+    set(CSRC_FILES ${CSRC_FILES} PARENT_SCOPE)
+endfunction()
+
+use_supported_platform_impls("conv2d")
+use_supported_platform_impls("linear")
+use_supported_platform_impls("avgpool2d")
+use_supported_platform_impls("adaptiveavgpool2d")
+use_supported_platform_impls("maxpool2d")
+use_supported_platform_impls("relu")
+use_supported_platform_impls("flatten")
+
 pybind11_add_module(_core MODULE ${CSRC_FILES})
 set_target_properties(_core PROPERTIES
     CXX_STANDARD 17
@@ -86,8 +137,8 @@ target_link_libraries(_core PRIVATE ${LIBRARIES})
 target_include_directories(_core PRIVATE ${INCLUDE_DIRECTORIES})
 target_link_directories(_core PRIVATE ${LINK_DIRECTORIES})
 
-if(USE_MPS)
-    target_compile_definitions(_core PRIVATE USE_MPS)
+if(USE_MPS_METAL)
+    target_compile_definitions(_core PRIVATE USE_MPS_METAL)
 endif()
 
 if(USE_CUDA_TOOLS)

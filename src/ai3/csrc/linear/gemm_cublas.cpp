@@ -1,12 +1,13 @@
 #pragma once
 
-#include "../cuda_utils.hpp"
-#include "ai3.hpp"
+#include <ai3.hpp>
+#include <algos.hpp>
+#include <cuda_utils.hpp>
 #include <optional>
 
 template <typename dtype>
-Tensor _linear(Tensor input, const Tensor &weight,
-               const std::optional<const Tensor> &bias) {
+Tensor linear::gemm(Tensor input, const Tensor &weight,
+                    const std::optional<const Tensor> &bias) {
     ensure_same_type(input, weight);
     errs::bail_if(input.width() != weight.width(),
                   "Invalid matrix multiplication: input width=", input.width(),
@@ -87,3 +88,6 @@ Tensor _linear(Tensor input, const Tensor &weight,
 
     return output;
 }
+
+template Tensor linear::gemm<float>(LINEAR_PARAMS);
+template Tensor linear::gemm<double>(LINEAR_PARAMS);

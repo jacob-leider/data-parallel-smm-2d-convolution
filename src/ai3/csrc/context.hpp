@@ -1,9 +1,9 @@
 #pragma once
 
-#include "utils.hpp"
+#include <utils.hpp>
 
 #if defined USE_CUDA_TOOLS
-#include "cuda_utils.hpp"
+#include <cuda_utils.hpp>
 #endif
 
 #if defined USE_SYCL
@@ -11,7 +11,7 @@
 using namespace cl;
 #endif
 
-#if defined USE_MPS
+#if defined USE_MPS_METAL
 void *gen_mps_graph_device(void);
 void *gen_mps_graph(void);
 void *gen_mtl_device(void);
@@ -28,7 +28,7 @@ class Context {
      * @brief Returns the cached `MPSGraphDevice`, initializing it if
      * necessary
      */
-#if defined USE_MPS
+#if defined USE_MPS_METAL
     inline static void *mps_graph_device() {
         if (mps_device_init) {
             return mps_g_device;
@@ -47,7 +47,7 @@ class Context {
      * @brief Returns the cached `MPSGraph`, initializing it if
      * necessary
      */
-#if USE_MPS
+#if USE_MPS_METAL
     inline static void *mps_graph() {
         if (mps_g_init) {
             return mps_g;
@@ -66,7 +66,7 @@ class Context {
      * @brief Returns the cached `MTLDevice`, initializing it if
      * necessary
      */
-#if USE_MPS
+#if USE_MPS_METAL
     inline static void *mtl_device() {
         if (mtl_d_init) {
             return mtl_d;
@@ -147,7 +147,7 @@ class Context {
             CUBLAS_CHECK(cublasDestroy(cublas_handle));
         }
 #endif
-#if defined USE_MPS
+#if defined USE_MPS_METAL
         if (mps_g_init) {
             release_mps_graph(mps_g);
         }
@@ -158,7 +158,7 @@ class Context {
     }
 
   private:
-#if defined USE_MPS
+#if defined USE_MPS_METAL
     inline static void *mps_g_device = nullptr;
     inline static bool mps_device_init = false;
     inline static void *mps_g = nullptr;
