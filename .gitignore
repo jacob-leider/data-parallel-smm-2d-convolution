@@ -6,6 +6,7 @@ venv
 todos.rst
 
 docs/_build
+docs/_static
 docs/_templates
 docs/doxygen
 docs/html

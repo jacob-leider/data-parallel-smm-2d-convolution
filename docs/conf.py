@@ -8,9 +8,14 @@ import subprocess
 import os
 import sys
 
+cur_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..'))
+    os.path.join(cur_directory, '..'))
 sys.path.append(parent_directory)
+
+static_directory = os.path.join(cur_directory, '_static')
+if not os.path.exists(static_directory):
+    os.makedirs(static_directory)
 
 
 class PrettyPrintIterable(Directive):
