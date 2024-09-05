@@ -12,7 +12,7 @@ requires = ["scikit-build-core", "pybind11"]
 build-backend = "scikit_build_core.build"
 
 [project.optional-dependencies]
-dev = ["numpy", "torchvision", "torch"]
+dev = ["numpy", "torch", "torchvision"]
 format = ["autopep8"]
 doc = ["sphinx", "breathe", "furo"]
 

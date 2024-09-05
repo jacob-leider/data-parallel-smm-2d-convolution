@@ -78,12 +78,15 @@ MPSTensor feed_tensor(MPSGraph *graph, MPSGraphDevice *device,
         [graph placeholderWithShape:mps_shape(tens.shape, bias)
                            dataType:MPSDataTypeFloat32
                                name:nil];
+    id<MTLBuffer> buffer = [[device metalDevice]
+        newBufferWithBytesNoCopy:tens.data
+                          length:sizeof(float) * tens.count()
+                         options:MTLResourceStorageModeShared
+                     deallocator:nil];
     MPSGraphTensorData *data = [[[MPSGraphTensorData alloc]
-        initWithDevice:device
-                  data:[NSData dataWithBytes:tens.data
-                                      length:sizeof(float) * tens.count()]
-                 shape:[placeholder shape]
-              dataType:MPSDataTypeFloat32] autorelease];
+        initWithMTLBuffer:buffer
+                    shape:[placeholder shape]
+                 dataType:MPSDataTypeFloat32] autorelease];
     return MPSTensor{placeholder, data};
 }
 
@@ -167,16 +170,19 @@ Tensor conv2d::mps<float>(Tensor input, const Tensor &kernel,
         }
 
         id<MTLCommandQueue> command_queue =
-            [[[device metalDevice] newCommandQueue] autorelease];
+            [[device metalDevice] newCommandQueue];
         MPSCommandBuffer *command_buffer =
             [MPSCommandBuffer commandBufferFromCommandQueue:command_queue];
+
+        MPSGraphExecutionDescriptor *exec_desc =
+            [MPSGraphExecutionDescriptor new];
 
         [graph encodeToCommandBuffer:command_buffer
                                feeds:feeds
                     targetOperations:nil
                    resultsDictionary:@{output_tensor : output_data}
-                 executionDescriptor:
-                     [[MPSGraphExecutionDescriptor new] autorelease]];
+                 executionDescriptor:exec_desc];
+
         [command_buffer commit];
         [command_buffer waitUntilCompleted];
     }
