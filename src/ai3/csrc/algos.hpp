@@ -69,16 +69,24 @@ namespace flatten {
 template <typename dtype> Tensor direct(FLATTEN_PARAMS);
 }
 
-#if defined USE_CUDA_TOOLS
-const bool USING_CUDA_TOOLS = true;
+#if defined USE_CUBLAS
+const bool USING_CUBLAS = true;
 #else
-const bool USING_CUDA_TOOLS = false;
+const bool USING_CUBLAS = false;
 #endif
+
+#if defined USE_CUDNN
+const bool USING_CUDNN = true;
+#else
+const bool USING_CUDNN = false;
+#endif
+
 #if defined USE_MPS_METAL
 const bool USING_MPS_METAL = true;
 #else
 const bool USING_MPS_METAL = false;
 #endif
+
 #if defined USE_SYCL
 const bool USING_SYCL = true;
 #else

@@ -3,7 +3,7 @@
 
 .. automodule:: ai3
    :members:
-   :exclude-members: SUPPORTED_ALGORITHMS, using_mps_and_metal, using_cuda_tools, using_sycl
+   :exclude-members: SUPPORTED_ALGORITHMS, using_mps_and_metal, using_cublas, using_cudnn, using_sycl
 
 .. autodata:: ai3.SUPPORTED_ALGORITHMS
     :annotation:
@@ -14,4 +14,5 @@
 
 .. autofunction:: ai3.using_mps_and_metal
 .. autofunction:: ai3.using_sycl
-.. autofunction:: ai3.using_cuda_tools
+.. autofunction:: ai3.using_cudnn
+.. autofunction:: ai3.using_cublas

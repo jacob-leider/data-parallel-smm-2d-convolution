@@ -7,7 +7,7 @@ existing *DNN*.
 """
 
 from typing import Mapping, Optional, Sequence, TypeAlias
-from . import _core, utils, layers, errors
+from . import _core, utils, layers
 from .tensor import Tensor
 
 FROM_BACKEND: Optional[str] = None
@@ -208,6 +208,11 @@ def using_sycl() -> bool:
     return _core.using_sycl()
 
 
-def using_cuda_tools() -> bool:
-    """Whether the implementations can use *cuda* toolkit"""
-    return _core.using_cuda_tools()
+def using_cudnn() -> bool:
+    """Whether the implementations can use *cuDNN*"""
+    return _core.using_cudnn()
+
+
+def using_cublas() -> bool:
+    """Whether the implementations can use *cuBLAS*"""
+    return _core.using_cublas()

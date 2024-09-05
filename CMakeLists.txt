@@ -31,17 +31,16 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     find_library(foundation NAMES Foundation)
     find_library(coreml NAMES CoreML)
     if(metal AND mps AND foundation AND coreml)
-        message(STATUS "Using Metal, Foundation, MetalPerformanceShaders, CoreML")
+        message(STATUS "Found Metal, Foundation, MetalPerformanceShaders, CoreML")
         list(APPEND LIBRARIES ${metal} ${mps} ${foundation} ${coreml})
         set(USE_MPS_METAL YES)
     endif()
 endif()
 
 find_package(CUDAToolkit)
-set(USE_CUDA_TOOLS NO)
+set(USE_CUBLAS NO)
+set(USE_CUDNN NO)
 if(CUDAToolkit_FOUND)
-    message(STATUS "Using CUDAToolkit")
-    set(USE_CUDA_TOOLS YES)
     list(APPEND TARGET_PROPERTIES
         CUDA_STANDARD 17
         CUDA_STANDARD_REQUIRED TRUE
@@ -49,15 +48,31 @@ if(CUDAToolkit_FOUND)
         CUDA_SEPARABLE_COMPILATION ON
         CUDA_ARCHITECTURES "86"
     )
+    list(APPEND LIBRARIES CUDA::cudart)
 
-    list(APPEND LIBRARIES CUDA::cudart CUDA::cublas cudnn)
+    if (TARGET CUDA::cublas)
+        set(USE_CUBLAS YES)
+        message(STATUS "Found cuBLAS")
+        list(APPEND LIBRARIES CUDA::cublas)
+    endif()
+
+    find_path(CUDNN_INCLUDE_DIR cudnn.h
+        HINTS ${CUDA_TOOLKIT_ROOT_DIR}
+        PATH_SUFFIXES cuda/include cuda include)
+    find_library(CUDNN_LIBRARY cudnn
+        PATHS ${CUDA_TOOLKIT_ROOT_DIR}
+        PATH_SUFFIXES lib lib64 cuda/lib cuda/lib64 lib/x64)
+    if(CUDNN_INCLUDE_DIR AND CUDNN_LIBRARY)
+        set(USE_CUDNN YES)
+        message(STATUS "Found cuDNN")
+        list(APPEND LIBRARIES cudnn)
+    endif()
 endif()
-
 
 find_package(SYCL)
 set(USE_SYCL no)
 if(SYCL_FOUND)
-    message(STATUS "Using SYCL")
+    message(STATUS "Found SYCL")
     set(USE_SYCL YES)
     set(CMAKE_CXX_COMPILER "${SYCL_COMPILER}")
 
@@ -88,10 +103,13 @@ endfunction()
 function(use_supported_platform_impls op)
     file(GLOB IMPLS "${CSRC_DIR}/${op}/*_plain.cpp")
 
-    if(USE_CUDA_TOOLS)
+    if(USE_CUDNN)
         foreach(FILE ${IMPLS})
             check_and_add_impl(${FILE} "cudnn" "cpp")
         endforeach()
+    endif()
+
+    if(USE_CUBLAS)
         foreach(FILE ${IMPLS})
             check_and_add_impl(${FILE} "cublas" "cpp")
         endforeach()
@@ -141,8 +159,12 @@ if(USE_MPS_METAL)
     target_compile_definitions(_core PRIVATE USE_MPS_METAL)
 endif()
 
-if(USE_CUDA_TOOLS)
-    target_compile_definitions(_core PRIVATE USE_CUDA_TOOLS)
+if(USE_CUBLAS)
+    target_compile_definitions(_core PRIVATE USE_CUBLAS)
+endif()
+
+if(USE_CUDNN)
+    target_compile_definitions(_core PRIVATE USE_CUDNN)
 endif()
 
 if(USE_SYCL)

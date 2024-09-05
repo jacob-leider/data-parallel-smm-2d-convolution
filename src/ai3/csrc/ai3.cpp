@@ -287,7 +287,7 @@ class Conv2D : virtual public Layer {
                                             padding_h, padding_w, stride_h,
                                             stride_w, dilation_h, dilation_w,
                                             padding_mode, groups);
-            } else if constexpr (USING_CUDA_TOOLS) {
+            } else if constexpr (USING_CUDNN) {
                 return conv2d::implicit_precomp_gemm<dtype>(
                     std::move(input), weight, bias, padding_h, padding_w,
                     stride_h, stride_w, dilation_h, dilation_w, padding_mode,
@@ -470,7 +470,8 @@ PYBIND11_MODULE(_core, m) {
     m.def("output_hw_for_2d", &output_hw_for_2d_no_ceil);
     m.def("using_mps_and_metal", [] { return USING_MPS_METAL; });
     m.def("using_sycl", [] { return USING_SYCL; });
-    m.def("using_cuda_tools", [] { return USING_CUDA_TOOLS; });
+    m.def("using_cublas", [] { return USING_CUBLAS; });
+    m.def("using_cudnn", [] { return USING_CUDNN; });
     m.def("default_opt_str", [] { return DEFAULT_OPT_STR; });
 
     static_assert(sizeof(float) == 4,

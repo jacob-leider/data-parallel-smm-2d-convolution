@@ -2,8 +2,12 @@
 
 #include <utils.hpp>
 
-#if defined USE_CUDA_TOOLS
-#include <cuda_utils.hpp>
+#if defined USE_CUBLAS
+#include <cublas_utils.hpp>
+#endif
+
+#if defined USE_CUDNN
+#include <cudnn_utils.hpp>
 #endif
 
 #if defined USE_SYCL
@@ -85,7 +89,7 @@ class Context {
      * @brief Returns the cached `cudnnHandle_t`, initializing it if
      * necessary
      */
-#if defined USE_CUDA_TOOLS
+#if defined USE_CUDNN
     inline static void *cudnn_handle_t() {
         if (cudnn_init) {
             return cudnn_handle;
@@ -104,7 +108,7 @@ class Context {
      * @brief Returns the cached `cublasHandle_t`, initializing it if
      * necessary
      */
-#if defined USE_CUDA_TOOLS
+#if defined USE_CUBLAS
     inline static void *cublas_handle_t() {
         if (cublas_init) {
             return cublas_handle;
@@ -139,10 +143,13 @@ class Context {
 #endif
 
     ~Context() {
-#if defined USE_CUDA_TOOLS
+#if defined USE_CUDNN
         if (cudnn_init) {
             CUDNN_CHECK(cudnnDestroy(cudnn_handle));
         }
+#endif
+
+#if defined USE_CUBLAS
         if (cublas_init) {
             CUBLAS_CHECK(cublasDestroy(cublas_handle));
         }
@@ -167,9 +174,11 @@ class Context {
     inline static bool mtl_d_init = false;
 #endif
 
-#if defined USE_CUDA_TOOLS
+#if defined USE_CUDNN
     inline static cudnnHandle_t cudnn_handle;
     inline static bool cudnn_init = false;
+#endif
+#if defined USE_CUBLAS
     inline static cublasHandle_t cublas_handle;
     inline static bool cublas_init = false;
 #endif

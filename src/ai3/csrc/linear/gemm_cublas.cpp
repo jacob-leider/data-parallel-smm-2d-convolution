@@ -1,8 +1,6 @@
-#pragma once
-
 #include <ai3.hpp>
 #include <algos.hpp>
-#include <cuda_utils.hpp>
+#include <cublas_utils.hpp>
 #include <optional>
 
 template <typename dtype>
