@@ -171,4 +171,11 @@ if(USE_SYCL)
     target_compile_definitions(_core PRIVATE USE_SYCL)
 endif()
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/custom.cmake")
+    message(STATUS "including custom cmake")
+    include("${CMAKE_SOURCE_DIR}/cmake/custom.cmake")
+else()
+    message(STATUS "no custom cmake found")
+endif()
+
 install(TARGETS _core DESTINATION ${SKBUILD_PROJECT_NAME})

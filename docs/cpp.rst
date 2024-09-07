@@ -17,6 +17,4 @@ Available Customization With *C++*
 
 .. doxygengroup:: custom
 
-Available Customization With *C++*
-----------------------------------
 .. doxygennamespace:: sample_dims

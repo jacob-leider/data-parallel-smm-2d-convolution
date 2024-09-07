@@ -27,6 +27,10 @@
  *
  * Operations available for customization create implementations in the
  * <a href="@SRC_REPO/custom">custom</a> directory.
+ *
+ * To configure the build process for custom operations use
+ * <a href="@REPO/cmake/custom.cmake">custom.cmake</a>, which is
+ * included in the <a href="@REPO/CMakeLists.txt">CMakeLists.txt</a>.
  */
 
 #pragma once
