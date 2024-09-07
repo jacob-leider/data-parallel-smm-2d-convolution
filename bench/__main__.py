@@ -1,6 +1,6 @@
 from bench import layer, swap_conv2d, swap_backend
-import models
+import model_zoo
 
 layer.run()
-models.run_on(swap_conv2d.runner)
-models.run_on(swap_backend.runner)
+model_zoo.run_on(swap_conv2d.runner)
+model_zoo.run_on(swap_backend.runner)

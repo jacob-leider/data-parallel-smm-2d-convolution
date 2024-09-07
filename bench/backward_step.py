@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch import optim
 import ai3
-import models
+import model_zoo
 import sys
 import time
 
@@ -40,4 +40,4 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
 
 if __name__ == "__main__":
     print('BACKWARD')
-    models.from_args(runner, sys.argv)
+    model_zoo.from_args(runner, sys.argv)

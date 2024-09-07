@@ -1,8 +1,9 @@
 import torch
 import ai3
 from ai3.errors import UnsupportedCallableError
-import models
+import model_zoo
 import sys
+import ai3.swap_torch
 from copy import deepcopy
 from test import compare_tensors
 
@@ -38,27 +39,27 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
     sb_out = ai3_model(input_data)
     compare_tensors(
         sb_out, target,
-        f"{name} swap backend, not copied, {models.BATCH} samples")
+        f"{name} swap backend, not copied, {model_zoo.BATCH} samples")
 
     ai3.swap_conv2d(module)
     sc_out = module(input_data)
     compare_tensors(
         sc_out, target,
-        f"{name} swap conv2d, not copied, {models.BATCH} samples")
+        f"{name} swap conv2d, not copied, {model_zoo.BATCH} samples")
 
     ai3_sc_cpy_out = alter_orig_after_copy_ensure_same(
         module, input_data, f"{name} ai3 sc after copying then altering orig")
     compare_tensors(
         ai3_sc_cpy_out, torch_cpy_out,
-        f"{name} torch copied and ai3 sc copied, {models.BATCH} samples")
+        f"{name} torch copied and ai3 sc copied, {model_zoo.BATCH} samples")
 
     ai3_sb_cpy = deepcopy(ai3_model)
     del ai3_model.core
     ai3_sb_cpy_out = ai3_sb_cpy(input_data)
     compare_tensors(
         ai3_sb_cpy_out, torch_cpy_out,
-        f"{name} torch copied and ai3 sb copied, {models.BATCH} samples")
+        f"{name} torch copied and ai3 sb copied, {model_zoo.BATCH} samples")
 
 
 if __name__ == "__main__":
-    models.from_args(runner, sys.argv)
+    model_zoo.from_args(runner, sys.argv)

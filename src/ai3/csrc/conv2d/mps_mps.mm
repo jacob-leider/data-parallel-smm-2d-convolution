@@ -170,7 +170,7 @@ Tensor conv2d::mps<float>(Tensor input, const Tensor &kernel,
         }
 
         id<MTLCommandQueue> command_queue =
-            [[device metalDevice] newCommandQueue];
+            [[[device metalDevice] newCommandQueue] autorelease];
         MPSCommandBuffer *command_buffer =
             [MPSCommandBuffer commandBufferFromCommandQueue:command_queue];
 

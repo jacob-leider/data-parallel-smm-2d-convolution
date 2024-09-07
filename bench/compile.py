@@ -3,7 +3,7 @@ import ai3
 from test import compare_tensors
 from test.ops.compile import compile
 from bench import predict_show_time, timed_predict
-import models
+import model_zoo
 import sys
 import statistics
 
@@ -41,7 +41,7 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
                           name + ' ai3 comp grad',  N=N, grad=True)
 
     compare_tensors(
-        output, target, f'{name} ai3 comp with grad, {models.BATCH} samples',
+        output, target, f'{name} ai3 comp with grad, {model_zoo.BATCH} samples',
         print_pass=False)
 
     target = show_stat_of(torch_comp, input_data,
@@ -50,9 +50,9 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
                           name + ' ai3 comp no grad', N=N, grad=False)
 
     compare_tensors(
-        output, target, f'{name} ai3 comp no grad, {models.BATCH} samples',
+        output, target, f'{name} ai3 comp no grad, {model_zoo.BATCH} samples',
         print_pass=False)
 
 
 if __name__ == "__main__":
-    models.from_args(runner, sys.argv)
+    model_zoo.from_args(runner, sys.argv)
