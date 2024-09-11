@@ -1,6 +1,6 @@
 import torch
 from torch import nn
-from torch import optim
+from torch.optim.adam import Adam
 import ai3
 import model_zoo
 import sys
@@ -11,9 +11,8 @@ criterion = nn.CrossEntropyLoss()
 
 def time_backward_step(module, input_data, name: str):
     input_data.requires_grad_(True)
-    # module.train() # CHECK for some reason this breaks inception check later
-    optimizer = optim.Adam(  # type: ignore
-        module.parameters(), lr=0.01)
+    module.train()
+    optimizer = Adam(module.parameters(), lr=0.01)
     optimizer.zero_grad()
     out = module(input_data)
     tar = torch.randn(out.shape)

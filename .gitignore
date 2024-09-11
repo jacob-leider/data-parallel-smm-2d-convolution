@@ -12,5 +12,8 @@ docs/doxygen
 docs/html
 docs/latex
 
+src/ai3/_version.py
+papers/JOSS
+
 papers/JOSS/jats
 papers/IEEE_HPEC_24/results

@@ -2,7 +2,7 @@ from . import _core, layers, errors, utils
 from typing import Mapping, Optional, List, Sequence, Union, DefaultDict, Tuple
 from collections import defaultdict
 import torch
-from torch import func, nn, fx, relu
+from torch import nn, fx, ops # type: ignore
 from torch.nn import grad
 from torch.fx import passes
 
@@ -109,11 +109,10 @@ def conv2d_backward(ctx, out_grad):
         out_grad = out_grad.reshape(
             1, *out_grad.shape)
 
-    # CHECK errors with the params
     if ctx.needs_input_grad[0]:
         grad_input = grad.conv2d_input(
             input.shape, weight, out_grad,
-            stride=(stride_h, stride_w),  # type: ignore
+            stride=(stride_h, stride_w), # type: ignore
             padding=(padding_h, padding_w),  # type: ignore
             dilation=(dilation_h, dilation_w),  # type: ignore
             groups=groups
@@ -195,7 +194,8 @@ class Conv2D(nn.Module):
             self.bias_data_ptr = None
 
     def forward(self, x: torch.Tensor):
-        return torch.ops.ai3.conv2d(  # type: ignore
+        assert(callable(ops.ai3.conv2d))
+        return ops.ai3.conv2d(
             x, self.weight, self.bias, self.padding[0],
             self.padding[1],
             self.stride[0],

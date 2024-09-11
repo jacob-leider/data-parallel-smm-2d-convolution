@@ -13,7 +13,7 @@ CSRC_FILES = [
     if f.suffix in ['.cpp', '.hpp'] and 'venv' not in f.parts]
 PY_FILES = [str(f) for f in Path('.').rglob('*.py') if 'venv' not in f.parts]
 
-CONV2D_ALGOS_TO_USE = ['mps', 'metal']
+CONV2D_ALGOS_TO_USE = []
 """The *conv2d* algorithms to use"""
 USE_ALL_POSSIBLE_CONV = False
 """
@@ -21,16 +21,21 @@ Whether to automatically generate :data:`CONV2D_ALGOS_TO_USE` to contain all
 possible algorithms
 """
 if USE_ALL_POSSIBLE_CONV:
-    assert len(CONV2D_ALGOS_TO_USE) == 0
     import ai3
+    assert len(CONV2D_ALGOS_TO_USE) == 0
     CONV2D_ALGOS_TO_USE.extend(['direct', 'smm'])
     if ai3.using_mps_and_metal():
         CONV2D_ALGOS_TO_USE.append('mps')
-    if ai3.using_cuda_tools():
+    if ai3.using_cudnn():
         CONV2D_ALGOS_TO_USE.extend(['gemm',
                                     'implicit gemm', 'implicit precomp gemm',
                                     'guess'])
 
+# TODO add a deploy_docs that pushes the docs to the new branch
+# - also want a way to archive the specific versions
+# TODO have a folder in docs which is always used and has a index.html for current
+# and all the folders for previous versions, generating the docs with the pages doesn't break
+# this but maybe we want to do a branch so that we have more control
 
 def run_command(command, cwd=None):
     print(f'Running: {command}')
@@ -134,9 +139,9 @@ if __name__ == '__main__':
         else:
             cmd_found = False
             for start in [
-                'test.ops', 'test.swap_conv2d', 'test.swap_backend',
-                'test.serialization.pickle', 'test.serialization.deepcopy',
-                'bench.backward_step', 'bench.swap_conv2d',
+                    'test.ops', 'test.swap_conv2d', 'test.swap_backend',
+                    'test.serialization.pickle', 'test.serialization.deepcopy',
+                    'bench.backward_step', 'bench.swap_conv2d',
                     'bench.swap_backend', 'bench.compile']:
                 if cmd.startswith(start):
                     fix_cmd_run(cmd, start)

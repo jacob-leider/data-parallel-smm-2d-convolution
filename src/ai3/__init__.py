@@ -7,8 +7,10 @@ existing *DNN*.
 """
 
 from typing import Mapping, Optional, Sequence, TypeAlias
-from . import _core, utils, layers
+from . import _core, utils, layers, _version
 from .tensor import Tensor
+
+__version__ = _version.__version__
 
 FROM_BACKEND: Optional[str] = None
 """The backend of the existing *DNN*

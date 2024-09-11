@@ -1,23 +1,34 @@
 [project]
 name = "ai-3"
-version = "0.0.1"
+dynamic = ["version"]
 readme = "README.rst"
-description = "Algorithmic Innovations for Accelerated Implementations of Artificial Intelligence"
+description = "Enables Algorithmic Selection and Customization in Deep Neural Networks"
 authors = [
-{name = "Timothy Cronin", email = "tcroniniv@gmail.com"},
+{name = "Timothy Cronin"}
+]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Topic :: Software Development :: Libraries",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research"
 ]
 
 [build-system]
 requires = ["scikit-build-core", "pybind11"]
 build-backend = "scikit_build_core.build"
 
-[project.optional-dependencies]
-dev = ["numpy", "torch", "torchvision"]
-format = ["autopep8"]
-doc = ["sphinx", "breathe", "furo"]
-
 [tool.scikit-build]
 cmake.build-type = "Release"
 wheel.packages = ["src/ai3"]
 sdist.cmake = false
 cmake.define = {SKBUILD_PROJECT_NAME="ai3"}
+metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
+sdist.include = ["src/ai3/_version.py"]
+
+[tool.setuptools_scm]
+write_to = "src/ai3/_version.py"
+
+[project.optional-dependencies]
+dev = ["numpy", "torch", "torchvision"]
+format = ["autopep8"]
+doc = ["sphinx", "breathe", "furo"]
