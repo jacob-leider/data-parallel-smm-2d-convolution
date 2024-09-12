@@ -17,7 +17,7 @@ FLOAT64_STR = 'float64'
 TORCH_TENSOR_TYPE_STR = 'torch.Tensor'
 TORCH_MODULE_TYPE_STR = 'torch.nn.modules.module.Module'
 
-AlgorithmicSelector: TypeAlias = Union[str, Sequence[str], Callable]
+AlgorithmicSelector = Union[str, Sequence[str], Callable]
 
 SUPPORTED_ALGORITHMS = {
     'conv2d': ['direct', 'smm', 'winograd', 'gemm',

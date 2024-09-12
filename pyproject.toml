@@ -12,6 +12,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research"
 ]
+requires-python = ">=3.8"
 
 [build-system]
 requires = ["scikit-build-core", "pybind11"]
@@ -31,4 +32,4 @@ write_to = "src/ai3/_version.py"
 [project.optional-dependencies]
 dev = ["numpy", "torch", "torchvision"]
 format = ["autopep8"]
-doc = ["sphinx", "breathe", "furo"]
+doc = ["sphinx", "breathe", "pydata-sphinx-theme"]

@@ -25,7 +25,7 @@ SUPPORTED_FROM_BACKENDS: Sequence[str] = ['torch']
 * `torch <https://pytorch.org/>`_
 """
 
-AlgorithmicSelector: TypeAlias = utils.AlgorithmicSelector
+AlgorithmicSelector = utils.AlgorithmicSelector
 """The object that performs the algorithmic selection for an associated operation
 
 There are three different types of algorithmic selectors.

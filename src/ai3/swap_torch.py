@@ -5,6 +5,11 @@ import torch
 from torch import nn, fx, ops # type: ignore
 from torch.nn import grad
 from torch.fx import passes
+from packaging import version
+
+MIN_TORCH_VERSION = '2.4'
+
+errors.bail_if(version.parse(torch.__version__) < version.parse(MIN_TORCH_VERSION), 'requires torch >= 2.4')
 
 
 def mod_to_op(mod: nn.Module) -> str:

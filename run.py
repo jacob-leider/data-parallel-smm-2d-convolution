@@ -8,12 +8,12 @@ PIP = 'pip3'
 C_FORMAT = 'clang-format'
 PY_FORMAT = 'autopep8 --in-place --experimental'
 
-CSRC_FILES = [
+CSRC_FILES = ' '.join([
     str(f) for f in Path('.').rglob('*')
-    if f.suffix in ['.cpp', '.hpp'] and 'venv' not in f.parts]
-PY_FILES = [str(f) for f in Path('.').rglob('*.py') if 'venv' not in f.parts]
+    if f.suffix in ['.cpp', '.hpp'] and 'venv' not in f.parts])
+PY_FILES = ' '.join([str(f) for f in Path('.').rglob('*.py') if 'venv' not in f.parts])
 
-CONV2D_ALGOS_TO_USE = []
+CONV2D_ALGOS_TO_USE = ['direct']
 """The *conv2d* algorithms to use"""
 USE_ALL_POSSIBLE_CONV = False
 """
@@ -30,12 +30,6 @@ if USE_ALL_POSSIBLE_CONV:
         CONV2D_ALGOS_TO_USE.extend(['gemm',
                                     'implicit gemm', 'implicit precomp gemm',
                                     'guess'])
-
-# TODO add a deploy_docs that pushes the docs to the new branch
-# - also want a way to archive the specific versions
-# TODO have a folder in docs which is always used and has a index.html for current
-# and all the folders for previous versions, generating the docs with the pages doesn't break
-# this but maybe we want to do a branch so that we have more control
 
 def run_command(command, cwd=None):
     print(f'Running: {command}')
@@ -126,8 +120,8 @@ if __name__ == '__main__':
         elif cmd == 'readme':
             run_command(f'{PY} docs.gen_readme')
         elif cmd == 'format':
-            run_command(f'{C_FORMAT} -i {' '.join(CSRC_FILES)}')
-            run_command(f'{PY_FORMAT} {' '.join(PY_FILES)}')
+            run_command(f'{C_FORMAT} -i {CSRC_FILES}')
+            run_command(f'{PY_FORMAT} {PY_FILES}')
         elif cmd == 'joss':
             run_command(f'docker run --rm '
                         '--volume $PWD/papers/JOSS/:/data '
