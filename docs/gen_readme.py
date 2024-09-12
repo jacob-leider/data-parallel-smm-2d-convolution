@@ -4,6 +4,7 @@ import ai3
 import textwrap
 import inspect
 
+
 def prune_rst_links_and_remove_args(obj) -> str:
     docstring = inspect.getdoc(obj)
     assert (docstring)
@@ -19,6 +20,7 @@ def prune_rst_links_and_remove_args(obj) -> str:
 
     return docstring
 
+
 def clean_rst_prolog():
     from docs.conf import rst_prolog
     if rst_prolog.startswith('\n'):
@@ -28,6 +30,7 @@ def clean_rst_prolog():
         rst_prolog += '\n'
 
     return rst_prolog
+
 
 if __name__ == "__main__":
     with open(os.path.join('docs', 'intro.rst'), 'r') as index_file:

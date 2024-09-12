@@ -86,28 +86,28 @@ html_css_files = [
 
 html_show_sourcelink = False
 html_sidebars = {
- '**': []
+    '**': []
 }
 html_theme_options = {
-        'navbar_align': 'left',
-        'icon_links': [
-            {
-                'name': 'GitHub',
-                'url': repo,
-                'icon': 'fa-brands fa-github',
-                'type': 'fontawesome',
-                },
-            {
-                'name': 'PyPI',
-                'url': docs,
-                'icon': 'fa-brands fa-python',
-                'type': 'fontawesome',
-                }
-            ]
+    'navbar_align': 'left',
+    'icon_links': [
+        {
+            'name': 'GitHub',
+            'url': repo,
+            'icon': 'fa-brands fa-github',
+            'type': 'fontawesome',
+        },
+        {
+            'name': 'PyPI',
+            'url': docs,
+            'icon': 'fa-brands fa-python',
+            'type': 'fontawesome',
         }
+    ]
+}
 
 breathe_projects = {
-        name: os.path.join(os.getcwd(), 'doxygen', 'xml')
+    name: os.path.join(os.getcwd(), 'doxygen', 'xml')
 }
 breathe_default_project = name
 
@@ -117,6 +117,7 @@ import torch
 import torchvision
 from example.manual_conv2d import ConvNet
 '''
+
 
 def setup(app):
     app.add_directive('pprint', PrettyPrintIterable)
