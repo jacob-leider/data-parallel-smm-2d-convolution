@@ -14,22 +14,27 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: build
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build
         run: |
           sudo apt-get update
           sudo apt-get install git -y
-          sudo apt install python3-pip -y
           sudo apt-get install doxygen -y
           sudo pip3 install sphinx
           sudo pip3 install pydata-sphinx-theme
           sudo pip3 install breathe
           git fetch --tags
-          cd docs
-          mkdir _build
-          python3 install
-          python3 run.py docs
-          python3 run.py readme
+          python3.11 run.py install
+          python3.11 run.py docs
+          python3.11 run.py readme
+          # move these pages to default then for each tag do the same
+          # might be better in a python script
+          # then checkout
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
