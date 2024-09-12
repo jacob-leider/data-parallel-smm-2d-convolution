@@ -4,7 +4,7 @@
 .. |custom| replace:: custom
 .. _custom_cmake: https://github.com/KLab-ai3/ai3/tree/main/src/ai3/cmake/custom.cmake
 .. |custom_cmake| replace:: *custom.cmake*
-.. _doc: https://example.com
+.. _doc: https://klab-ai3.github.io/ai3
 .. |doc| replace:: **Documentation**
 .. |name| replace:: *ai-3*
 |name|

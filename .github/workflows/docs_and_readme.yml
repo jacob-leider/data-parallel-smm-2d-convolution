@@ -19,19 +19,15 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '>=3.11'
       - name: Build
         run: |
           sudo apt-get update
           sudo apt-get install git -y
           sudo apt-get install doxygen -y
-          sudo pip3 install sphinx
-          sudo pip3 install pydata-sphinx-theme
-          sudo pip3 install breathe
+          python -m pip install sphinx breathe pydata-sphinx-theme
           git fetch --tags
-          python3.11 run.py install
-          python3.11 run.py docs
-          python3.11 run.py readme
+          python run.py install docs
           # move these pages to default then for each tag do the same
           # might be better in a python script
           # then checkout
