@@ -1,6 +1,9 @@
 *Python API*
 ============
 
+.. automodule:: ai3
+   :exclude-members:
+
 Functions Providing Algorithmic Selection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -6,11 +6,8 @@ venv
 todos.rst
 
 docs/_build
-docs/_static
-docs/_templates
 docs/doxygen
-docs/html
-docs/latex
+pages
 
 src/ai3/_version.py
 papers/JOSS

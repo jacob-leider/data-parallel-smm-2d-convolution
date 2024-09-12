@@ -1,4 +1,4 @@
-name: Docs and README
+name: Build Docs
 
 on:
   push:
@@ -27,16 +27,13 @@ jobs:
           sudo apt-get install doxygen -y
           python -m pip install sphinx breathe pydata-sphinx-theme
           git fetch --tags
-          python run.py install docs
-          # move these pages to default then for each tag do the same
-          # might be better in a python script
-          # then checkout
+          source docs/build_all_docs.sh
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './docs/_build/html'
+          path: './pages'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

@@ -8,15 +8,12 @@ from sphinx import addnodes
 import subprocess
 import os
 import sys
+import ai3
 
 cur_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(
     os.path.join(cur_directory, '..'))
 sys.path.append(parent_directory)
-
-static_directory = os.path.join(cur_directory, '_static')
-if not os.path.exists(static_directory):
-    os.makedirs(static_directory)
 
 
 class PrettyPrintIterable(Directive):
@@ -88,23 +85,39 @@ html_show_sourcelink = False
 html_sidebars = {
     '**': []
 }
+
+version = ai3.__version__
+version_parts = version.split('.')
+dev = len(version_parts) != 3 or not all(part.isdigit() for part in version_parts)
+
+if dev:
+    version_match = 'latest'
+else:
+    version_match = version
+
 html_theme_options = {
-    'navbar_align': 'left',
-    'icon_links': [
-        {
-            'name': 'GitHub',
-            'url': repo,
-            'icon': 'fa-brands fa-github',
-            'type': 'fontawesome',
-        },
-        {
-            'name': 'PyPI',
-            'url': docs,
-            'icon': 'fa-brands fa-python',
-            'type': 'fontawesome',
+        'navbar_align': 'left',
+        'navbar_center': ['version-switcher', 'navbar-nav'],
+        'switcher': {
+            'json_url': f'{docs}/latest/_static/switcher.json',
+            'version_match': version_match,
+            },
+        'check_switcher': True,
+        'icon_links': [
+            {
+                'name': 'GitHub',
+                'url': repo,
+                'icon': 'fa-brands fa-github',
+                'type': 'fontawesome',
+                },
+            {
+                'name': 'PyPI',
+                'url': 'https://example.com', # TODO fix this
+                'icon': 'fa-brands fa-python',
+                'type': 'fontawesome',
+                }
+            ]
         }
-    ]
-}
 
 breathe_projects = {
     name: os.path.join(os.getcwd(), 'doxygen', 'xml')
