@@ -6,7 +6,7 @@ by the framework and :func:`swap_conv2d` which swaps convolution operations out 
 existing *DNN*.
 """
 
-from typing import Mapping, Optional, Sequence, TypeAlias
+from typing import Mapping, Optional, Sequence
 from . import _core, utils, layers, _version
 from .tensor import Tensor
 

@@ -42,13 +42,13 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = "ai3"
+PROJECT_NAME           = $(PROJECT_NAME)
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
 # control system is used.
 
-PROJECT_NUMBER         = 0.0.1
+PROJECT_NUMBER         =
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer a
@@ -289,11 +289,12 @@ TAB_SIZE               = 4
 # with the commands \{ and \} for these it is advised to use the version @{ and
 # @} or use a double escape (\\{ and \\})
 
-ALIASES = REPO=https://github.com/KLab-AI3/ai3-draft/tree/main
-ALIASES += SRC_REPO=@REPO/src/ai3
-ALIASES += CSRC_REPO=@SRC_REPO/csrc
+ALIASES = REPO_MAIN=$(REPO_MAIN)
+ALIASES += REPO_SRC=$(REPO_SRC)
+ALIASES += REPO_CSRC=$(REPO_CSRC)
 ALIASES += DEFAULT_BOOL{1}="@ingroup custom^^ Set this to *true* to use custom *\1* operation as default"
-ALIASES += CUSTOM_OP{2}="@ingroup custom^^@brief Function for custom implementations of *\1*, see built-in implementations <a href=\"@CSRC_REPO/\2\">here</a>^^ @tparam dtype The data type of the tensors"
+ALIASES += CUSTOM_OP{2}="@ingroup custom^^@brief Function for custom implementations of *\1*, see built-in implementations <a href=\"@REPO_CSRC/\2\">here</a>^^ @tparam dtype The data type of the tensors"
+ALIASES += PROJECT_NAME=$(PROJECT_NAME)
 
 # Set the OPTIMIZE_OUTPUT_FOR_C tag to YES if your project consists of C sources
 # only. Doxygen will then generate output that is more tailored for C. For

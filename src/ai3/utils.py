@@ -6,7 +6,6 @@ from typing import (
     Mapping,
     Callable,
     Optional,
-    TypeAlias
 )
 import inspect
 from . import errors, _core
@@ -87,7 +86,6 @@ def smart_type_str(orig_type) -> str:
         return any(
             base.__module__ + '.' + base.__name__ == type_str
             for base in orig_type.__mro__)
-
     if isinstance(orig_type, str):
         return orig_type
     if is_subclass_of(orig_type, TORCH_TENSOR_TYPE_STR):

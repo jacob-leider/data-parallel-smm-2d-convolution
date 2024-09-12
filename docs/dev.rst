@@ -102,13 +102,3 @@ Documentation
 Develop
 ~~~~~~~
 * *clangd*: Generate the *.clangd* file with the correct include paths
-
-Models
-------
-
-.. automodule:: model_zoo
-   :members:
-
-.. automodule:: model_zoo.models
-   :members:
-   :undoc-members:

@@ -1,18 +1,35 @@
 *Python API*
 ============
 
-.. automodule:: ai3
-   :members:
-   :exclude-members: SUPPORTED_ALGORITHMS, using_mps_and_metal, using_cublas, using_cudnn, using_sycl
+Functions Providing Algorithmic Selection
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+.. autofunction:: ai3.swap_conv2d
+.. autofunction:: ai3.swap_backend
+
+Types
+~~~~~
+.. autodata:: ai3.AlgorithmicSelector
+
+Classes
+~~~~~~~
+.. autoclass:: ai3.Model
+   :members:
+
+.. autoclass:: ai3.Tensor
+   :members:
+
+Global Variables
+~~~~~~~~~~~~~~~~
 .. autodata:: ai3.SUPPORTED_ALGORITHMS
     :annotation:
 .. pprint:: ai3.SUPPORTED_ALGORITHMS
+.. autodata:: ai3.FROM_BACKEND
+.. autodata:: ai3.SUPPORTED_FROM_BACKENDS
 
-.. automodule:: ai3.tensor
-   :members:
-
-.. autofunction:: ai3.using_mps_and_metal
+Other Functions
+~~~~~~~~~~~~~~~
 .. autofunction:: ai3.using_sycl
 .. autofunction:: ai3.using_cudnn
 .. autofunction:: ai3.using_cublas
+.. autofunction:: ai3.using_mps_and_metal

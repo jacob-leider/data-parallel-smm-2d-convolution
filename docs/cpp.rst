@@ -3,8 +3,8 @@
 
 .. doxygenpage:: index
 
-*C++* Classes
--------------
+Classes
+-------
 
 .. doxygenclass:: Tensor
     :members:
@@ -12,8 +12,8 @@
 .. doxygenclass:: Context
     :members:
 
-Available Customization With *C++*
-----------------------------------
+Available Customization
+-----------------------
 
 .. doxygengroup:: custom
 

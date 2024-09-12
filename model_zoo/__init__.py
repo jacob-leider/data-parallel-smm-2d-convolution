@@ -1,4 +1,3 @@
-"""Provides simple interface for generating *DNNS* for tests and benchmarks"""
 import torch
 from .models import *
 from typing import Sequence

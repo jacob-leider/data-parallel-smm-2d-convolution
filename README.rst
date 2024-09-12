@@ -1,7 +1,16 @@
-*ai3*
-=====
+.. _repo: https://github.com/KLab-ai3/ai3
+.. |repo| replace:: **Source Code**
+.. _custom: https://github.com/KLab-ai3/ai3/tree/main/src/ai3/custom
+.. |custom| replace:: custom
+.. _custom_cmake: https://github.com/KLab-ai3/ai3/tree/main/src/ai3/cmake/custom.cmake
+.. |custom_cmake| replace:: *custom.cmake*
+.. _doc: https://example.com
+.. |doc| replace:: **Documentation**
+.. |name| replace:: *ai-3*
+|name|
+======
 
-The *ai3* (Algorithmic Innovations for Accelerated Implementations of
+The |name| (Algorithmic Innovations for Accelerated Implementations of
 Artificial Intelligence) framework provides easy-to-use fine-grain algorithmic
 control over an existing *DNN*. The framework contains built-in high performance
 implementations of common deep learning operations and methods by which users
@@ -9,18 +18,18 @@ can implement their own algorithms in *C++*. The framework incurs no additional
 performance overhead, meaning that performance depends solely on the algorithms
 chosen by the user.
 
-.. TODO fill this out once published
+|doc|_ |repo|_
 
-.. _doc: http://www.example.com
-.. |doc| replace:: **Documentation**
-.. _ins_cus: http://www.example.com
-.. |ins_cus| replace:: **Installation for Customization**
+Installation
+------------
 
-|doc|_
+**Default Implementations:** ``pip install |name|``
 
-**Installation:** ``pip install aix3``
-
-|ins_cus|_
+**Custom Implementations:**
+   1. Download the source code
+   2. Create an implementation using |custom|_
+   3. If needed, configure the build process with |custom_cmake|_
+   4. ``pip install <path to source code>``
 
 The framework currently features two methods for algorithmic swapping. *swap_backend*
 which swaps every module type of a *DNN* returning an object completely managed

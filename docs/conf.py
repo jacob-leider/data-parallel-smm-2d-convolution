@@ -1,3 +1,4 @@
+import tomllib
 from pprint import pformat
 from docutils import nodes
 from importlib import import_module
@@ -22,7 +23,7 @@ class PrettyPrintIterable(Directive):
     required_arguments = 1
 
     def run(self):
-        module_path, member_name = self.arguments[0].rsplit(".", 1)
+        module_path, member_name = self.arguments[0].rsplit('.', 1)
         module = import_module(module_path)
         member = getattr(module, member_name)
 
@@ -36,15 +37,36 @@ class PrettyPrintIterable(Directive):
         )
 
         literal = nodes.literal_block(code, code)
-        literal["language"] = "python"
+        literal['language'] = 'python'
 
-        return [addnodes.desc_content("", literal)]
+        return [addnodes.desc_content('', literal)]
 
 
-project = 'ai3'
+with open(os.path.join(parent_directory, 'pyproject.toml'), 'rb') as f:
+    pyproject_data = tomllib.load(f)
+
+name = pyproject_data.get('project', {}).get('name', '')
+repo = pyproject_data.get('project', {}).get('homepage', '')
+docs = pyproject_data.get('project', {}).get('documentation', '')
+repo_main = repo + '/tree/main'
+repo_src = repo_main + '/src/ai3'
+repo_csrc = repo_src + '/csrc'
+
+rst_prolog = f'''
+.. _repo: {repo}
+.. |repo| replace:: **Source Code**
+.. _custom: {repo_src + '/custom'}
+.. |custom| replace:: custom
+.. _custom_cmake: {repo_src + '/cmake/custom.cmake'}
+.. |custom_cmake| replace:: *custom.cmake*
+.. _doc: {docs}
+.. |doc| replace:: **Documentation**
+.. |name| replace:: *{name}*
+'''
+
+project = name
 copyright = '2024, Timothy Cronin'
 author = 'Timothy Cronin'
-release = '0.0.1'
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -55,21 +77,39 @@ extensions = [
 
 master_file = 'index'
 
-templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
-
-html_theme = 'furo'
+html_theme = 'pydata_sphinx_theme'
 html_static_path = ['_static']
+html_css_files = [
+    'custom.css',
+]
 
-autodoc_member_order = 'bysource'
-
-subprocess.call('make clean', shell=True)
-subprocess.call('doxygen', shell=True)
+html_show_sourcelink = False
+html_sidebars = {
+ '**': []
+}
+html_theme_options = {
+        'navbar_align': 'left',
+        'icon_links': [
+            {
+                'name': 'GitHub',
+                'url': repo,
+                'icon': 'fa-brands fa-github',
+                'type': 'fontawesome',
+                },
+            {
+                'name': 'PyPI',
+                'url': docs,
+                'icon': 'fa-brands fa-python',
+                'type': 'fontawesome',
+                }
+            ]
+        }
 
 breathe_projects = {
-    "ai3": os.path.join(os.getcwd(), "doxygen", "xml")
+        name: os.path.join(os.getcwd(), 'doxygen', 'xml')
 }
-breathe_default_project = "ai3"
+breathe_default_project = name
 
 doctest_global_setup = '''
 import ai3
@@ -78,6 +118,9 @@ import torchvision
 from example.manual_conv2d import ConvNet
 '''
 
-
 def setup(app):
     app.add_directive('pprint', PrettyPrintIterable)
+    subprocess.call('make clean', shell=True, cwd=cur_directory)
+    subprocess.call(
+        f'PROJECT_NAME=*{name}* REPO_MAIN={repo_main} REPO_SRC={repo_src} REPO_CSRC={repo_csrc} doxygen',
+        shell=True, cwd=cur_directory)
