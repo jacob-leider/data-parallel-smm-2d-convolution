@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 from collections.abc import Buffer
 from typing import Sequence, Optional
 from enum import Enum

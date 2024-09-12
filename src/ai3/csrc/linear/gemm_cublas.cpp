@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 #include <ai3.hpp>
 #include <algos.hpp>
 #include <cublas_utils.hpp>

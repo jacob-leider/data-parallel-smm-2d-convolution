@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 #include <MetalPerformanceShadersGraph/MetalPerformanceShadersGraph.h>
 #include <ai3.hpp>
 #include <algos.hpp>

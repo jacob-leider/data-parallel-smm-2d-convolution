@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 #import <MetalPerformanceShaders/MetalPerformanceShaders.h>
 #include <algos.hpp>
 

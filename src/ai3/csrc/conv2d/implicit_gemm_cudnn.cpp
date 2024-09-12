@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 #include "exec_cudnn.hpp"
 #include <ai3.hpp>
 #include <algos.hpp>

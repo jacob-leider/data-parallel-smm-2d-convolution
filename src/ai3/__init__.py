@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 """Provides the easy-to-use fine-grain algorithmic control over an existing *DNN*
 
 The framework currently features two methods for algorithmic swapping. :func:`swap_backend`

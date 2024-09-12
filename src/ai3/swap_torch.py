@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 from . import _core, layers, errors, utils
 from typing import Mapping, Optional, List, Sequence, Union, DefaultDict, Tuple
 from collections import defaultdict
