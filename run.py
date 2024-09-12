@@ -2,9 +2,10 @@ import subprocess
 import os
 from pathlib import Path
 import argparse
+import sys
 
-PY = 'python3 -m'
-PIP = 'pip3'
+PY = f'{sys.executable} -m'
+PIP = f'{sys.executable} -m pip'
 C_FORMAT = 'clang-format'
 PY_FORMAT = 'autopep8 --in-place --experimental'
 
