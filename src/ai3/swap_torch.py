@@ -2,14 +2,15 @@ from . import _core, layers, errors, utils
 from typing import Mapping, Optional, List, Sequence, Union, DefaultDict, Tuple
 from collections import defaultdict
 import torch
-from torch import nn, fx, ops # type: ignore
+from torch import nn, fx, ops  # type: ignore
 from torch.nn import grad
 from torch.fx import passes
 from packaging import version
 
 MIN_TORCH_VERSION = '2.4'
 
-errors.bail_if(version.parse(torch.__version__) < version.parse(MIN_TORCH_VERSION), 'requires torch >= 2.4')
+errors.bail_if(version.parse(torch.__version__) < version.parse(
+    MIN_TORCH_VERSION), 'requires torch >= 2.4')
 
 
 def mod_to_op(mod: nn.Module) -> str:
@@ -117,7 +118,7 @@ def conv2d_backward(ctx, out_grad):
     if ctx.needs_input_grad[0]:
         grad_input = grad.conv2d_input(
             input.shape, weight, out_grad,
-            stride=(stride_h, stride_w), # type: ignore
+            stride=(stride_h, stride_w),  # type: ignore
             padding=(padding_h, padding_w),  # type: ignore
             dilation=(dilation_h, dilation_w),  # type: ignore
             groups=groups
@@ -199,7 +200,7 @@ class Conv2D(nn.Module):
             self.bias_data_ptr = None
 
     def forward(self, x: torch.Tensor):
-        assert(callable(ops.ai3.conv2d))
+        assert (callable(ops.ai3.conv2d))
         return ops.ai3.conv2d(
             x, self.weight, self.bias, self.padding[0],
             self.padding[1],

@@ -41,7 +41,8 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
                           name + ' ai3 comp grad',  N=N, grad=True)
 
     compare_tensors(
-        output, target, f'{name} ai3 comp with grad, {model_zoo.BATCH} samples',
+        output, target,
+        f'{name} ai3 comp with grad, {model_zoo.BATCH} samples',
         print_pass=False)
 
     target = show_stat_of(torch_comp, input_data,

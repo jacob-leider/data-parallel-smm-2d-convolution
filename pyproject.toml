@@ -1,7 +1,8 @@
 [project]
 name = "ai-3"
-dynamic = ["version"]
 readme = "README.rst"
+homepage = "https://github.com/KLab-ai3/ai3"
+documentation = "https://example.com"
 description = "Enables Algorithmic Selection and Customization in Deep Neural Networks"
 authors = [
 {name = "Timothy Cronin"}
@@ -12,6 +13,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research"
 ]
+dynamic = ["version"]
 requires-python = ">=3.8"
 
 [build-system]

@@ -1,5 +1,5 @@
 import torch
-from torch import ops # type: ignore
+from torch import ops  # type: ignore
 
 PASS_MES = 'Passed opcheck for '
 
@@ -18,7 +18,7 @@ def convolution_samples():
 
 
 def conv2d():
-    assert(callable(ops.ai3.conv2d))
+    assert (callable(ops.ai3.conv2d))
     for samp in convolution_samples():
         torch.library.opcheck(
             ops.ai3.conv2d, samp)

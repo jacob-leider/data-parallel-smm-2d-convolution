@@ -11,7 +11,8 @@ PY_FORMAT = 'autopep8 --in-place --experimental'
 CSRC_FILES = ' '.join([
     str(f) for f in Path('.').rglob('*')
     if f.suffix in ['.cpp', '.hpp'] and 'venv' not in f.parts])
-PY_FILES = ' '.join([str(f) for f in Path('.').rglob('*.py') if 'venv' not in f.parts])
+PY_FILES = ' '.join([str(f)
+                    for f in Path('.').rglob('*.py') if 'venv' not in f.parts])
 
 CONV2D_ALGOS_TO_USE = ['direct']
 """The *conv2d* algorithms to use"""
@@ -30,6 +31,7 @@ if USE_ALL_POSSIBLE_CONV:
         CONV2D_ALGOS_TO_USE.extend(['gemm',
                                     'implicit gemm', 'implicit precomp gemm',
                                     'guess'])
+
 
 def run_command(command, cwd=None):
     print(f'Running: {command}')
