@@ -6,37 +6,38 @@ on:
 
   workflow_dispatch:
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
 permissions:
   id-token: write
   pages: write
-steps:
-  - uses: actions/checkout@v3
-  - name: build
-    run: |
-      sudo apt-get update
-      sudo apt-get install git -y
-      sudo apt install python3-pip -y
-      sudo apt-get install doxygen -y
-      sudo pip3 install sphinx
-      sudo pip3 install pydata-sphinx-theme
-      sudo pip3 install breathe
-      git fetch --tags
-      cd docs
-      mkdir _build
-      python3 install
-      python3 run.py docs
-      python3 run.py readme
-  - name: Setup Pages
-    uses: actions/configure-pages@v3
-  - name: Upload artifact
-    uses: actions/upload-pages-artifact@v2
-    with:
-      path: './docs/_build/html'
-  - name: Deploy to GitHub Pages
-    id: deployment
-    uses: actions/deploy-pages@v2
-    with:
-      github_token: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: build
+        run: |
+          sudo apt-get update
+          sudo apt-get install git -y
+          sudo apt install python3-pip -y
+          sudo apt-get install doxygen -y
+          sudo pip3 install sphinx
+          sudo pip3 install pydata-sphinx-theme
+          sudo pip3 install breathe
+          git fetch --tags
+          cd docs
+          mkdir _build
+          python3 install
+          python3 run.py docs
+          python3 run.py readme
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: './docs/_build/html'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

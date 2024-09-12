@@ -14,7 +14,7 @@ chosen by the user.
 Installation
 ------------
 
-**Default Implementations:** ``pip install |name|``
+**Default Implementations:** *pip install* |name|
 
 **Custom Implementations:**
    1. Download the source code
