@@ -20,7 +20,7 @@ html_content = f"""
     <title>Redirecting...</title>
 </head>
 <body>
-    <p>If you are not redirected automatically, follow this <a href="{redirect_url}">link</a>.</p>
+    <p><a href="{redirect_url}">redirect to stable</a></p>
 </body>
 </html>
 """
