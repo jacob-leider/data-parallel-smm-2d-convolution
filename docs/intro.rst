@@ -14,10 +14,14 @@ chosen by the user.
 Installation
 ------------
 
-**Default Implementations:** *pip install* |pkg_name|
+Default Implementations
+'''''''''''''''''''''''
+1. **Wheel Installation:** *pip install* |pkg_name|
+2. **From Source (improves acceleration platform finding):** *pip install* |pkg_name| *--no-binary :all:*
 
-**Custom Implementations:**
-   1. Download the source code
-   2. Create an implementation with the operations defined in |custom|_
-   3. If needed, configure the build process with |custom_cmake|_
-   4. ``pip install <path to source code>``
+Custom Implementations:
+'''''''''''''''''''''''
+1. Download the source code
+2. Create an implementation with the operations defined in |custom|_
+3. If needed, configure the build process with |custom_cmake|_
+4. ``pip install <path to source code>``

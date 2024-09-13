@@ -116,7 +116,7 @@ html_theme_options = {
         },
         {
             'name': 'PyPI',
-            'url': 'https://example.com',  # TODO fix this
+            'url': 'https://pypi.org/project/aithree/',
             'icon': 'fa-brands fa-python',
             'type': 'fontawesome',
         }
