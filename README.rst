@@ -25,15 +25,16 @@ chosen by the user.
 |doc|_ |repo|_
 
 Installation
-------------
+""""""""""""
+**Built-In Implementations**
+  1. Wheel: *pip install* |pkg_name|
+  2. From Source (improves acceleration platform finding): *pip install* |pkg_name| *--no-binary :all:*
 
-**Default Implementations:** *pip install* |pkg_name|
-
-**Custom Implementations:**
-   1. Download the source code
-   2. Create an implementation with the operations defined in |custom|_
-   3. If needed, configure the build process with |custom_cmake|_
-   4. ``pip install <path to source code>``
+**Custom Implementations**
+  1. Download the source code
+  2. Create an implementation with the operations defined in |custom|_
+  3. If needed, configure the build process with |custom_cmake|_
+  4. ``pip install <path to source code>``
 
 The framework currently features two methods for algorithmic swapping. `swap_backend`
 which swaps every module type of a *DNN* returning an object completely managed
