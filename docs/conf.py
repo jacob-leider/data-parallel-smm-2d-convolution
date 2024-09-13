@@ -42,7 +42,7 @@ class PrettyPrintIterable(Directive):
 with open(os.path.join(parent_directory, 'pyproject.toml'), 'rb') as f:
     pyproject_data = tomllib.load(f)
 
-name = pyproject_data.get('project', {}).get('name', '')
+pkg_name = pyproject_data.get('project', {}).get('name', '')
 repo = pyproject_data.get('project', {}).get('homepage', '')
 docs = pyproject_data.get('project', {}).get('documentation', '')
 repo_main = repo + '/tree/main'
@@ -60,10 +60,11 @@ rst_prolog = f'''
 .. |doc| replace:: **Documentation**
 .. _model_zoo: {repo_main + '/model_zoo/models.py'}
 .. |model_zoo| replace:: *model_zoo*
-.. |name| replace:: *{name}*
+.. |name| replace:: *{ai3.__name__}*
+.. |pkg_name| replace:: *{pkg_name}*
 '''
 
-project = name
+project = ai3.__name__
 copyright = '2024, Timothy Cronin'
 author = 'Timothy Cronin'
 
@@ -123,9 +124,9 @@ html_theme_options = {
 }
 
 breathe_projects = {
-    name: os.path.join(os.getcwd(), 'doxygen', 'xml')
+    pkg_name: os.path.join(os.getcwd(), 'doxygen', 'xml')
 }
-breathe_default_project = name
+breathe_default_project = pkg_name
 
 doctest_global_setup = '''
 import ai3
@@ -139,5 +140,5 @@ def setup(app):
     app.add_directive('pprint', PrettyPrintIterable)
     subprocess.call('make clean', shell=True, cwd=cur_directory)
     subprocess.call(
-        f'PROJECT_NAME=*{name}* REPO_MAIN={repo_main} REPO_SRC={repo_src} REPO_CSRC={repo_csrc} doxygen',
+        f'PROJECT_NAME=*{pkg_name}* REPO_MAIN={repo_main} REPO_SRC={repo_src} REPO_CSRC={repo_csrc} doxygen',
         shell=True, cwd=cur_directory)

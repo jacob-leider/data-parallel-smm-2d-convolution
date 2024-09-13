@@ -8,7 +8,8 @@
 .. |doc| replace:: **Documentation**
 .. _model_zoo: https://github.com/KLab-ai3/ai3/tree/main/model_zoo/models.py
 .. |model_zoo| replace:: *model_zoo*
-.. |name| replace:: *ai-3*
+.. |name| replace:: *ai3*
+.. |pkg_name| replace:: *aithree*
 |name|
 ======
 
@@ -25,7 +26,7 @@ chosen by the user.
 Installation
 ------------
 
-**Default Implementations:** *pip install* |name|
+**Default Implementations:** *pip install* |pkg_name|
 
 **Custom Implementations:**
    1. Download the source code

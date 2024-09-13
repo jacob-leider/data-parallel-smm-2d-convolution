@@ -10,6 +10,7 @@ docs/doxygen
 pages
 
 dist
+download_release.sh
 
 src/ai3/_version.py
 papers/JOSS
