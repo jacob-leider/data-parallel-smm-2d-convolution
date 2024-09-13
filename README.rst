@@ -10,6 +10,7 @@
 .. |model_zoo| replace:: *model_zoo*
 .. |name| replace:: *ai3*
 .. |pkg_name| replace:: *aithree*
+
 |name|
 ======
 
@@ -34,16 +35,16 @@ Installation
    3. If needed, configure the build process with |custom_cmake|_
    4. ``pip install <path to source code>``
 
-The framework currently features two methods for algorithmic swapping. *swap_backend*
+The framework currently features two methods for algorithmic swapping. `swap_backend`
 which swaps every module type of a *DNN* returning an object completely managed
-by |name| and *swap_conv2d* which swaps convolution operations out of the
+by |name| and `swap_conv2d` which swaps convolution operations out of the
 existing *DNN*.
 
 *swap_conv2d*
 ~~~~~~~~~~~~~
 Swaps, in-place, *conv2d* operations out of the existing *DNN* for an implementation of
 the user specified algorithm. After swapping, the same *DNN* can still be trained
-and compiled. If no *AlgorithmicSelector* is given then the default
+and compiled. If no `AlgorithmicSelector` is given then the default
 algorithm decided by the framework are used.
 
 Example:
@@ -59,14 +60,14 @@ Example:
     True
 
 *swap_backend*
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 Swaps every module in an exsiting *DNN* for an implementation
 of the user specified algorithm returning
-a :class:`Model` completly managed by the framework.
+a `Model` completly managed by the framework.
 
 Algorithmic selection is performed by passing a mapping from strings
-containing names of the operations to swap to a *AlgorithmicSelector*.
-If no *AlgorithmicSelector* is passed for a given operation then the default
+containing names of the operations to swap to a `AlgorithmicSelector`.
+If no `AlgorithmicSelector` is passed for a given operation then the default
 algorithm decided by the framework are used.
 
 Example:

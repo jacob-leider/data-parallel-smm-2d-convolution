@@ -9,8 +9,9 @@ def prune_rst_links_and_remove_args(obj) -> str:
     docstring = inspect.getdoc(obj)
     assert (docstring)
 
-    docstring = re.sub(r':func:`([^`]+)`', r'*\1*', docstring)
-    docstring = re.sub(r':type:`([^`]+)`', r'*\1*', docstring)
+    docstring = re.sub(r':func:`([^`]+)`', r'`\1`', docstring)
+    docstring = re.sub(r':class:`([^`]+)`', r'`\1`', docstring)
+    docstring = re.sub(r':type:`([^`]+)`', r'`\1`', docstring)
     docstring = textwrap.dedent(docstring).strip()
 
     paragraphs = docstring.split('\n\n')
@@ -39,6 +40,7 @@ if __name__ == "__main__":
         algo_platform_tables = index_file.read()
     with open('README.rst', 'w') as readme_file:
         readme_file.write(clean_rst_prolog())
+        readme_file.write('\n')
         readme_file.write(index_content)
 
         doc = prune_rst_links_and_remove_args(ai3)
@@ -54,7 +56,7 @@ if __name__ == "__main__":
 
         sb_doc = prune_rst_links_and_remove_args(ai3.swap_backend)
         readme_file.writelines(['*swap_backend*\n',
-                                '~~~~~~~~~~~~~\n',
+                                '~~~~~~~~~~~~~~\n',
                                 sb_doc])
         readme_file.write('\n\n')
 
