@@ -15,9 +15,9 @@ CSRC_FILES = ' '.join([
 PY_FILES = ' '.join([str(f)
                     for f in Path('.').rglob('*.py') if 'venv' not in f.parts])
 
-CONV2D_ALGOS_TO_USE = ['direct']
+CONV2D_ALGOS_TO_USE = []
 """The *conv2d* algorithms to use"""
-USE_ALL_POSSIBLE_CONV = False
+USE_ALL_POSSIBLE_CONV = True
 """
 Whether to automatically generate :data:`CONV2D_ALGOS_TO_USE` to contain all
 possible algorithms
@@ -28,6 +28,7 @@ if USE_ALL_POSSIBLE_CONV:
     CONV2D_ALGOS_TO_USE.extend(['direct', 'smm'])
     if ai3.using_mps_and_metal():
         CONV2D_ALGOS_TO_USE.append('mps')
+        CONV2D_ALGOS_TO_USE.append('metal')
     if ai3.using_cudnn():
         CONV2D_ALGOS_TO_USE.extend(['gemm',
                                     'implicit gemm', 'implicit precomp gemm',

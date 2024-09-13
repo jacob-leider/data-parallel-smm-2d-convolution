@@ -8,7 +8,7 @@
 const bool DEFAULT_ADAPTIVEAVGPOOL2D = false;
 
 /**
- * @CUSTOM_OP{AdaptiveAvgPool2D, adaptiveavgpool2d}
+ * @CUSTOM_OP{AdaptiveAvgPool2D,adaptiveavgpool2d}
  */
 template <typename dtype>
 Tensor adaptiveavgpool2d_custom(Tensor input,

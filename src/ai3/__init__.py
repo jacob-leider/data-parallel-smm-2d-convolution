@@ -4,7 +4,7 @@
 
 The framework currently features two methods for algorithmic swapping. :func:`swap_backend`
 which swaps every module type of a *DNN* returning an object completely managed
-by the framework and :func:`swap_conv2d` which swaps convolution operations out of the
+by |name| and :func:`swap_conv2d` which swaps convolution operations out of the
 existing *DNN*.
 """
 

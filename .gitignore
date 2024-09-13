@@ -9,6 +9,8 @@ docs/_build
 docs/doxygen
 pages
 
+dist
+
 src/ai3/_version.py
 papers/JOSS
 

@@ -11,27 +11,26 @@ benchmarking and more.
 
 Below are the possible commands and what they do.
 
-To explicitly test a custom algorithm, add ``custom`` to the
-algorithms list.
+To explicitly test a custom algorithm, add ``'custom'`` to the
+algorithms to use list.
 
 .. automodule:: run
    :members:
 
 Installing
-~~~~~~~~~~
+''''''''''
 
 * *install*: Runs ``pip3 install .``
 * *install.e*: Runs ``pip3 install --editable .``
 * *install.ev*: Runs ``pip3 install --editable --verbose .``
-* *install.ev*: Runs ``pip3 install .[dev,doc]``
 
 Testing
-~~~~~~~
+'''''''
 * *test*:
   Runs all of the following tests
 
 Unit
-^^^^
+""""
 
 * *test.unit*:
   Runs all unit tests
@@ -39,33 +38,33 @@ Unit
   Runs unit tests for the operation
 
 Integration
-^^^^^^^^^^^
+"""""""""""
 
 #. Ensures outputs are equivalent before and after after swapping *conv2d*
    modules for the framework's implementations
 
    * *test.swap_conv2d*:
-     Runs test for all :mod:`models`
+     Tests all models in |model_zoo|_
    * *test.swap_conv2d.<model>*:
-     Runs test for model from :mod:`models`
+     Tests the model from |model_zoo|_
 
 #. Ensures outputs are equivalent before and after swapping all modules for the
    framework's implementations
 
    * *test.swap_backend*:
-     Runs test for all :mod:`models`
+     Tests all models in |model_zoo|_
 
    * *test.swap_backend.<model>*:
-     Runs test for model from :mod:`models`
+     Tests the model from |model_zoo|_
 
 Benchmarking
-~~~~~~~~~~~~
+''''''''''''
 
 * *bench*:
   Runs all of the following benchmarks
 
 By Layer
-^^^^^^^^
+""""""""
 
 * *bench.layer*:
   Shows latency for all operations, both original and framework implementations
@@ -73,32 +72,31 @@ By Layer
 * *bench.layer.<layer>*:
   Shows latency for the specified operation, both original and framework implementations
 
-
 By *DNN*
-^^^^^^^^
+""""""""
 
 #. Shows latencies before and after after swapping *conv2d*
    modules for the framework's implementations
 
    * *bench.swap_conv2d*:
-     Shows latency for all :mod:`models`
+     Shows latency for all models in |model_zoo|_
    * *bench.swap_conv2d.<model>*:
-     Shows latency for the model from :mod:`models`
+     Shows latency for the model from |model_zoo|_
 
 
 #. Shows latencies before and after swapping all modules for the
    framework's implementations
 
    * *bench.swap_backend*:
-     Shows latency for all :mod:`models`
+     Shows latency for all models in |model_zoo|_
    * *bench.swap_backend.<model>*:
-     Shows latency for the model from :mod:`models`
+     Shows latency for the model from |model_zoo|_
 
 Documentation
-~~~~~~~~~~~~~
+'''''''''''''
 * *docs*: Generate the documentation in *HTML* format.
 * *readme*: Generate the *README.rst*
 
 Develop
-~~~~~~~
+'''''''
 * *clangd*: Generate the *.clangd* file with the correct include paths

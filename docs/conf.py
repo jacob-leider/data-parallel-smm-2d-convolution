@@ -58,6 +58,8 @@ rst_prolog = f'''
 .. |custom_cmake| replace:: *custom.cmake*
 .. _doc: {docs}
 .. |doc| replace:: **Documentation**
+.. _model_zoo: {repo_main + '/model_zoo/models.py'}
+.. |model_zoo| replace:: *model_zoo*
 .. |name| replace:: *{name}*
 '''
 

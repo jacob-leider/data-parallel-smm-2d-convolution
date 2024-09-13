@@ -26,6 +26,7 @@ jobs:
           sudo apt-get install git -y
           sudo apt-get install doxygen -y
           python -m pip install sphinx breathe pydata-sphinx-theme
+          python -m pip install .
           git fetch --tags
           source docs/build_all_docs.sh
       - name: Setup Pages

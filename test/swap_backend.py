@@ -20,7 +20,7 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
             output = ai3_model(input_data)
             compare_tensors(
                 output, target,
-                f"{name} swap backend, {model_zoo.BATCH} samples")
+                f"{name} swap backend using {algo}, {model_zoo.BATCH} samples")
 
 
 if __name__ == "__main__":
