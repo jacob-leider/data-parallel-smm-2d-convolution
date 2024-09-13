@@ -20,6 +20,8 @@
 
 #pragma once
 
+typedef unsigned int uint;
+
 #include "context.hpp"
 #include "tensor.hpp"
 #include "utils.hpp"

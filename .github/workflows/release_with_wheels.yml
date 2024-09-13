@@ -50,6 +50,7 @@ jobs:
       - name: Upload
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
           version="${{ needs.create-release.outputs.version }}"
           gh release upload "$version" wheels/*.whl
