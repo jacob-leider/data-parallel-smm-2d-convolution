@@ -164,8 +164,8 @@ def swap_backend(module,
         yields equivalent outputs as the original *DNN*
 
     Example:
-    Swaps the first *conv2d* operation for an implementation of direct convolution
-    and the second *conv2d* operation for an implementation of *SMM* convolution
+        Swaps the first *conv2d* operation for an implementation of direct convolution
+        and the second *conv2d* operation for an implementation of *SMM* convolution
 
         >>> def auto_selector(orig: torch.nn.Conv2d, input_shape) -> str:
         ...     out_channels = orig.weight.shape[0]
