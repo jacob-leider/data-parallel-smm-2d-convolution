@@ -56,10 +56,10 @@ rst_prolog = f'''
 .. |custom| replace:: custom
 .. _custom_cmake: {repo_src + '/cmake/custom.cmake'}
 .. |custom_cmake| replace:: *custom.cmake*
-.. _doc: {docs}
-.. |doc| replace:: **Documentation**
 .. _model_zoo: {repo_main + '/model_zoo/models.py'}
 .. |model_zoo| replace:: *model_zoo*
+.. _doc: {docs}
+.. |doc| replace:: **Documentation**
 .. |name| replace:: *{ai3.__name__}*
 .. |pkg_name| replace:: *{pkg_name}*
 '''

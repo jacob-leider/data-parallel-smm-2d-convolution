@@ -1,0 +1,31 @@
+name: Update ReadMe
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    name: update-readme
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '>=3.11'
+      - run: |
+          python -m pip install sphinx
+          python -m pip install .
+          python -m run readme
+          if git diff --exit-code README.rst > /dev/null; then
+            echo "No changes in README"
+          else
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            git add README.rst
+            git commit -m "generate new README"
+            git push
+          fi
