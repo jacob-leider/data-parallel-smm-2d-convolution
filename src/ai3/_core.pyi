@@ -50,7 +50,6 @@ def conv2d(input_address: int, input_shape: Sequence[int], input_type: ScalarTyp
     ...
 
 class Conv2D():
-    algorithm: str
     def __init__(self,
                  weight_address: int,
                  weight_shape: Sequence[int],

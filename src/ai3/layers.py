@@ -6,16 +6,17 @@ from typing import (
     Optional,
     Tuple
 )
-from abc import ABC
+from abc import ABC, abstractmethod
 from . import _core, errors, utils
 
 
 class Layer(ABC):
-    def __init__(self, core, algorithm):
+    def __init__(self, core):
         self.core = core
-        self.algorithm = algorithm
         ...
 
+    def algo(self) -> str:
+        return self.core.algorithm
 
 class Conv2D(Layer):
     def __init__(
@@ -32,7 +33,7 @@ class Conv2D(Layer):
             errors.bail_if(
                 padding_mode
                 not in ['zeros', 'reflect', 'replicate', 'circular'],
-                f"invalid padding mode: {padding_mode}")
+                f'invalid padding mode: {padding_mode}')
             padding_mode = _core.PaddingMode({
                 'zeros': _core.PaddingMode.zeros,
                 'reflect': _core.PaddingMode.reflect,
@@ -55,9 +56,6 @@ class Conv2D(Layer):
             dilation[1],
             _core.PaddingMode(padding_mode),
             groups, algorithm, scalar_type)
-
-    def set_algo(self, algo: str):
-        self.core.algorithm = algo
 
 
 class Linear(Layer):

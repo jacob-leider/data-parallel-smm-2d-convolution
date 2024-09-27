@@ -165,11 +165,11 @@ def setup_context(ctx, inputs, output):
 
 
 torch.library.custom_op(
-    "ai3::conv2d", conv2d, mutates_args=())
+    'ai3::conv2d', conv2d, mutates_args=())
 torch.library.register_fake(
-    "ai3::conv2d", conv2d_abstract)
+    'ai3::conv2d', conv2d_abstract)
 torch.library.register_autograd(
-    "ai3::conv2d", conv2d_backward, setup_context=setup_context)
+    'ai3::conv2d', conv2d_backward, setup_context=setup_context)
 
 
 class Conv2D(nn.Module):
@@ -186,7 +186,7 @@ class Conv2D(nn.Module):
         errors.bail_if(
             orig.padding_mode
             not in ['zeros', 'reflect', 'replicate', 'circular'],
-            f"invalid padding mode: {orig.padding_mode}")
+            f'invalid padding mode: {orig.padding_mode}')
         self.groups = orig.groups
         self.padding_mode = {
             'zeros': _core.PaddingMode.zeros,
@@ -217,7 +217,8 @@ class Conv2D(nn.Module):
 def get_algo_inc_counter(orig: Union[nn.Module, str],
                          algos: Mapping,
                          layer_counters: DefaultDict[str, int],
-                         input_shape: Optional[Sequence[int]]) -> str:
+                         input_shape: Optional[Sequence[int]],
+                         *, swapping_backend = False) -> str:
     if isinstance(orig, nn.Module):
         op = mod_to_op(orig)
     else:
@@ -225,7 +226,7 @@ def get_algo_inc_counter(orig: Union[nn.Module, str],
     if callable(algos[op]):
         errors.bail_if(
             isinstance(orig, str),
-            f"trying to use function selector for a function or module which is already swapped")
+            f'trying to use function selector for something that is not an instantiable')
         if input_shape is not None:
             algo = algos[op](orig, input_shape)
         else:
@@ -235,10 +236,12 @@ def get_algo_inc_counter(orig: Union[nn.Module, str],
         layer_counters[op] += 1
     else:
         algo = algos[op]
+    errors.bail_if(swapping_backend and algo == 'torch',
+                   f'cannot use {algo} implementation when swapping backend')
     errors.bail_if(not isinstance(algo, str),
-                   f"Invalid algorithm, {algo}, found for {op}")
+                   f'Invalid algorithm, {algo}, found for {op}')
     errors.bail_if(not algo in utils.SUPPORTED_ALGORITHMS[op],
-                   f"Unsupported algorithm, {algo}, found for {op}")
+                   f'algorithm, {algo}, is unsupported for {op}')
     return algo
 
 
@@ -272,7 +275,7 @@ def swap_backend_layers(complete_module: nn.Module, dtype,
         if with_shapes:
             node_input_shape = node.meta['tensor_meta'].shape
         if node.op == 'placeholder' or node.op == 'output':
-            pass
+            continue
         elif node.op == 'call_function':
             if node.target == torch.flatten:
                 start_dim = 0
@@ -285,40 +288,34 @@ def swap_backend_layers(complete_module: nn.Module, dtype,
                     start_dim = node.kwargs['start_dim']
                 if 'end_dim' in node.kwargs:
                     end_dim = node.kwargs['end_dim']
-                algo = get_algo_inc_counter(
-                    'flatten', algos, layer_counters, node_input_shape)
-                errors.bail_if(algo == "torch",
-                               "can't use torch backend when in swap_backend")
+                algo = get_algo_inc_counter( 'flatten', algos, layer_counters,
+                                            node_input_shape,
+                                            swapping_backend=True)
                 assert (isinstance(
                     start_dim, int))
                 assert (isinstance(end_dim, int))
-                forwards.append(layers.Flatten(
-                    start_dim, end_dim, algo))
+                layer = layers.Flatten(start_dim, end_dim, algo)
             elif node.target == torch.relu:
-                algo = get_algo_inc_counter(
-                    'relu', algos, layer_counters, node_input_shape)
-                errors.bail_if(algo == "torch",
-                               "can't use torch backend when in swap_backend")
-                forwards.append(
-                    layers.ReLU(algo))
+                algo = get_algo_inc_counter( 'relu', algos, layer_counters,
+                                            node_input_shape,
+                                            swapping_backend=True)
+                layer = layers.ReLU(algo)
             else:
                 errors.unsupported_mod(node.target)
         elif node.op == 'call_module':
             mod = getmodule(
                 complete_module, node.target)
-            if not isinstance(mod, nn.Dropout):
-                algo = get_algo_inc_counter(
-                    mod, algos, layer_counters, node_input_shape)
-                errors.bail_if(algo == "torch",
-                               "can't use torch backend when in swap_backend")
-                swapped = swap_layer(
-                    mod, dtype, algo)
-                if not swapped:
-                    errors.unsupported_mod(mod)
-                forwards.append(swapped)
+            if isinstance(mod, nn.Dropout):
+                continue
+            algo = get_algo_inc_counter(mod, algos, layer_counters,
+                                        node_input_shape,
+                                        swapping_backend=True)
+            layer = swap_layer(
+                mod, dtype, algo)
         else:
             errors.bail(
-                f"unsupported call: {node.op}")
+                f'unsupported operation: {node.op}')
+        forwards.append(layer)
 
     return forwards
 
@@ -363,7 +360,7 @@ def swap_conv2d(
 
 
 def swap_layer(module: Union[nn.Module, layers.Layer],
-               dtype, algo: str) -> Optional[layers.Layer]:
+               dtype, algo: str) -> layers.Layer:
     scalar_type = utils.get_scalar_type(dtype)
     if isinstance(module, (nn.Conv2d, Conv2D)):
         return layers.Conv2D(
@@ -386,4 +383,4 @@ def swap_layer(module: Union[nn.Module, layers.Layer],
         return layers.ReLU(algo)
     elif isinstance(module, nn.Flatten):
         return layers.Flatten(module.start_dim, module.end_dim, algo)
-    return None
+    errors.unsupported_mod(module)

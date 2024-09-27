@@ -70,17 +70,17 @@ def get_swapper(
             from_backend = 'torch'
         else:
             errors.bail(
-                f'Algorithmic selection is not suported for type {type_str}')
+                f'algorithmic selection is not suported for type {type_str}')
     try:
         if from_backend == 'torch':
             from . import swap_torch
             return swap_torch
     except ModuleNotFoundError as e:
         errors.print_error(
-            f'Using backend {from_backend}, but it was not found')
+            f'using backend {from_backend}, but it was not found')
         raise e
     errors.bail(
-        f"Unsupported backend: {from_backend}, supported backends are: {supported_backends}")
+        f'unsupported backend: {from_backend}, supported backends are: {supported_backends}')
 
 
 def smart_type_str(orig_type) -> str:
@@ -94,7 +94,7 @@ def smart_type_str(orig_type) -> str:
         return TORCH_TENSOR_TYPE_STR
     if is_subclass_of(orig_type, TORCH_MODULE_TYPE_STR):
         return TORCH_MODULE_TYPE_STR
-    return f"{orig_type.__module__}.{orig_type.__name__}"
+    return f'{orig_type.__module__}.{orig_type.__name__}'
 
 
 def get_address(frontend_data) -> int:
