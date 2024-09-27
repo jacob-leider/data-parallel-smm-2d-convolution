@@ -133,7 +133,7 @@ if __name__ == '__main__':
                         '--env JOURNAL=joss '
                         'openjournals/inara')
             run_command(f'{PY} papers.JOSS.function')
-            run_command(f'{PY} papers.JOSS.name_and_list')
+            run_command(f'{PY} papers.JOSS.single_and_list')
         else:
             cmd_found = False
             for start in [
