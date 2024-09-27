@@ -53,8 +53,8 @@ rst_prolog = f'''
 .. _repo: {repo}
 .. |repo| replace:: **Source Code**
 .. _custom: {repo_src + '/custom'}
-.. |custom| replace:: custom
-.. _custom_cmake: {repo_src + '/cmake/custom.cmake'}
+.. |custom| replace:: *custom*
+.. _custom_cmake: {repo_main + '/cmake/custom.cmake'}
 .. |custom_cmake| replace:: *custom.cmake*
 .. _model_zoo: {repo_main + '/model_zoo/models.py'}
 .. |model_zoo| replace:: *model_zoo*
