@@ -23,9 +23,9 @@ class Conv2D(nn.Module):
 def perform_pred_with(algo, orig, input):
     input_shape = tuple(input.size())
     optim = ai3.swap_backend(
-        orig, {"conv2d": algo})
+        orig, {'conv2d': algo})
     return predict_show_time(
-        optim, input, f"ai3 {algo} {input_shape}")
+        optim, input, f'ai3 {algo} {input_shape}')
 
 
 def run_on(input):
@@ -34,7 +34,7 @@ def run_on(input):
     input_shape = tuple(input.size())
 
     orig_out = predict_show_time(
-        orig, input, f"pytorch {input_shape}")
+        orig, input, f'pytorch {input_shape}')
     assert (isinstance(orig_out, torch.Tensor))
 
     for algo in CONV2D_ALGOS_TO_USE:
@@ -46,7 +46,7 @@ def run_on(input):
         compare_tensors(out, orig_out, algo, print_pass=False, atol=atol)
 
 
-print("Conv2D")
+print('Conv2D')
 run_on(torch.randn(N, 3, 224, 224))
 print('-------------')
 run_on(torch.randn(N, 512, 14, 14))

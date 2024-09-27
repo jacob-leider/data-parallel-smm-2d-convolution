@@ -33,7 +33,7 @@ def clean_rst_prolog():
     return rst_prolog
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     with open(os.path.join('docs', 'intro.rst'), 'r') as index_file:
         index_content = index_file.read()
     with open(os.path.join('docs', 'algo_platform_tables.rst'), 'r') as index_file:

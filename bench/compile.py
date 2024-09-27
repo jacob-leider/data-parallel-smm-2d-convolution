@@ -27,11 +27,11 @@ def show_stat_of(runner, input_data, name, *, N, grad):
 
 
 def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
-    predict_show_time(module, input_data, name + " torch orig")
+    predict_show_time(module, input_data, name + ' torch orig')
     torch_comp = compile(module)
 
     ai3.swap_conv2d(module)
-    predict_show_time(module, input_data, name + " ai3 orig")
+    predict_show_time(module, input_data, name + ' ai3 orig')
     ai3_comp = compile(module)
 
     target = show_stat_of(torch_comp, input_data,
@@ -55,5 +55,5 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
         print_pass=False)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     model_zoo.from_args(runner, sys.argv)

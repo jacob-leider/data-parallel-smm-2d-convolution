@@ -16,14 +16,14 @@ class MaxPool2D(nn.Module):
         return x
 
 
-print("MaxPool2D")
+print('MaxPool2D')
 input = torch.randn(1000, 3, 300, 300)
 orig = MaxPool2D(
     kernel_size=5, stride=1, padding=0)
 optim = ai3.swap_backend(orig)
 orig_out = predict_show_time(
-    orig, input, "pytorch")
+    orig, input, 'pytorch')
 assert (isinstance(orig_out, torch.Tensor))
-optim_out = predict_show_time(optim, input, "ai3")
+optim_out = predict_show_time(optim, input, 'ai3')
 compare_tensors(optim_out, orig_out.detach(
 ).numpy(), print_pass=False)

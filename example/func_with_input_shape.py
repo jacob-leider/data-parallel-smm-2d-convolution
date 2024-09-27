@@ -1,11 +1,12 @@
 import torch
 import ai3
+from ai3 import swap_torch
 from .manual_conv2d import ConvNet
 from typing import Sequence, Union
 
 
 def conv2d_selector(
-        orig: Union[torch.nn.Conv2d, ai3.swap_torch.Conv2D],
+        orig: Union[torch.nn.Conv2d, swap_torch.Conv2D],
         input_shape: Sequence[int]) -> str:
     out_channels = orig.weight.shape[0]
     if (out_channels < 50 and

@@ -14,13 +14,13 @@ class Flatten(nn.Module):
         return x
 
 
-print("Flatten")
+print('Flatten')
 input = torch.randn(10, 100, 20, 30, 40, 50)
 orig = Flatten()
 optim = ai3.swap_backend(orig)
 orig_out = predict_show_time(
-    orig, input, "pytorch")
+    orig, input, 'pytorch')
 assert (isinstance(orig_out, torch.Tensor))
-optim_out = predict_show_time(optim, input, "ai3")
+optim_out = predict_show_time(optim, input, 'ai3')
 compare_tensors(
-    optim_out, orig_out.detach().numpy(), "")
+    optim_out, orig_out.detach().numpy(), '')

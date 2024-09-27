@@ -22,13 +22,13 @@ def time_backward_step(module, input_data, name: str):
     loss.backward()
     end = time.time()
     backward_time = end - start
-    print(f"  Time Backward {name}: {backward_time:.4f} seconds")
+    print(f'  Time Backward {name}: {backward_time:.4f} seconds')
 
     start = time.time()
     optimizer.step()
     end = time.time()
     backward_time = end - start
-    print(f"  Time step {name}: {backward_time:.4f} seconds")
+    print(f'  Time step {name}: {backward_time:.4f} seconds')
 
 
 def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
@@ -37,6 +37,6 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
     time_backward_step(module, input_data, f'{name} ai3')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     print('BACKWARD')
     model_zoo.from_args(runner, sys.argv)

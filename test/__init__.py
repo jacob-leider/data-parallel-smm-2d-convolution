@@ -11,16 +11,16 @@ FAILED_TESTS = []
 def show_failed():
     if FAILED_TESTS:
         print(
-            f"Failed {len(FAILED_TESTS)} tests:")
+            f'Failed {len(FAILED_TESTS)} tests:')
         for test in FAILED_TESTS:
-            print(f"  - {test}")
+            print(f'  - {test}')
 
 
 atexit.register(show_failed)
 
 
 def add_fail(mes):
-    FAILED_TESTS.append(f"{mes}")
+    FAILED_TESTS.append(f'{mes}')
 
 
 def compare_tensors(

@@ -43,17 +43,17 @@ def wrapped_run(
         module: torch.nn.Module, input_sample_shape: Sequence[int],
         name, runner):
     name = name.upper()
-    print(f"{name}")
+    print(f'{name}')
     module.eval()
     (needs_groups, has_conv) = check_mod(module)
     if needs_groups and not GROUPED_CONVOLUTION:
         print(
-            f"  skipping {name} as it requires groups > 1")
+            f'  skipping {name} as it requires groups > 1')
     elif has_conv:
         runner(module, torch.randn(
             BATCH, *input_sample_shape), name)
     else:
-        print(f"{name} doesn't use convolution")
+        print(f'{name} does not use convolution')
 
 
 def run_all(runner):

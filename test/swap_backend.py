@@ -13,15 +13,15 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
         for algo in CONV2D_ALGOS_TO_USE:
             try:
                 ai3_model = ai3.swap_backend(
-                    module, {"conv2d": algo})
+                    module, {'conv2d': algo})
             except UnsupportedCallableError as e:
-                print(f"  {e} so skipping")
+                print(f'  {e} so skipping')
                 return
             output = ai3_model(input_data)
             compare_tensors(
                 output, target,
-                f"{name} swap backend using {algo}, {model_zoo.BATCH} samples")
+                f'{name} swap backend using {algo}, {model_zoo.BATCH} samples')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     model_zoo.from_args(runner, sys.argv)

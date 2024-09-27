@@ -14,8 +14,8 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
             output = module(input_data)
             compare_tensors(
                 output, target,
-                f"{name} swap conv2d with {algo}, {model_zoo.BATCH} samples")
+                f'{name} swap conv2d with {algo}, {model_zoo.BATCH} samples')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     model_zoo.from_args(runner, sys.argv)

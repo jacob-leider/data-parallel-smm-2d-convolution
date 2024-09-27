@@ -88,7 +88,7 @@ def conv2d():
                 if not torch.allclose(
                         param[1].grad, param_swapped[1].grad, atol=atol):
                     print(
-                        f"Grads differ for {param[0]}: {param[1].grad} vs {param_swapped[1].grad}")
+                        f'Grads differ for {param[0]}: {param[1].grad} vs {param_swapped[1].grad}')
                     exit(1)
 
             optimizer.step()
@@ -99,7 +99,7 @@ def conv2d():
                     model_swapped.named_parameters()):
                 if not torch.allclose(param[1], param_swapped[1], atol=atol):
                     print(
-                        f"Weights differ for {param[0]}: {param[1]} vs {param_swapped[1]}")
+                        f'Weights differ for {param[0]}: {param[1]} vs {param_swapped[1]}')
                     exit(1)
 
             total_loss_model += loss.item()
@@ -117,10 +117,10 @@ def conv2d():
     final_atol = 1e-3
     if abs(model_loss - swapped_loss) > final_atol:
         print(
-            f"Final loss for orig {model_loss} and swapped {swapped_loss} differ")
+            f'Final loss for orig {model_loss} and swapped {swapped_loss} differ')
     else:
         print(
-            f"Final loss for orig and swapped are within atol {final_atol}")
+            f'Final loss for orig and swapped are within atol {final_atol}')
 
 
 def evaluate_loss(model, loader, criterion):

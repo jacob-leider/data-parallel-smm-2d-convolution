@@ -21,7 +21,7 @@ class ConvNet(nn.Module):
         return x
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     input_data = torch.randn(10, 3, 224, 224)
     orig = ConvNet()
     torch_out = orig(input_data)

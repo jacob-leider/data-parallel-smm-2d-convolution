@@ -30,36 +30,36 @@ def alter_orig_after_copy_ensure_same(
 def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
     target = module(input_data)
     torch_cpy_out = alter_orig_after_copy_ensure_same(
-        deepcopy(module), input_data, f"{name} torch after copying then altering orig")
+        deepcopy(module), input_data, f'{name} torch after copying then altering orig')
     try:
         ai3_model = ai3.swap_backend(module)
     except UnsupportedCallableError as e:
-        print(f"  {e} so skipping")
+        print(f'  {e} so skipping')
         return
     sb_out = ai3_model(input_data)
     compare_tensors(
         sb_out, target,
-        f"{name} swap backend, not copied, {model_zoo.BATCH} samples")
+        f'{name} swap backend, not copied, {model_zoo.BATCH} samples')
 
     ai3.swap_conv2d(module)
     sc_out = module(input_data)
     compare_tensors(
         sc_out, target,
-        f"{name} swap conv2d, not copied, {model_zoo.BATCH} samples")
+        f'{name} swap conv2d, not copied, {model_zoo.BATCH} samples')
 
     ai3_sc_cpy_out = alter_orig_after_copy_ensure_same(
-        module, input_data, f"{name} ai3 sc after copying then altering orig")
+        module, input_data, f'{name} ai3 sc after copying then altering orig')
     compare_tensors(
         ai3_sc_cpy_out, torch_cpy_out,
-        f"{name} torch copied and ai3 sc copied, {model_zoo.BATCH} samples")
+        f'{name} torch copied and ai3 sc copied, {model_zoo.BATCH} samples')
 
     ai3_sb_cpy = deepcopy(ai3_model)
     del ai3_model.core
     ai3_sb_cpy_out = ai3_sb_cpy(input_data)
     compare_tensors(
         ai3_sb_cpy_out, torch_cpy_out,
-        f"{name} torch copied and ai3 sb copied, {model_zoo.BATCH} samples")
+        f'{name} torch copied and ai3 sb copied, {model_zoo.BATCH} samples')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     model_zoo.from_args(runner, sys.argv)

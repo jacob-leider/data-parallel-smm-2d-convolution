@@ -46,12 +46,12 @@ def test_conv2d_with(input, out_channels, kernel_size, mes):
     for name in grad_torch:
         if not torch.allclose(grad_torch[name], grad_ai3[name]):
             print(
-                f"Gradients for {name} on {mes} differ")
+                f'Gradients for {name} on {mes} differ')
             same_gradients = False
 
     if same_gradients:
         print(
-            f"Gradients are the same for conv2d on {mes}")
+            f'Gradients are the same for conv2d on {mes}')
     else:
         print(
-            f"Gradients are different for conv2d on {mes}")
+            f'Gradients are different for conv2d on {mes}')

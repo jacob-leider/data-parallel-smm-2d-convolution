@@ -27,7 +27,7 @@ def timed_predict(runner, data, grad: bool = False):
         out = runner.predict(
             data, out_type=torch.Tensor)
     else:
-        print(f"invalid runner f{type(runner)}")
+        print(f'invalid runner f{type(runner)}')
         assert (False)
     end_time = time.time()
     assert (start_time > 0)
@@ -39,5 +39,5 @@ def timed_predict(runner, data, grad: bool = False):
 def predict_show_time(runner, data, runner_name: str, grad: bool = False):
     out, latency = timed_predict(runner, data, grad=grad)
     print(
-        f"  Time {runner_name}: {latency} seconds")
+        f'  Time {runner_name}: {latency} seconds')
     return out
