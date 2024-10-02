@@ -7,8 +7,9 @@
 Functions Providing Algorithmic Selection
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: ai3.swap_conv2d
+.. autofunction:: ai3.swap_operation
 .. autofunction:: ai3.swap_backend
+.. autofunction:: ai3.swap_conv2d
 
 Types
 ~~~~~

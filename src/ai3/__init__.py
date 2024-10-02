@@ -4,11 +4,12 @@
 
 The framework currently features two methods for algorithmic swapping. :func:`swap_backend`
 which swaps every module type of a *DNN* returning an object completely managed
-by |name| and :func:`swap_conv2d` which swaps convolution operations out of the
+by |name| and :func:`swap_operation` which swaps specific operations out of the
 existing *DNN*.
 """
 
-from typing import Mapping, Optional, Sequence
+import inspect
+from typing import Mapping, Optional, Sequence, Type, Union
 from . import _core, utils, layers, _version
 from .tensor import Tensor
 
@@ -101,17 +102,29 @@ class Model():
         return out.to(out_type)
 
 
-def swap_conv2d(
+def add_docstring_with_call(func):
+    lines = inspect.getsourcelines(func)[0]
+    line = lines[len(lines) - 1]
+    line = line.strip()
+    func.__doc__ = f"Calls:\
+\
+            >>> {line}"
+    return func
+
+
+def swap_operation(
+        op_type: Union[Type, str],
         module,
         algos: Optional[AlgorithmicSelector] = None,
         sample_input_shape: Optional[Sequence[int]] = None):
     """
-    Swaps, in-place, *conv2d* operations out of the existing *DNN* for an implementation of
+    Swaps operations in-place out of the existing *DNN* for an implementation of
     the user specified algorithm. After swapping, the same *DNN* can still be trained
     and compiled. If no :type:`AlgorithmicSelector` is given then the default
     algorithm decided by the framework are used.
 
     Args:
+        op_type : the type of operation to swap out
         module : the module containing the *conv2d* operations to be swapped out in-place
         algos (Optional[:type:`AlgorithmicSelector`]) :
             algorithmic selector for the *conv2d* operations
@@ -125,18 +138,23 @@ def swap_conv2d(
         >>> input_data = torch.randn(10, 3, 224, 224)
         >>> orig = ConvNet()
         >>> orig_out = orig(input_data)
-        >>> ai3.swap_conv2d(orig, ['direct', 'smm'])
-        >>> sc_out = orig(input_data)
-        >>> torch.allclose(orig_out, sc_out, atol=1e-6)
+        >>> ai3.swap_operation(nn.Conv2d, orig, ['direct', 'smm'])
+        >>> so_out = orig(input_data)
+        >>> torch.allclose(orig_out, so_out, atol=1e-6)
         True
     """
-    if not algos:
-        algos = DEFAULT_ALGOS["conv2d"]
-    utils.check_callable_params_with_shape(
-        {'conv2d': algos}, sample_input_shape)
     swapper = utils.get_swapper(module, FROM_BACKEND, SUPPORTED_FROM_BACKENDS)
-    swapper.swap_conv2d(
-        module, algos, sample_input_shape)
+    if isinstance(op_type, str):
+        op_str = op_type
+        op_type = swapper.str_to_op_type(op_type)
+    else:
+        op_str = swapper.op_type_to_str(op_type)
+    if not algos:
+        algos = DEFAULT_ALGOS[op_str]
+    utils.check_callable_params_with_shape(
+        {op_str: algos}, sample_input_shape)
+    swapper.swap_operation(op_type,
+                           module, algos, sample_input_shape)
 
 
 def swap_backend(module,
@@ -200,6 +218,16 @@ def swap_backend(module,
         algos, sample_input_shape)
     return Model(swapper.swap_backend_layers(
         module, dtype, algos, sample_input_shape))
+
+
+def swap_conv2d(module,
+                algos: Optional['AlgorithmicSelector'] = None,
+                sample_input_shape: Optional[Sequence[int]] = None):
+    """
+    Calls
+        >>> swap_operation('conv2d', module, algos, sample_input_shape) # doctest: +SKIP
+    """
+    swap_operation('conv2d', module, algos, sample_input_shape)
 
 
 def using_mps_and_metal() -> bool:

@@ -18,6 +18,7 @@ class Layer(ABC):
     def algo(self) -> str:
         return self.core.algorithm
 
+
 class Conv2D(Layer):
     def __init__(
             self,  weight, bias, _stride: Union[int, Tuple[int, ...]],

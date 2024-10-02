@@ -4,6 +4,7 @@ from typing import (
     Union,
     Sequence,
     Any,
+    Type,
     Tuple,
     Mapping,
     Callable,
@@ -83,7 +84,7 @@ def get_swapper(
         f'unsupported backend: {from_backend}, supported backends are: {supported_backends}')
 
 
-def smart_type_str(orig_type) -> str:
+def smart_type_str(orig_type: Union[Type, str]) -> str:
     def is_subclass_of(orig_type, type_str):
         return any(
             base.__module__ + '.' + base.__name__ == type_str

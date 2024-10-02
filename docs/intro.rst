@@ -11,6 +11,12 @@ chosen by the user.
 
 |doc|_ |repo|_
 
+.. figure:: _static/framework_overview.png
+    :align: center
+    :width: 70%
+
+    Framework Overview
+
 Installation
 """"""""""""
 **Built-In Implementations**
