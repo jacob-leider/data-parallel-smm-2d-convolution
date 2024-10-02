@@ -240,10 +240,10 @@ with torch.inference_mode():
     input = torch.randn(EARLY_SHAPE)
     orig_models = {"AlexNet": tvm.alexnet(),
                    "DenseNet": tvm.DenseNet(),
-                   "GoogleNet": tvm.googlenet(),
-                   "Incetion V3": tvm.inception_v3(),
+                   "GoogLeNet": tvm.googlenet(),
+                   "Inception V3": tvm.inception_v3(),
                    "ResNet152": tvm.resnet152(),
-                   "Squeezenet 1.1": tvm.squeezenet1_1(),
+                   "SqueezeNet 1.1": tvm.squeezenet1_1(),
                    "Swin Transformer Base": tvm.swin_b(),
                    "VGG16": tvm.vgg16(),
                    "Vision Transformer Base 16": tvm.vit_b_16()}
