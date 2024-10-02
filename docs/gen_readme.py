@@ -4,6 +4,7 @@ import ai3
 import textwrap
 import inspect
 
+GITHUB_RAW = 'https://raw.githubusercontent.com/KLab-AI3/ai3/main'
 
 def prune_rst_links_and_remove_args(obj) -> str:
     docstring = inspect.getdoc(obj)
@@ -34,10 +35,14 @@ def clean_rst_prolog():
 
 
 if __name__ == '__main__':
-    with open(os.path.join('docs', 'intro.rst'), 'r') as index_file:
-        index_content = index_file.read()
-    with open(os.path.join('docs', 'algo_platform_tables.rst'), 'r') as index_file:
-        algo_platform_tables = index_file.read()
+    with open(os.path.join('docs', 'intro.rst'), 'r') as file:
+        index_content = file.read().replace('_static/framework_overview.png',
+                                            f'{GITHUB_RAW}/docs/_static/framework_overview.png'
+                                            )
+    with open(os.path.join('docs', 'home_footnotes.rst'), 'r') as file:
+        footnotes = file.read()
+    with open(os.path.join('docs', 'algo_platform_tables.rst'), 'r') as file:
+        algo_platform_tables = file.read()
     with open('README.rst', 'w') as readme_file:
         readme_file.write(clean_rst_prolog())
         readme_file.write('\n')
@@ -47,9 +52,9 @@ if __name__ == '__main__':
         readme_file.write(''.join(doc.splitlines(keepends=True)[1:]))
         readme_file.write('\n\n')
 
-        sc_doc = prune_rst_links_and_remove_args(ai3.swap_conv2d)
+        sc_doc = prune_rst_links_and_remove_args(ai3.swap_operation)
 
-        readme_file.writelines(['*swap_conv2d*\n',
+        readme_file.writelines(['*swap_operation*\n',
                                 '~~~~~~~~~~~~~\n',
                                 sc_doc])
         readme_file.write('\n\n')
@@ -61,3 +66,5 @@ if __name__ == '__main__':
         readme_file.write('\n\n')
 
         readme_file.write(algo_platform_tables)
+        readme_file.write('\n')
+        readme_file.write(footnotes)

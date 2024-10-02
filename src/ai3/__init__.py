@@ -33,15 +33,19 @@ AlgorithmicSelector = utils.AlgorithmicSelector
 
 There are three different types of algorithmic selectors.
 
-* **str:** contains the name of the algorithm that will be used for all modules
-    of the associated type
-* **Sequence[str]:** list of algorithm names, as modules are encountered in a forward pass,
-    they are replaced with an implementation of the algorithm in the list
-    with the same index as that module has relative to the other modules
-    of the associated type
-* **Callable:** function which is given the module being swapped and returns the name of the
-    algorithm to use, the function can optionally take the input size for this
-    module provided that a sample input shape was passed to the swapping function.
+Options:
+    * str
+        contains the name of the algorithm that will be used for all modules
+        of the associated type
+    * Sequence[str]
+        list of algorithm names, as modules are encountered in a forward pass,
+        they are replaced with an implementation of the algorithm in the list
+        with the same index as that module has relative to the other modules
+        of the associated type
+    * Callable
+        function which is given the module being swapped and returns the name of the
+        algorithm to use, the function can optionally take the input size for this
+        module provided that a sample input shape was passed to the swapping function.
 
 Example:
     Function to perform algorithmic selection.

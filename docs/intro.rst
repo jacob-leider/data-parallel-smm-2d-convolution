@@ -11,11 +11,14 @@ chosen by the user.
 
 |doc|_ |repo|_
 
-.. figure:: _static/framework_overview.png
-    :align: center
-    :width: 70%
 
-    Framework Overview
+Framework Overview [#f1]_
+"""""""""""""""""""""""""
+
+.. figure:: _static/framework_overview.png
+   :align: center
+   :width: 70%
+
 
 Installation
 """"""""""""

@@ -131,6 +131,7 @@ breathe_default_project = pkg_name
 doctest_global_setup = '''
 import ai3
 import torch
+from torch import nn
 import torchvision
 from example.manual_conv2d import ConvNet
 '''

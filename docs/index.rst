@@ -13,3 +13,5 @@ Contents
 .. _supported-operations:
 
 .. include:: algo_platform_tables.rst
+
+.. include:: home_footnotes.rst
