@@ -1,8 +1,8 @@
 .. _repo: https://github.com/KLab-ai3/ai3
 .. |repo| replace:: **Source Code**
 .. _custom: https://github.com/KLab-ai3/ai3/tree/main/src/ai3/custom
-.. |custom| replace:: custom
-.. _custom_cmake: https://github.com/KLab-ai3/ai3/tree/main/src/ai3/cmake/custom.cmake
+.. |custom| replace:: *custom*
+.. _custom_cmake: https://github.com/KLab-ai3/ai3/tree/main/cmake/custom.cmake
 .. |custom_cmake| replace:: *custom.cmake*
 .. _model_zoo: https://github.com/KLab-ai3/ai3/tree/main/model_zoo/models.py
 .. |model_zoo| replace:: *model_zoo*
@@ -24,6 +24,15 @@ chosen by the user.
 
 |doc|_ |repo|_
 
+
+Framework Overview [#f1]_
+"""""""""""""""""""""""""
+
+.. figure:: https://raw.githubusercontent.com/KLab-AI3/ai3/main/docs/_static/framework_overview.png
+   :align: center
+   :width: 70%
+
+
 Installation
 """"""""""""
 **Built-In Implementations**
@@ -38,12 +47,12 @@ Installation
 
 The framework currently features two methods for algorithmic swapping. `swap_backend`
 which swaps every module type of a *DNN* returning an object completely managed
-by |name| and `swap_conv2d` which swaps convolution operations out of the
+by |name| and `swap_operation` which swaps specific operations out of the
 existing *DNN*.
 
-*swap_conv2d*
+*swap_operation*
 ~~~~~~~~~~~~~
-Swaps, in-place, *conv2d* operations out of the existing *DNN* for an implementation of
+Swaps operations in-place out of the existing *DNN* for an implementation of
 the user specified algorithm. After swapping, the same *DNN* can still be trained
 and compiled. If no `AlgorithmicSelector` is given then the default
 algorithm decided by the framework are used.
@@ -55,9 +64,9 @@ Example:
     >>> input_data = torch.randn(10, 3, 224, 224)
     >>> orig = ConvNet()
     >>> orig_out = orig(input_data)
-    >>> ai3.swap_conv2d(orig, ['direct', 'smm'])
-    >>> sc_out = orig(input_data)
-    >>> torch.allclose(orig_out, sc_out, atol=1e-6)
+    >>> ai3.swap_operation(nn.Conv2d, orig, ['direct', 'smm'])
+    >>> so_out = orig(input_data)
+    >>> torch.allclose(orig_out, so_out, atol=1e-6)
     True
 
 *swap_backend*
@@ -316,3 +325,5 @@ Flatten
      - |n|
    * - *metal*
      - |n|
+
+.. [#f1] created with `draw.io <https://draw.io>`_
