@@ -19,6 +19,7 @@ Framework Overview [#f1]_
    :align: center
    :width: 70%
 
+.. include:: home_footnotes
 
 Installation
 """"""""""""

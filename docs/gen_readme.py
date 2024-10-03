@@ -36,17 +36,18 @@ def clean_rst_prolog():
 
 if __name__ == '__main__':
     with open(os.path.join('docs', 'intro.rst'), 'r') as file:
-        index_content = file.read().replace('_static/framework_overview.png',
-                                            f'{GITHUB_RAW}/docs/_static/framework_overview.png'
-                                            )
-    with open(os.path.join('docs', 'home_footnotes.rst'), 'r') as file:
+        intro_lines = file.readlines()
+        filtered_lines = [line for line in intro_lines if not line.startswith('.. include:')]
+        intro = ''.join(filtered_lines).replace('_static/framework_overview.png',
+                                                 f'{GITHUB_RAW}/docs/_static/framework_overview.png')
+    with open(os.path.join('docs', 'home_footnotes'), 'r') as file:
         footnotes = file.read()
     with open(os.path.join('docs', 'algo_platform_tables.rst'), 'r') as file:
         algo_platform_tables = file.read()
     with open('README.rst', 'w') as readme_file:
         readme_file.write(clean_rst_prolog())
         readme_file.write('\n')
-        readme_file.write(index_content)
+        readme_file.write(intro)
 
         doc = prune_rst_links_and_remove_args(ai3)
         readme_file.write(''.join(doc.splitlines(keepends=True)[1:]))
