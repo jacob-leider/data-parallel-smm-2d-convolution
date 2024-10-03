@@ -106,7 +106,7 @@ Example:
     True
 
 Supported Operations, their Algorithms, and Acceleration Platform Compatibility
--------------------------------------------------------------------------------
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 .. |y| unicode:: U+2713
 .. |n| unicode:: U+2717
