@@ -49,7 +49,7 @@ class Tensor():
         }[self.core.scalar_type]
         errors.bail_if(
             dtype is None,
-            f"tensor type, {self.core.scalar_type} is neither float32 or float64")
+            f'tensor type, {self.core.scalar_type} is neither float32 or float64')
         data: numpy.ndarray = numpy.frombuffer(
             self.core, dtype=dtype)
         return data.reshape(self.core.shape)
