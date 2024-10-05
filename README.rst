@@ -98,8 +98,8 @@ Example:
     >>> vgg16 = vgg16.eval()
     >>> with torch.inference_mode():
     ...     torch_out = vgg16(input_data)
-    ...     model: ai3.Model = ai3.swap_backend(vgg16, {"conv2d": auto_selector,
-    ...                                                 "maxpool2d": "default"},
+    ...     model: ai3.Model = ai3.swap_backend(vgg16, {'conv2d': auto_selector,
+    ...                                                 'maxpool2d': 'default'},
     ...                                         sample_input_shape=(1, 3, 224, 224))
     ...     sb_out = model(input_data)
     ...     torch.allclose(torch_out, sb_out, atol=1e-4)
