@@ -9,7 +9,7 @@ existing *DNN*.
 """
 
 import inspect
-from typing import Mapping, Optional, Sequence, Type, Union
+from typing import Mapping, Optional, Sequence, Type, Union, TypeVar
 from . import _core, utils, layers, _version
 from .tensor import Tensor
 
@@ -105,12 +105,12 @@ class Model():
         out = Tensor(out)
         return out.to(out_type)
 
-
 def swap_operation(
         op_type: Union[Type, str],
         module,
         algos: Optional[AlgorithmicSelector] = None,
-        sample_input_shape: Optional[Sequence[int]] = None):
+        sample_input_shape: Optional[Sequence[int]] = None,
+        swap_with = None):
     """
     Swaps operations in-place out of the existing *DNN* for an implementation of
     the user specified algorithm. After swapping, the same *DNN* can still be trained
@@ -124,6 +124,9 @@ def swap_operation(
             algorithmic selector for the *conv2d* operations
         sample_input_shape : the input shape to the *DNN* which is passed to the
                              function algorithmic selector if present
+        swap_with : the new type which performs the operation, the original operator
+                    and the algorithm are passed for initialization, if not present,
+                    the operator provided by |name| will be used
 
     Example:
         Swaps the first *conv2d* operation for an implementation of direct convolution
@@ -148,7 +151,7 @@ def swap_operation(
     utils.check_callable_params_with_shape(
         {op_str: algos}, sample_input_shape)
     swapper.swap_operation(op_type,
-                           module, algos, sample_input_shape)
+                           module, algos, sample_input_shape, swap_with)
 
 
 def swap_backend(module,
@@ -216,12 +219,13 @@ def swap_backend(module,
 
 def swap_conv2d(module,
                 algos: Optional['AlgorithmicSelector'] = None,
-                sample_input_shape: Optional[Sequence[int]] = None):
+                sample_input_shape: Optional[Sequence[int]] = None,
+                swap_with = None):
     """
     Calls
         >>> swap_operation('conv2d', module, algos, sample_input_shape) # doctest: +SKIP
     """
-    swap_operation('conv2d', module, algos, sample_input_shape)
+    swap_operation('conv2d', module, algos, sample_input_shape, swap_with)
 
 
 def using_mps_and_metal() -> bool:

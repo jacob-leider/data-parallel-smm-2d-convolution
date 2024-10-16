@@ -16,9 +16,8 @@ errors.bail_if(version.parse(torch.__version__) < version.parse(
 
 
 class Conv2D(nn.Module):
-    def __init__(self, orig: nn.Conv2d, algorithm: str, target: str):
+    def __init__(self, orig: nn.Conv2d, algorithm: str):
         super(Conv2D, self).__init__()
-        self.target = target
         self.algorithm = algorithm
 
         self.stride = utils.make_2d(orig.stride)
@@ -353,13 +352,14 @@ def swapped_type(op_type) -> Optional[Type]:
 
 
 def swap_operation(
-        op_type: Type, module: nn.Module, selector: utils.AlgorithmicSelector,
-        sample_input_shape: Optional[Sequence[int]] = None):
-    swapped_op_type = swapped_type(op_type)
+        orig_op_type: Type, module: nn.Module, selector: utils.AlgorithmicSelector,
+        sample_input_shape: Optional[Sequence[int]], swap_with):
+    if not swap_with:
+        swap_with = swapped_type(orig_op_type)
     errors.bail_if(
-        swapped_op_type is None,
-        f'cannot perform inplace algorithmic selection for {op_type}')
-    assert swapped_op_type is not None
+        swap_with is None,
+        f'cannot perform inplace algorithmic selection for {orig_op_type}')
+    assert swap_with is not None
     graph, with_shapes = trace_module(
         module, sample_input_shape)
 
@@ -371,16 +371,16 @@ def swap_operation(
             node_input_shape = node.meta['tensor_meta'].shape
         if node.op == 'call_module':
             mod = getmodule(module, node.target)
-            if isinstance(mod, (op_type, swapped_op_type)):
+            if isinstance(mod, (orig_op_type, swap_with)):
                 algo = get_algo_inc_counter(
                     mod, selector,
                     layer_counters, node_input_shape)
                 if algo == 'torch':
                     continue
-                if isinstance(mod, op_type):
+                if isinstance(mod, orig_op_type):
                     module = setmodule(
                         module, node.target,
-                        swapped_op_type(mod, algo, str(node.target)))
+                        swap_with(mod, algo))
                 else:
                     setattr(mod, 'algorithm', algo)
 
