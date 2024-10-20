@@ -28,7 +28,7 @@ with torch.inference_mode():
     torch_out = vgg16(input_data)
 
     ai3.swap_conv2d(
-        vgg16, conv2d_selector, None, SpecialConv)
+        vgg16, conv2d_selector, None, swap_with=SpecialConv)
     sb_out = vgg16(input_data)
     assert torch.allclose(
         torch_out, sb_out, atol=1e-4)

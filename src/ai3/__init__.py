@@ -8,8 +8,7 @@ by |name| and :func:`swap_operation` which swaps specific operations out of the
 existing *DNN*.
 """
 
-import inspect
-from typing import Mapping, Optional, Sequence, Type, Union, TypeVar
+from typing import Mapping, Optional, Sequence, Type, Union
 from . import _core, utils, layers, _version
 from .tensor import Tensor
 
@@ -110,6 +109,7 @@ def swap_operation(
         module,
         algos: Optional[AlgorithmicSelector] = None,
         sample_input_shape: Optional[Sequence[int]] = None,
+        *,
         swap_with = None):
     """
     Swaps operations in-place out of the existing *DNN* for an implementation of
@@ -220,12 +220,13 @@ def swap_backend(module,
 def swap_conv2d(module,
                 algos: Optional['AlgorithmicSelector'] = None,
                 sample_input_shape: Optional[Sequence[int]] = None,
+                *,
                 swap_with = None):
     """
     Calls
         >>> swap_operation('conv2d', module, algos, sample_input_shape) # doctest: +SKIP
     """
-    swap_operation('conv2d', module, algos, sample_input_shape, swap_with)
+    swap_operation('conv2d', module, algos, sample_input_shape, swap_with=swap_with)
 
 
 def using_mps_and_metal() -> bool:
