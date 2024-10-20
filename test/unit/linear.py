@@ -26,7 +26,7 @@ def test(*, num_samples, in_features: int, out_features: int,
     orig = Linear(in_features, out_features, with_bias)
     torch_output = orig(input)
 
-    model = ai3.swap_backend(orig)
+    model = ai3.convert(orig)
     ai3_output = model.predict(input, torch.Tensor)
     compare_tensors(
         ai3_output, torch_output, test_name)

@@ -20,7 +20,7 @@ print('AvgPool2D')
 input = torch.randn(1000, 3, 300, 300)
 orig = AvgPool2D(
     kernel_size=5, stride=1, padding=0)
-optim = ai3.swap_backend(orig)
+optim = ai3.convert(orig)
 orig_out = predict_show_time(
     orig, input, 'pytorch')
 assert (isinstance(orig_out, torch.Tensor))

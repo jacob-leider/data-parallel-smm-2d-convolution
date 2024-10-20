@@ -273,7 +273,7 @@ def trace_module(module: nn.Module,
     return graph, with_shapes
 
 
-def swap_backend_layers(complete_module: nn.Module, dtype,
+def convert_layers(complete_module: nn.Module, dtype,
                         algos: Mapping[str, utils.AlgorithmicSelector],
                         sample_input_shape: Optional[Sequence[int]] = None) -> List[layers.Layer]:
     graph, with_shapes = trace_module(

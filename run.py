@@ -132,15 +132,14 @@ if __name__ == '__main__':
                         '--user $(id -u):$(id -g) '
                         '--env JOURNAL=joss '
                         'openjournals/inara')
-            run_command(f'{PY} papers.JOSS.function')
-            run_command(f'{PY} papers.JOSS.single_and_list')
+            run_command(f'{PY} papers.JOSS.example')
         else:
             cmd_found = False
             for start in [
-                    'test.ops', 'test.swap_conv2d', 'test.swap_backend',
+                    'test.ops', 'test.swap_conv2d', 'test.convert',
                     'test.serialization.pickle', 'test.serialization.deepcopy',
                     'bench.backward_step', 'bench.swap_conv2d',
-                    'bench.swap_backend', 'bench.compile']:
+                    'bench.convert', 'bench.compile']:
                 if cmd.startswith(start):
                     fix_cmd_run(cmd, start)
                     break

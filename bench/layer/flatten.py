@@ -17,7 +17,7 @@ class Flatten(nn.Module):
 print('Flatten')
 input = torch.randn(10, 100, 20, 30, 40, 50)
 orig = Flatten()
-optim = ai3.swap_backend(orig)
+optim = ai3.convert(orig)
 orig_out = predict_show_time(
     orig, input, 'pytorch')
 assert (isinstance(orig_out, torch.Tensor))

@@ -32,7 +32,7 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
     torch_cpy_out = alter_orig_after_copy_ensure_same(
         deepcopy(module), input_data, f'{name} torch after copying then altering orig')
     try:
-        ai3_model = ai3.swap_backend(module)
+        ai3_model = ai3.convert(module)
     except UnsupportedCallableError as e:
         print(f'  {e} so skipping')
         return

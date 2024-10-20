@@ -12,7 +12,7 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
     with torch.inference_mode():
         for algo in CONV2D_ALGOS_TO_USE:
             try:
-                ai3_model = ai3.swap_backend(
+                ai3_model = ai3.convert(
                     module, {'conv2d': algo})
             except UnsupportedCallableError as e:
                 print(f'  {e} so skipping')

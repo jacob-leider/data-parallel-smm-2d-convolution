@@ -21,7 +21,7 @@ def runner(module: torch.nn.Module, input_data: torch.Tensor, name: str):
             f'{name} torch orig and torch unpickled, {model_zoo.BATCH} samples')
 
         try:
-            ai3_model = ai3.swap_backend(module)
+            ai3_model = ai3.convert(module)
         except UnsupportedCallableError as e:
             print(f'  {e} so skipping')
             return

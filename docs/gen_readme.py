@@ -64,8 +64,8 @@ if __name__ == '__main__':
                                 sc_doc])
         readme_file.write('\n\n')
 
-        sb_doc = prune_rst_links_and_remove_args(ai3.swap_backend)
-        readme_file.writelines(['*swap_backend*\n',
+        sb_doc = prune_rst_links_and_remove_args(ai3.convert)
+        readme_file.writelines(['*convert*\n',
                                 '~~~~~~~~~~~~~~\n',
                                 sb_doc])
         readme_file.write('\n\n')

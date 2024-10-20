@@ -49,7 +49,7 @@ def test(*, input_channels: int, in_height: int, in_width: int,
     orig = MaxPool2D(kernel_shape, stride, padding, dilation, ceil_mode)
     torch_output = orig(input)
 
-    model = ai3.swap_backend(orig)
+    model = ai3.convert(orig)
     ai3_output = model.predict(input)
     compare_tensors(
         ai3_output, torch_output, test_name)

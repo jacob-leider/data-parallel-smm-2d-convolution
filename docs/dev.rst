@@ -51,10 +51,10 @@ Integration
 #. Ensures outputs are equivalent before and after swapping all modules for the
    framework's implementations
 
-   * *test.swap_backend*:
+   * *test.convert*:
      Tests all models in |model_zoo|_
 
-   * *test.swap_backend.<model>*:
+   * *test.convert.<model>*:
      Tests the model from |model_zoo|_
 
 Benchmarking
@@ -87,9 +87,9 @@ By *DNN*
 #. Shows latencies before and after swapping all modules for the
    framework's implementations
 
-   * *bench.swap_backend*:
+   * *bench.convert*:
      Shows latency for all models in |model_zoo|_
-   * *bench.swap_backend.<model>*:
+   * *bench.convert.<model>*:
      Shows latency for the model from |model_zoo|_
 
 Documentation

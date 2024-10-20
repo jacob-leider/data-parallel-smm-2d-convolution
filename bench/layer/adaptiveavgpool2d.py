@@ -20,7 +20,7 @@ def run():
     print('AdaptiveAvgPool2D')
     input = torch.randn(1000, 3, 300, 300)
     orig = AdaptiveAvgPool2D(output_size=(50, 50))
-    optim = ai3.swap_backend(orig)
+    optim = ai3.convert(orig)
     orig_out = predict_show_time(
         orig, input, 'pytorch')
     assert (isinstance(orig_out, torch.Tensor))

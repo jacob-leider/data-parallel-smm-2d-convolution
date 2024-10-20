@@ -17,7 +17,7 @@ vgg16.eval()
 with torch.inference_mode():
     torch_out = vgg16(input_data)
 
-    model: ai3.Model = ai3.swap_backend(
+    model: ai3.Model = ai3.convert(
         vgg16, {'conv2d': conv2d_selector, 'maxpool2d': 'default'})
     sb_out = model(input_data)
     assert torch.allclose(

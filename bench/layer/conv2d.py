@@ -22,7 +22,7 @@ class Conv2D(nn.Module):
 
 def perform_pred_with(algo, orig, input):
     input_shape = tuple(input.size())
-    optim = ai3.swap_backend(
+    optim = ai3.convert(
         orig, {'conv2d': algo})
     return predict_show_time(
         optim, input, f'ai3 {algo} {input_shape}')

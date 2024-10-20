@@ -25,7 +25,7 @@ if __name__ == '__main__':
     input_data = torch.randn(10, 3, 224, 224)
     orig = ConvNet()
     torch_out = orig(input_data)
-    model: ai3.Model = ai3.swap_backend(
+    model: ai3.Model = ai3.convert(
         orig, {'conv2d': 'direct', 'maxpool2d': 'default'})
     sb_out = model(input_data)
     ai3.swap_conv2d(orig, ['direct', 'smm'])

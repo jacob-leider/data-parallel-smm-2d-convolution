@@ -18,7 +18,7 @@ class ReLU(nn.Module):
 print('ReLU')
 input = torch.randn(1000, 3, 1000, 500)
 orig = ReLU()
-optim = ai3.swap_backend(orig)
+optim = ai3.convert(orig)
 orig_out = predict_show_time(
     orig, input, 'pytorch')
 assert (isinstance(orig_out, torch.Tensor))

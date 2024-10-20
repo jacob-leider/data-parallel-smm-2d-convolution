@@ -34,7 +34,7 @@ with torch.inference_mode():
         torch_out, sc_out_first, atol=1e-6)
     assert torch.allclose(
         torch_out, sc_out_second, atol=1e-6)
-    model = ai3.swap_backend(
+    model = ai3.convert(
         orig, {'conv2d': conv2d_selector, 'maxpool2d': 'default'},
         (3, 224, 224))
     sb_out = model.predict(input_data)

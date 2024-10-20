@@ -41,7 +41,7 @@ def test(*, num_samples=None, input_channels: int, in_height: int, in_width: int
     torch_output = orig(input)
 
     for algo in CONV2D_ALGOS_TO_USE:
-        model: ai3.Model = ai3.swap_backend(orig, {'conv2d': algo})
+        model: ai3.Model = ai3.convert(orig, {'conv2d': algo})
         out = model.predict(
             input, out_type=torch.Tensor)
         if algo == 'metal':

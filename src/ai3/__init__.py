@@ -2,7 +2,7 @@
 
 """Provides the easy-to-use fine-grain algorithmic control over an existing *DNN*
 
-The framework currently features two methods for algorithmic swapping. :func:`swap_backend`
+The framework currently features two methods for algorithmic swapping. :func:`convert`
 which swaps every module type of a *DNN* returning an object completely managed
 by |name| and :func:`swap_operation` which swaps specific operations out of the
 existing *DNN*.
@@ -155,7 +155,7 @@ def swap_operation(
                            module, algos, sample_input_shape, swap_with)
 
 
-def swap_backend(module,
+def convert(module,
                  algos: Optional[Mapping[str, AlgorithmicSelector]] = None,
                  sample_input_shape: Optional[Sequence[int]] = None, *,
                  dtype=None) -> Model:
@@ -197,7 +197,7 @@ def swap_backend(module,
         >>> vgg16 = vgg16.eval()
         >>> with torch.inference_mode():
         ...     torch_out = vgg16(input_data)
-        ...     model: ai3.Model = ai3.swap_backend(vgg16, {'conv2d': auto_selector,
+        ...     model: ai3.Model = ai3.convert(vgg16, {'conv2d': auto_selector,
         ...                                                 'maxpool2d': 'default'},
         ...                                         sample_input_shape=(1, 3, 224, 224))
         ...     sb_out = model(input_data)
@@ -214,7 +214,7 @@ def swap_backend(module,
         dtype = swapper.default_dtype()
     utils.check_callable_params_with_shape(
         algos, sample_input_shape)
-    return Model(swapper.swap_backend_layers(
+    return Model(swapper.convert_layers(
         module, dtype, algos, sample_input_shape))
 
 

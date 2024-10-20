@@ -19,7 +19,7 @@ class Linear(nn.Module):
 print('Linear')
 input = torch.randn(1000, 1200)
 orig = Linear(1200, 800)
-optim = ai3.swap_backend(orig)
+optim = ai3.convert(orig)
 optim_out = predict_show_time(optim, input, 'ai3')
 orig_out = predict_show_time(
     orig, input, 'pytorch')
