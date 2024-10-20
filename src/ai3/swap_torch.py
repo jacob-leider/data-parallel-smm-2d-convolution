@@ -274,8 +274,8 @@ def trace_module(module: nn.Module,
 
 
 def convert_layers(complete_module: nn.Module, dtype,
-                        algos: Mapping[str, utils.AlgorithmicSelector],
-                        sample_input_shape: Optional[Sequence[int]] = None) -> List[layers.Layer]:
+                   algos: Mapping[str, utils.AlgorithmicSelector],
+                   sample_input_shape: Optional[Sequence[int]] = None) -> List[layers.Layer]:
     graph, with_shapes = trace_module(
         complete_module, sample_input_shape)
 

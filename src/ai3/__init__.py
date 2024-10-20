@@ -2,10 +2,9 @@
 
 """Provides the easy-to-use fine-grain algorithmic control over an existing *DNN*
 
-The framework currently features two methods for algorithmic swapping. :func:`convert`
-which swaps every module type of a *DNN* returning an object completely managed
-by |name| and :func:`swap_operation` which swaps specific operations out of the
-existing *DNN*.
+The framework currently features two methods for algorithmic swapping.
+:func:`convert` which converts the entire *DNN* and :func:`swap_operation`
+which swaps specific operations out of the existing *DNN*.
 """
 
 from typing import Mapping, Optional, Sequence, Type, Union
@@ -156,13 +155,12 @@ def swap_operation(
 
 
 def convert(module,
-                 algos: Optional[Mapping[str, AlgorithmicSelector]] = None,
-                 sample_input_shape: Optional[Sequence[int]] = None, *,
-                 dtype=None) -> Model:
+            algos: Optional[Mapping[str, AlgorithmicSelector]] = None,
+            sample_input_shape: Optional[Sequence[int]] = None, *,
+            dtype=None) -> Model:
     """
-    Swaps every module in an exsiting *DNN* for an implementation
-    of the user specified algorithm returning
-    a :class:`Model` completly managed by the framework.
+    Converts every operation in a *DNN* to an implementation of the user
+    specified algorithm returning a :class:`Model` completly managed by |name|.
 
     Algorithmic selection is performed by passing a mapping from strings
     containing names of the operations to swap to a :type:`AlgorithmicSelector`.

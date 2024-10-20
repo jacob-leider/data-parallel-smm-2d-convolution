@@ -11,9 +11,9 @@ def prune_rst_links_and_remove_args(obj) -> str:
     docstring = inspect.getdoc(obj)
     assert (docstring)
 
-    docstring = re.sub(r':func:`([^`]+)`', r'`\1`', docstring)
-    docstring = re.sub(r':class:`([^`]+)`', r'`\1`', docstring)
-    docstring = re.sub(r':type:`([^`]+)`', r'`\1`', docstring)
+    docstring = re.sub(r':func:`([^`]+)`', r'*\1*', docstring)
+    docstring = re.sub(r':class:`([^`]+)`', r'*\1*', docstring)
+    docstring = re.sub(r':type:`([^`]+)`', r'*\1*', docstring)
     docstring = textwrap.dedent(docstring).strip()
 
     paragraphs = docstring.split('\n\n')
