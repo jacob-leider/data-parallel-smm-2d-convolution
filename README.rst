@@ -45,16 +45,15 @@ Installation
   3. If needed, configure the build process with |custom_cmake|_
   4. ``pip install <path to source code>``
 
-The framework currently features two methods for algorithmic swapping. `swap_backend`
-which swaps every module type of a *DNN* returning an object completely managed
-by |name| and `swap_operation` which swaps specific operations out of the
-existing *DNN*.
+The framework currently features two methods for algorithmic swapping.
+*convert* which converts the entire *DNN* and *swap_operation*
+which swaps specific operations out of the existing *DNN*.
 
 *swap_operation*
 ~~~~~~~~~~~~~
 Swaps operations in-place out of the existing *DNN* for an implementation of
 the user specified algorithm. After swapping, the same *DNN* can still be trained
-and compiled. If no `AlgorithmicSelector` is given then the default
+and compiled. If no *AlgorithmicSelector* is given then the default
 algorithm decided by the framework are used.
 
 Example:
@@ -69,15 +68,14 @@ Example:
     >>> torch.allclose(orig_out, so_out, atol=1e-6)
     True
 
-*swap_backend*
+*convert*
 ~~~~~~~~~~~~~~
-Swaps every module in an exsiting *DNN* for an implementation
-of the user specified algorithm returning
-a `Model` completly managed by the framework.
+Converts every operation in a *DNN* to an implementation of the user
+specified algorithm returning a *Model* completly managed by |name|.
 
 Algorithmic selection is performed by passing a mapping from strings
-containing names of the operations to swap to a `AlgorithmicSelector`.
-If no `AlgorithmicSelector` is passed for a given operation then the default
+containing names of the operations to swap to a *AlgorithmicSelector*.
+If no *AlgorithmicSelector* is passed for a given operation then the default
 algorithm decided by the framework are used.
 
 Example:
@@ -98,7 +96,7 @@ Example:
     >>> vgg16 = vgg16.eval()
     >>> with torch.inference_mode():
     ...     torch_out = vgg16(input_data)
-    ...     model: ai3.Model = ai3.swap_backend(vgg16, {'conv2d': auto_selector,
+    ...     model: ai3.Model = ai3.convert(vgg16, {'conv2d': auto_selector,
     ...                                                 'maxpool2d': 'default'},
     ...                                         sample_input_shape=(1, 3, 224, 224))
     ...     sb_out = model(input_data)
