@@ -104,13 +104,14 @@ class Model():
         out = Tensor(out)
         return out.to(out_type)
 
+
 def swap_operation(
         op_type: Union[Type, str],
         module,
         algos: Optional[AlgorithmicSelector] = None,
         sample_input_shape: Optional[Sequence[int]] = None,
         *,
-        swap_with = None):
+        swap_with=None):
     """
     Swaps operations in-place out of the existing *DNN* for an implementation of
     the user specified algorithm. After swapping, the same *DNN* can still be trained
@@ -221,12 +222,13 @@ def swap_conv2d(module,
                 algos: Optional['AlgorithmicSelector'] = None,
                 sample_input_shape: Optional[Sequence[int]] = None,
                 *,
-                swap_with = None):
+                swap_with=None):
     """
     Calls
         >>> swap_operation('conv2d', module, algos, sample_input_shape) # doctest: +SKIP
     """
-    swap_operation('conv2d', module, algos, sample_input_shape, swap_with=swap_with)
+    swap_operation('conv2d', module, algos,
+                   sample_input_shape, swap_with=swap_with)
 
 
 def using_mps_and_metal() -> bool:

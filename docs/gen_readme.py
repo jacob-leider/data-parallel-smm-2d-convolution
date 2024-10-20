@@ -6,6 +6,7 @@ import inspect
 
 GITHUB_RAW = 'https://raw.githubusercontent.com/KLab-AI3/ai3/main'
 
+
 def prune_rst_links_and_remove_args(obj) -> str:
     docstring = inspect.getdoc(obj)
     assert (docstring)
@@ -37,9 +38,12 @@ def clean_rst_prolog():
 if __name__ == '__main__':
     with open(os.path.join('docs', 'intro.rst'), 'r') as file:
         intro_lines = file.readlines()
-        filtered_lines = [line for line in intro_lines if not line.startswith('.. include:')]
-        intro = ''.join(filtered_lines).replace('_static/framework_overview.png',
-                                                 f'{GITHUB_RAW}/docs/_static/framework_overview.png')
+        filtered_lines = [
+            line for line in intro_lines
+            if not line.startswith('.. include:')]
+        intro = ''.join(filtered_lines).replace(
+            '_static/framework_overview.png',
+            f'{GITHUB_RAW}/docs/_static/framework_overview.png')
     with open(os.path.join('docs', 'home_footnotes'), 'r') as file:
         footnotes = file.read()
     with open(os.path.join('docs', 'algo_platform_tables.rst'), 'r') as file:

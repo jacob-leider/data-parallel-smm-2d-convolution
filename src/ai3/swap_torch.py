@@ -352,8 +352,10 @@ def swapped_type(op_type) -> Optional[Type]:
 
 
 def swap_operation(
-        orig_op_type: Type, module: nn.Module, selector: utils.AlgorithmicSelector,
-        sample_input_shape: Optional[Sequence[int]], swap_with):
+        orig_op_type: Type, module: nn.Module,
+        selector: utils.AlgorithmicSelector,
+        sample_input_shape: Optional[Sequence[int]],
+        swap_with):
     if not swap_with:
         swap_with = swapped_type(orig_op_type)
     errors.bail_if(
