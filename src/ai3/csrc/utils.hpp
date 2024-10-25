@@ -177,6 +177,15 @@ inline void *new_data_with_type(const ScalarType type, const uint count) {
     }
 }
 
+inline uint prev_power_of_two(uint x) {
+    x |= x >> 1;
+    x |= x >> 2;
+    x |= x >> 4;
+    x |= x >> 8;
+    x |= x >> 16;
+    return x - (x >> 1);
+}
+
 inline uint size_of_scalar_type(ScalarType type) {
     switch (type) {
     case ScalarType::Float32:

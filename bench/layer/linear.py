@@ -19,9 +19,9 @@ class Linear(nn.Module):
 print('Linear')
 input = torch.randn(1000, 1200)
 orig = Linear(1200, 800)
-optim = ai3.convert(orig)
-optim_out = predict_show_time(optim, input, 'ai3')
+sb = ai3.convert(orig)
+sb_out = predict_show_time(sb, input, 'ai3')
+print(f'type: {type(sb_out)}')
 orig_out = predict_show_time(
     orig, input, 'pytorch')
-assert (isinstance(orig_out, torch.Tensor))
-compare_tensors(optim_out, orig_out.detach().numpy(), print_pass=False)
+compare_tensors(sb_out, orig_out, print_pass=False)
