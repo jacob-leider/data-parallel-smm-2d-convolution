@@ -92,7 +92,7 @@ Linear
    * - *none*
      - |y|
    * - *sycl*
-     - |n|
+     - |y|
    * - *cudnn*
      - |n|
    * - *cublas*

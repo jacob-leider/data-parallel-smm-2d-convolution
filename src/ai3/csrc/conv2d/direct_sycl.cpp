@@ -67,33 +67,10 @@ Tensor conv2d::direct(Tensor input, const Tensor &kernel,
     if (output_area < work_group_size) {
         work_group_size = output_area;
     }
-    dtype scaler =
-        std::sqrt(dtype(work_group_size) / (output_channels * output_area));
-    uint each_channel = output_channels * scaler;
-    uint each_output_area = output_area * scaler;
-    if (each_channel == 0) {
-        each_channel = 1;
-        scaler = 1 / (scaler * output_channels);
-        each_output_area /= scaler;
-        if (each_output_area == 0) {
-            each_output_area = 1;
-        }
-    }
-    if (each_output_area == 0) {
-        scaler = 1 / (scaler * each_output_area);
-        each_output_area = 1;
-        each_channel /= scaler;
-        if (each_channel == 0) {
-            each_channel = 1;
-        }
-    }
-
-    const uint total_output_area =
-        ((output_area + each_output_area - 1) / each_output_area) *
-        each_output_area;
-    const uint total_channels =
-        ((output_channels + each_channel - 1) / each_channel) * each_channel;
-
+    uint each_channel, each_output_area, total_channels, total_output_area;
+    proportionate_2d_work_split<dtype>(
+        output_channels, output_area, work_group_size, &each_channel,
+        &each_output_area, &total_channels, &total_output_area);
     queue.submit([&](sycl::handler &h) {
         auto acc_input =
             buf_input.template get_access<sycl::access::mode::read>(h);
