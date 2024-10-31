@@ -1,4 +1,5 @@
 .. include:: intro.rst
+.. include:: performance.rst
 
 Contents
 """"""""

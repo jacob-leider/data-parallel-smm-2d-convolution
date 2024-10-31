@@ -34,6 +34,12 @@ def clean_rst_prolog():
 
     return rst_prolog
 
+def fix_paths(contents):
+    return re.sub(
+        r'_static/(\S+)',
+        lambda match: f"{GITHUB_RAW}/docs/_static/{match.group(1)}",
+        contents
+    )
 
 if __name__ == '__main__':
     with open(os.path.join('docs', 'intro.rst'), 'r') as file:
@@ -41,11 +47,10 @@ if __name__ == '__main__':
         filtered_lines = [
             line for line in intro_lines
             if not line.startswith('.. include:')]
-        intro = re.sub(
-            r'_static/(\S+)',
-            lambda match: f"{GITHUB_RAW}/docs/_static/{match.group(1)}",
-            ''.join(filtered_lines)
-        )
+        intro = fix_paths(''.join(filtered_lines))
+    with open(os.path.join('docs', 'performance.rst'), 'r') as file:
+        performance = file.read()
+        performance = fix_paths(performance)
     with open(os.path.join('docs', 'home_footnotes'), 'r') as file:
         footnotes = file.read()
     with open(os.path.join('docs', 'algo_platform_tables.rst'), 'r') as file:
@@ -53,6 +58,7 @@ if __name__ == '__main__':
     with open('README.rst', 'w') as readme_file:
         readme_file.write(clean_rst_prolog())
         readme_file.write('\n')
+        intro = re.sub(r":ref:`([^<]+) <.*?>`", r"\1", intro).strip()
         readme_file.write(intro)
 
         doc = prune_rst_links_and_remove_args(ai3)
@@ -70,6 +76,9 @@ if __name__ == '__main__':
         readme_file.writelines(['*convert*\n',
                                 '~~~~~~~~~~~~~~\n',
                                 sb_doc])
+        readme_file.write('\n\n')
+
+        readme_file.write(performance)
         readme_file.write('\n\n')
 
         readme_file.write(algo_platform_tables)

@@ -2,7 +2,7 @@
 
 """Provides the easy-to-use fine-grain algorithmic control over an existing *DNN*
 
-The framework currently features two methods for algorithmic swapping.
+|name| currently features two methods for algorithmic swapping.
 :func:`convert` which converts the entire *DNN* and :func:`swap_operation`
 which swaps specific operations out of the existing *DNN*.
 """

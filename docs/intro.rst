@@ -32,23 +32,3 @@ Installation
   2. Create an implementation with the operations defined in |custom|_
   3. If needed, configure the build process with |custom_cmake|_
   4. ``pip install <path to source code>``
-
-.. _performance:
-
-Performance
-"""""""""""
-.. figure:: _static/conv2d_times.png
-   :alt: Latencies of Convolution Operation
-   :align: center
-   :width: 80%
-   :figwidth: 80%
-
-   Latency of Convolution
-
-.. figure:: _static/model_times.png
-   :alt: Latencies of Models Relative to *PyTorch*
-   :align: center
-   :width: 80%
-   :figwidth: 80%
-
-   Latency of an Entire Model When Using |name| Relative to *PyTorch*
