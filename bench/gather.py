@@ -207,7 +207,7 @@ def table_save():
         bbox=dict(
             boxstyle='round,pad=0.3', edgecolor='black', facecolor='none'))
 
-    plt.savefig(os.path.join(RESULT_DIR, 'model_times_table.png'),
+    plt.savefig(os.path.join(RESULT_DIR, 'model_times.png'),
                 bbox_inches='tight')
     plt.close()
 

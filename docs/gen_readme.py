@@ -41,9 +41,11 @@ if __name__ == '__main__':
         filtered_lines = [
             line for line in intro_lines
             if not line.startswith('.. include:')]
-        intro = ''.join(filtered_lines).replace(
-            '_static/framework_overview.png',
-            f'{GITHUB_RAW}/docs/_static/framework_overview.png')
+        intro = re.sub(
+            r'_static/(\S+)',
+            lambda match: f"{GITHUB_RAW}/docs/_static/{match.group(1)}",
+            ''.join(filtered_lines)
+        )
     with open(os.path.join('docs', 'home_footnotes'), 'r') as file:
         footnotes = file.read()
     with open(os.path.join('docs', 'algo_platform_tables.rst'), 'r') as file:
