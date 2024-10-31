@@ -16,11 +16,11 @@
 
 The |name| (Algorithmic Innovations for Accelerated Implementations of
 Artificial Intelligence) framework provides easy-to-use fine-grain algorithmic
-control over an existing *DNN*. |name| contains built-in high performance
-implementations of common deep learning operations and methods by which users
-can implement their own algorithms in *C++*. |name| incurs no additional
-performance overhead, meaning that performance depends solely on the algorithms
-chosen by the user.
+control over an existing *DNN*. |name| contains built-in
+high performance implementations of common deep learning
+operations and methods by which users can implement their own algorithms in
+*C++*. |name| incurs no additional performance overhead, meaning that
+performance depends solely on the algorithms chosen by the user.
 
 |doc|_ |repo|_
 
@@ -44,8 +44,7 @@ Installation
   2. Create an implementation with the operations defined in |custom|_
   3. If needed, configure the build process with |custom_cmake|_
   4. ``pip install <path to source code>``
-
-The framework currently features two methods for algorithmic swapping.
+|name| currently features two methods for algorithmic swapping.
 *convert* which converts the entire *DNN* and *swap_operation*
 which swaps specific operations out of the existing *DNN*.
 
@@ -102,6 +101,27 @@ Example:
     ...     sb_out = model(input_data)
     ...     torch.allclose(torch_out, sb_out, atol=1e-4)
     True
+
+.. _performance:
+
+Performance
+"""""""""""
+.. figure:: https://raw.githubusercontent.com/KLab-AI3/ai3/main/docs/_static/conv2d_times.png
+   :alt: Latencies of Convolution Operation
+   :align: center
+   :width: 80%
+   :figwidth: 80%
+
+   Latency of Convolution
+
+.. figure:: https://raw.githubusercontent.com/KLab-AI3/ai3/main/docs/_static/model_times.png
+   :alt: Latencies of Models Relative to *PyTorch*
+   :align: center
+   :width: 80%
+   :figwidth: 80%
+
+   Latency of Model When Using |name| Relative to *PyTorch*
+
 
 Supported Operations, their Algorithms, and Acceleration Platform Compatibility
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -197,7 +217,7 @@ Linear
    * - *none*
      - |y|
    * - *sycl*
-     - |n|
+     - |y|
    * - *cudnn*
      - |n|
    * - *cublas*
