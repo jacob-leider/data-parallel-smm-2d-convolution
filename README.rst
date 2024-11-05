@@ -112,7 +112,7 @@ Performance
    :width: 80%
    :figwidth: 80%
 
-   Latency of Convolution
+   Latency of Convolution (`details`_)
 
 .. figure:: https://raw.githubusercontent.com/KLab-AI3/ai3/main/docs/_static/model_times.png
    :alt: Latencies of Models Relative to *PyTorch*
@@ -120,7 +120,16 @@ Performance
    :width: 80%
    :figwidth: 80%
 
-   Latency of Model When Using |name| Relative to *PyTorch*
+   Latency of Model When Using |name| Relative to *PyTorch* (`details`_)
+
+.. _details:
+
+The `cuDNN <https://developer.nvidia.com/cudnn>`_ and `SYCL
+<https://www.khronos.org/sycl/>`_ benchmarks for both *ai3* and *PyTorch* were
+gathered using an *NVIDIA GeForce L40S GPU* with *16* gigabytes of memory. The
+final latencies used are the average over *10* runs after *10* warm up runs.
+The implementations for the algorithms include select ones provided by *cuDNN*
+and implementations from *ai3* which leverage *SYCL*.
 
 
 Supported Operations, their Algorithms, and Acceleration Platform Compatibility
