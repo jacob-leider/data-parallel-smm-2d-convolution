@@ -19,7 +19,6 @@ Tensor conv2d_custom(Tensor input, const Tensor &kernel,
                      const uint stride_h, const uint stride_w,
                      const uint dilation_h, const uint dilation_w,
                      const PaddingMode padding_mode, uint groups) {
-                        ensure_same_type(input, kernel, bias);
     ensure_same_type(input, kernel, bias);
     errs::bail_if(padding_mode != PaddingMode::Zeros,
                   "padding mode must be zeroes");
@@ -57,75 +56,75 @@ Tensor conv2d_custom(Tensor input, const Tensor &kernel,
     const dtype *in_data = data_as<dtype>(input.data);
     const dtype *kern_data = data_as<dtype>(kernel.data);
     dtype *bias_data = nullptr;
+
     if (has_bias) {
         bias_data = data_as<dtype>(bias->data);
     }
 
     dtype *out_data = data_as<dtype>(output.data);
-    
+
     for (uint samp = 0; samp < num_samples; samp++) {
-        for (size_t c = 0; c < input_channels; c++)
-        {
-            for (size_t k_col  = 0; k_col < kernel_width; k_col++)
-            {
-                // Sliced Mat ← T_j^c (slice j)
-                for (k_row = 0; k_row < kernel_height; k_row++)
-                {
-                    // Shifted Mat ← Sliced Mat[k:h' +k,:] (slice j, shifted down k).
-                    for (size_t m = 0; m < output_channels; m++)
-                    {                        
-                        // w ← K[c,j,k,m]
-                        const float w = kern_data[to_linear(
-                                m, c, 
-                                k_row, k_col, 
-                                output_channels, input_channels, 
-                                kernel_height)];
-                        
-                        // Multiply w by submatrix of T_j^c, add it to output.
-                        for (size_t o_row = 0; o_row < output_height; o_row++)
-                        {
-                            for (size_t o_col = 0; o_col < output_width; o_col++)
-                            {
-                                // Input row and column offsets.
-                                const size_t i_row = o_row * stride_h + k_row * dilation_h - padding_h;
-                                const size_t i_col = o_col * stride_w + k_col * dilation_w - padding_w;
-                                
-                                // Output flattened offset.
-                                const size_t o_offset = to_linear(samp, m, 
-                                        o_row, o_col, 
-                                        output_channels, 
-                                        output_height, 
-                                        output_width);
-
-                                // Input flattened offset.
-                                const size_t i_offset = to_linear(samp, c, 
-                                        i_row, i_col,
-                                        input_channels, 
-                                        input_height,
-                                        input_width);
-
-                                out_data[o_offset] = w * in_data[i_offset];
-                            }
-                        }
+        for (uint out_c = 0; out_c < output_channels; out_c++) {
+            for (uint out_h = 0; out_h < output_height; out_h++) {
+                for (uint out_w = 0; out_w < output_width; out_w++) {
+                    if (has_bias)
+                    {
+                        out_data[to_linear(samp, 
+                        out_c, out_h, out_w,
+                        output_channels, output_height,
+                        output_width)] = bias_data[out_c];
+                    }
+                    else
+                    {
+                        out_data[to_linear(samp, 
+                        out_c, out_h, out_w,
+                        output_channels, output_height,
+                        output_width)] = 0;
                     }
                 }
             }
         }
     }
-    
-    if (has_bias) {
-        for (size_t o_channel = 0; o_channel < output_channels; o_channel++)
-        {
-            for (size_t o_row = 0; o_row < output_height; o_row++)
-            {
-                for (size_t o_col = 0; o_col < output_width; o_col++)
-                {
-                    const size_t o_offset = to_linear(o_channel, 
-                            o_row, o_col, 
-                            output_channels,
-                            output_height);
 
-                    out_data[o_offset] += bias;
+
+    for (uint samp = 0; samp < num_samples; samp++) {
+        for (uint in_c = 0; in_c < input_channels; ++in_c) {
+            for (uint ker_w = 0; ker_w < kernel_width; ++ker_w) {
+                for (uint ker_h = 0; ker_h < kernel_height; ++ker_h) {
+                    for (uint out_c = 0; out_c < output_channels; out_c++) {
+
+                        // Weight.
+                        const dtype w = kern_data[to_linear(
+                                        out_c, 
+                                        in_c, 
+                                        ker_h, ker_w,
+                                        input_channels, 
+                                        kernel_height, kernel_width)];
+
+                        // Multiply & accumulate the submatrix with "w".
+                        for (uint out_h = 0; out_h < output_height; out_h++) {
+                            for (uint out_w = 0; out_w < output_width; out_w++) {
+
+                                uint h_offset = out_h * stride_h - padding_h +
+                                                ker_h * dilation_h;
+                                uint w_offset = out_w * stride_w - padding_w +
+                                                ker_w * dilation_w;
+
+                                if (!(h_offset >= 0 && h_offset < input_height &&
+                                        w_offset >= 0 && w_offset < input_width))
+                                    continue;
+
+                                out_data[to_linear(samp, 
+                                        out_c, out_h, out_w,
+                                        output_channels, output_height,
+                                        output_width)]
+                                        += in_data[to_linear(samp, 
+                                                in_c, h_offset, w_offset,
+                                                input_channels, input_height,
+                                                input_width)] * w;
+                            }
+                        }
+                    }
                 }
             }
         }
