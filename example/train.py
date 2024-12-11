@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import ai3
+import time
 
 
 class ConvNet(nn.Module):
@@ -36,24 +37,36 @@ class ConvNet(nn.Module):
 
 def train(model, loader, criterion):
     lr = 0.001
-    optimizer = optim.Adam(
-        model.parameters(), lr=lr)
+    optimizer = optim.SGD(model.parameters(), lr=lr)
 
-    model.train()
+    # model.train()
+
+    f = None
+    try:
+        f = open("./results.txt", "a")
+    except:
+        f = open("./results.txt", "w")
 
     for epoch in range(5):
+        t1 = time.time()
         total_loss_model = 0.0
         for (inputs, labels) in loader:
             optimizer.zero_grad()
             outputs = model(inputs)
-            loss = criterion(outputs, labels)
-            loss.backward()
+            # loss = criterion(outputs, labels)
+            # loss.backward()
             optimizer.step()
-            total_loss_model += loss.item()
-
+            # total_loss_model += loss.item()
+        
+        # Report epoch duration.
+        t2 = time.time()
+        dt = t2 - t1
+        f.write(f"{dt}\n")
+        
         print(
-            f'Epoch {epoch+1} - Loss: {total_loss_model / len(loader):.4f}')
-
+            f'Epoch {epoch+1} - Loss: {total_loss_model / len(loader):.4f}, TIME ELAPSED = {dt:.3f} s')
+        
+    f.close()
 
 def evaluate(model, loader, criterion):
     model.eval()
@@ -84,7 +97,21 @@ loader = DataLoader(dataset, batch_size=int(
     len(dataset)/100), shuffle=True)
 
 model = ConvNet()
-ai3.swap_conv2d(model)
+
+if not ai3.using_sycl():
+    print("ERROR: Not using SYCL.")
+
+f = None
+try:
+    f = open("./results.txt", "a")
+except:
+    f = open("./results.txt", "w")
+
+alg = 'Torch'
+f.write(f'USING: {alg}')
+print(f'USING: {alg}')
+
+ai3.swap_conv2d(model, alg)
 criterion = nn.CrossEntropyLoss()
 
 train(model, loader, criterion)
